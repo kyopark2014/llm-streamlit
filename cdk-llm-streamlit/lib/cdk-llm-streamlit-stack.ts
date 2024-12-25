@@ -14,7 +14,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-      const ec2Role = new iam.Role(this, `role-ec2-for-${projectName}`, {
+    const ec2Role = new iam.Role(this, `role-ec2-for-${projectName}`, {
       roleName: `role-ec2-for-${projectName}-${region}`,
       assumedBy: new iam.CompositePrincipal(
         new iam.ServicePrincipal("ec2.amazonaws.com"),
@@ -125,8 +125,8 @@ EOF"`,
         'systemctl enable streamlit.service',
         'systemctl start streamlit'
       ];
-
-    userData.addCommands(...commands);
+      userData.addCommands(...commands);
+    }
 
     // EC2 instance
     const appInstance = new ec2.Instance(this, `app-for-${projectName}`, {
@@ -166,7 +166,7 @@ EOF"`,
       allowAllOutbound: true,
       securityGroupName: `alb-sg-for-${projectName}`,
       description: 'security group for alb'
-    })
+    });
     ec2Sg.connections.allowFrom(albSg, ec2.Port.tcp(targetPort), 'allow traffic from alb') // alb -> ec2
     
     // ALB
@@ -178,7 +178,7 @@ EOF"`,
       },
       securityGroup: albSg,
       loadBalancerName: `alb-for-${projectName}`
-    })
+    });
     alb.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY); 
 
     // ALB Listener
@@ -192,7 +192,7 @@ EOF"`,
       targets,
       protocol: elbv2.ApplicationProtocol.HTTP,
       port: targetPort
-    })  
+    }); 
 
     new cdk.CfnOutput(this, `albUrl-for-${projectName}`, {
       value: `http://${alb.loadBalancerDnsName}/`,
