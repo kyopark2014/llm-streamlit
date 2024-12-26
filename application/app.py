@@ -67,7 +67,7 @@ def extract_and_display_s3_images(text, s3_client):
 st.sidebar.subheader("Upload Image")
 uploaded_file = st.sidebar.file_uploader("Choose an image", type=["png", "jpg", "jpeg"])
 
-option = st.sidebar.selectbox('Please select in selectbox!',('General Conversation', 'Agent', 'Translation', 'Grammer'))
+option = st.sidebar.selectbox('Please select in selectbox!',('일상적인 대화', 'Agentic Workflow (Tool Use)', '번역하기', '문법 검토하기'))
 st.sidebar.write('Selected application:', option)
 
 # Preview the uploaded image in the sidebar
@@ -79,18 +79,7 @@ if uploaded_file is not None:
 
 clear_button = st.sidebar.button("Clear Conversation", key="clear")
 
-if option == 'general conversation':
-    st.title("일상적인 대화")
-if option == 'Agent':
-    st.title("Agentic Workflow (Tool Use)")
-if option == 'Translation':
-    st.title("번역하기")
-if option == 'Grammer':
-    st.title("문법 검토하기")
-else:
-    st.title(option)
-#st.header('this is header')
-#st.subheader('this is subheader')
+st.title(option)
 
 st.sidebar.markdown(
     "This app shows an Agentic Chatbot powered by Amazon Bedrock to answer questions."
@@ -101,11 +90,13 @@ if user_input := st.chat_input("메시지를 입력하세요."):
     with st.chat_message("user"):
         st.markdown(user_input)
 
-    if option == 'General Conversation':
+#st.header('this is header')
+#st.subheader('this is subheader')
+    if option == '일상적인 대화':
         msg = chat.general_conversation(user_input)
-    elif option == 'Agent':
+    elif option == 'Agentic Workflow (Tool Use)':
         msg = chat.run_agent_executor2(user_input)
-    elif option == 'Translation':
+    elif option == '번역하기':
         msg = chat.translate_text(user_input)
     elif option == 'Grammer':
         msg = chat.check_grammer(user_input)
