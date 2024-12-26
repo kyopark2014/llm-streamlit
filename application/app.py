@@ -81,6 +81,10 @@ clear_button = st.sidebar.button("Clear Conversation", key="clear")
 
 st.title(option)
 
+if clear_button or "messages" not in st.session_state:
+    st.session_state.messages = []
+    chat.clear_chat_history()
+
 st.sidebar.markdown(
     "This app shows an Agentic Chatbot powered by Amazon Bedrock to answer questions."
 )
