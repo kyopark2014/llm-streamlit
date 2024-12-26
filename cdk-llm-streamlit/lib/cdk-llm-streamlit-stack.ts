@@ -96,11 +96,11 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     const userData = ec2.UserData.forLinux();
 
     const commands = [
-        'yum install nginx -y',
-        'service nginx start',
-        'yum install git python-pip -y',
-        'pip install pip --upgrade',            
-        `sh -c "cat <<EOF > /etc/systemd/system/streamlit.service
+      'yum install nginx -y',
+      'service nginx start',
+      'yum install git python-pip -y',
+      'pip install pip --upgrade',            
+      `sh -c "cat <<EOF > /etc/systemd/system/streamlit.service
 [Unit]
 Description=Streamlit
 After=network-online.target
@@ -117,14 +117,14 @@ EOF"`,
         `runuser -l ec2-user -c "mkdir -p /home/ec2-user/.streamlit"`,
         `runuser -l ec2-user -c "cat <<EOF > /home/ec2-user/.streamlit/config.toml
 [server]
-port=8080
+port=${targetPort}
 EOF"`,
-        `runuser -l ec2-user -c 'cd && git clone https://github.com/kyopark2014/llm-streamlit'`,
-        `runuser -l ec2-user -c 'pip install streamlit streamlit_chat'`,        
-        `runuser -l ec2-user -c 'pip install boto3 langchain_aws langchain langchain_community langgraph'`,
-        `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python'`,
-        'systemctl enable streamlit.service',
-        'systemctl start streamlit'
+      `runuser -l ec2-user -c 'cd && git clone https://github.com/kyopark2014/llm-streamlit'`,
+      `runuser -l ec2-user -c 'pip install streamlit streamlit_chat'`,        
+      `runuser -l ec2-user -c 'pip install boto3 langchain_aws langchain langchain_community langgraph'`,
+      `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python'`,
+      'systemctl enable streamlit.service',
+      'systemctl start streamlit'
     ];
     userData.addCommands(...commands);
 

@@ -25,6 +25,8 @@ from typing_extensions import Annotated, TypedDict
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 
+region = "us-west-2"
+
 multi_region_models = [   # Nova Pro
     {   
         "bedrock_region": "us-west-2", # Oregon
@@ -72,6 +74,7 @@ def get_chat():
     boto3_bedrock = boto3.client(
         service_name='bedrock-runtime',
         region_name=bedrock_region,
+        region=region
         config=Config(
             retries = {
                 'max_attempts': 30
