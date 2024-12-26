@@ -4,6 +4,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as elbv2_tg from 'aws-cdk-lib/aws-elasticloadbalancingv2-targets'
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 
 const projectName = `llm-streamlit`; 
 const region = process.env.CDK_DEFAULT_REGION;    
@@ -22,15 +23,38 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       )
     });
 
-    const SecreatPolicy = new iam.PolicyStatement({  // policy statement for sagemaker
-      resources: ['*'],
-      actions: ['secretsmanager:*'],
-    });        
-    ec2Role.attachInlinePolicy( // add bedrock policy
-      new iam.Policy(this, `secretmanager-policy-lambda-chat-for-${projectName}`, {
-        statements: [SecreatPolicy],
-      }),
-    );
+    const weatherApiSecret = new secretsmanager.Secret(this, `weather-api-secret-for-${projectName}`, {
+      description: 'secret for weather api key', // openweathermap
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      secretName: `openweathermap-${projectName}`,
+      secretObjectValue: {
+        project_name: cdk.SecretValue.unsafePlainText(projectName),
+        weather_api_key: cdk.SecretValue.unsafePlainText(''),
+      },
+    });
+    weatherApiSecret.grantRead(ec2Role) 
+
+    const langsmithApiSecret = new secretsmanager.Secret(this, `weather-langsmith-secret-for-${projectName}`, {
+      description: 'secret for lamgsmith api key', // openweathermap
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      secretName: `langsmithapikey-${projectName}`,
+      secretObjectValue: {
+        langchain_project: cdk.SecretValue.unsafePlainText(projectName),
+        langsmith_api_key: cdk.SecretValue.unsafePlainText(''),
+      }, 
+    });
+    langsmithApiSecret.grantRead(ec2Role) 
+
+    const tavilyApiSecret = new secretsmanager.Secret(this, `weather-tavily-secret-for-${projectName}`, {
+      description: 'secret for lamgsmith api key', // openweathermap
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      secretName: `tavilyapikey-${projectName}`,
+      secretObjectValue: {
+        project_name: cdk.SecretValue.unsafePlainText(projectName),
+        tavily_api_key: cdk.SecretValue.unsafePlainText(''),
+      },
+    });
+    tavilyApiSecret.grantRead(ec2Role) 
 
     const pvrePolicy = new iam.PolicyStatement({  
       resources: ['*'],
