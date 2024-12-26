@@ -67,7 +67,7 @@ def extract_and_display_s3_images(text, s3_client):
 st.sidebar.subheader("Upload Image")
 uploaded_file = st.sidebar.file_uploader("Choose an image", type=["png", "jpg", "jpeg"])
 
-option = st.sidebar.selectbox('Please select in selectbox!',('General Conversation', 'Agent', 'Translation'))
+option = st.sidebar.selectbox('Please select in selectbox!',('General Conversation', 'Agent', 'Translation', 'Grammer'))
 st.sidebar.write('Selected application:', option)
 
 # Preview the uploaded image in the sidebar
