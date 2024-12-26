@@ -1,14 +1,19 @@
 import streamlit as st 
 import chat
 
-# Add file uploader to sidebar
-st.sidebar.subheader("Upload Image")
-uploaded_file = st.sidebar.file_uploader("Choose an image", type=["png", "jpg", "jpeg"])
-
+st.sidebar.subheader("대화 형태")
 option = st.sidebar.selectbox('대화 형태를 선택하세요.',('일상적인 대화', 'Agentic Workflow (Tool Use)', '번역하기', '문법 검토하기'))
-st.sidebar.write('선택된 대화:', option)
+#st.sidebar.write('선택된 대화:', option)
+
+# Add file uploader to sidebar
+st.sidebar.subheader("이미지 업로드")
+uploaded_file = st.sidebar.file_uploader("이미지 선택", type=["png", "jpg", "jpeg"])
 
 st.title(option)
+
+st.markdown(
+    "아마존 베드락을 이용하여 주셔서 감사합니다. 편안한 대화를 즐기실수 있으며, 파일을 업로드하면 요약을 할 수 있습니다."
+)
 
 # Preview the uploaded image in the sidebar
 if uploaded_file is not None:
@@ -19,30 +24,19 @@ if uploaded_file is not None:
     
     if st.button("Clear Image"):
         uploaded_file = None
-        st.rerun()    
+        st.rerun()
 
-clear_button = st.sidebar.button("Clear Conversation", key="clear")
+clear_button = st.sidebar.button("대화 초기화", key="clear")
 
 if clear_button or "messages" not in st.session_state:
     st.session_state.messages = []
     chat.clear_chat_history()
-
-st.sidebar.markdown(
-    "This app shows an Agentic Chatbot powered by Amazon Bedrock to answer questions."
-)
     
 # Always show the chat input
 if user_input := st.chat_input("메시지를 입력하세요."):
-    if uploaded_file is not None:
-        # Upload the file to S3
-        image_url = chat.upload_to_s3(uploaded_file.getvalue(), uploaded_file.name)
-        print('image_url: ', image_url)
-
     with st.chat_message("user"):
         st.markdown(user_input)
 
-#st.header('this is header')
-#st.subheader('this is subheader')
     if option == '일상적인 대화':
         msg = chat.general_conversation(user_input)
     elif option == 'Agentic Workflow (Tool Use)':
