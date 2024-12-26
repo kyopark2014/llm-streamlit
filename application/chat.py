@@ -334,6 +334,7 @@ if langsmith_api_key:
 
 # api key to use Tavily Search
 tavily_api_key = []
+tavily_key = ""
 try:
     get_tavily_api_secret = secretsmanager.get_secret_value(
         SecretId=f"tavilyapikey-{projectName}"
@@ -341,35 +342,13 @@ try:
     #print('get_tavily_api_secret: ', get_tavily_api_secret)
     secret = json.loads(get_tavily_api_secret['SecretString'])
     #print('secret: ', secret)
-    if secret['tavily_api_key']:
-        tavily_api_key = json.loads(secret['tavily_api_key'])
+    tavily_key = secret['tavily_api_key']
     #print('tavily_api_key: ', tavily_api_key)
 except Exception as e: 
     raise e
 
-def check_tavily_secret(tavily_api_key):
-    query = 'what is LangGraph'
-    valid_keys = ""
-
-    for i, key in enumerate(tavily_api_key):
-        try:
-            tavily_client = TavilyClient(api_key=key)
-            response = tavily_client.search(query, max_results=1)
-            # print('tavily response: ', response)
-
-            if 'results' in response and len(response['results']):
-                print('the valid tavily api keys: ', i)
-                valid_keys = key
-                break
-        except Exception as e:
-            print('Exception: ', e)
-    # print('valid_keys: ', valid_keys)
-    
-    return valid_keys
-
-tavily_key = check_tavily_secret(tavily_api_key)
-# print('tavily_api_key: ', tavily_api_key)
-os.environ["TAVILY_API_KEY"] = tavily_key
+if tavily_key:
+    os.environ["TAVILY_API_KEY"] = tavily_key
 
 def tavily_search(query, k):
     docs = []    
