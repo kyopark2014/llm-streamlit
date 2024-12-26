@@ -27,6 +27,7 @@ from typing import Any, List, Tuple, Dict, Optional, cast, Literal, Sequence, Un
 from typing_extensions import Annotated, TypedDict
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
+from datetime import datetime
 
 bedrock_region = "us-west-2"
 projectName = os.environ.get('projectName')
@@ -37,8 +38,17 @@ if projectName is None:
 accountId = os.environ.get('accountId')
 print('accountId: ', accountId)
 
+region = os.environ.get('region')
+if region is None:
+    region = "us-west-2"
+print('region: ', region)
+
 bucketName = os.environ.get('bucketName')
+if bucketName is None:
+    bucketName = f"storage-for-{projectName}-{accountId}-{region}" 
 print('bucketName: ', bucketName)
+
+s3_prefix = 'docs'
 
 multi_region_models = [   # Nova Pro
     {   
@@ -65,10 +75,10 @@ userId = "demo"
 map_chain = dict() 
 
 if userId in map_chain:  
-        print('memory exist. reuse it!')
+        # print('memory exist. reuse it!')
         memory_chain = map_chain[userId]
 else: 
-    print('memory does not exist. create new one!')        
+    # print('memory does not exist. create new one!')        
     memory_chain = ConversationBufferWindowMemory(memory_key="chat_history", output_key='answer', return_messages=True, k=5)
     map_chain[userId] = memory_chain
 
@@ -709,9 +719,10 @@ def upload_to_s3(file_bytes, file_name):
         )
 
         # Generate a unique file name to avoid collisions
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        unique_id = str(uuid.uuid4())[:8]
-        s3_key = f"uploaded_images/{timestamp}_{unique_id}_{file_name}"
+        #timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        #unique_id = str(uuid.uuid4())[:8]
+        #s3_key = f"uploaded_images/{timestamp}_{unique_id}_{file_name}"
+        s3_key = f"{s3_prefix}/{file_name}"
 
         content_type = (
             "image/jpeg"

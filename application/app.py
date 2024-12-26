@@ -1,9 +1,4 @@
 import streamlit as st 
-import boto3
-from datetime import datetime
-import uuid
-import os
-import re
 import chat
 
 # Add file uploader to sidebar
@@ -13,16 +8,20 @@ uploaded_file = st.sidebar.file_uploader("Choose an image", type=["png", "jpg", 
 option = st.sidebar.selectbox('Please select in selectbox!',('일상적인 대화', 'Agentic Workflow (Tool Use)', '번역하기', '문법 검토하기'))
 st.sidebar.write('Selected application:', option)
 
+st.title(option)
+
 # Preview the uploaded image in the sidebar
 if uploaded_file is not None:
-    st.image(uploaded_file, caption="Preview of uploaded image", use_column_width=True)
+    st.image(uploaded_file, caption="Preview of uploaded image", use_container_width=True)
+
+    image_url = chat.upload_to_s3(uploaded_file.getvalue(), uploaded_file.name)
+    print('image_url: ', image_url)
+    
     if st.button("Clear Image"):
         uploaded_file = None
-        st.rerun()
+        st.rerun()    
 
 clear_button = st.sidebar.button("Clear Conversation", key="clear")
-
-st.title(option)
 
 if clear_button or "messages" not in st.session_state:
     st.session_state.messages = []

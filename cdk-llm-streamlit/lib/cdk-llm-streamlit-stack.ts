@@ -187,6 +187,7 @@ EOF"`,
       `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python'`,
       `runuser -l ec2-user -c 'export projectName=${projectName}'`,
       `runuser -l ec2-user -c 'export accountId=${accountId}'`,      
+      `runuser -l ec2-user -c 'export region=${region}'`,
       `runuser -l ec2-user -c 'export bucketName=${bucketName}'`,
       'systemctl enable streamlit.service',
       'systemctl start streamlit'
