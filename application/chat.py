@@ -650,9 +650,13 @@ def translate_text(text):
 
     return msg[msg.find('<result>')+8:len(msg)-9] # remove <result> tag
 
+def clear_chat_history():
+    memory_chain.clear()
+    map_chain[userId] = memory_chain
+    
 def check_grammer(text):
     chat = get_chat()
-    
+
     if isKorean(text)==True:
         system = (
             "다음의 <article> tag안의 문장의 오류를 찾아서 설명하고, 오류가 수정된 문장을 답변 마지막에 추가하여 주세요."
