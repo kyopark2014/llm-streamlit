@@ -34,6 +34,11 @@ st.sidebar.markdown(
     
 # Always show the chat input
 if user_input := st.chat_input("메시지를 입력하세요."):
+    if uploaded_file is not None:
+        # Upload the file to S3
+        image_url = chat.upload_to_s3(uploaded_file.getvalue(), uploaded_file.name)
+        print('image_url: ', image_url)
+
     with st.chat_message("user"):
         st.markdown(user_input)
 
