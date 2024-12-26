@@ -141,7 +141,7 @@ def general_conversation(query):
     except Exception:
         err_msg = traceback.format_exc()
         print('error message: ', err_msg)        
-        raise Exception ("Not able to request to LLM: {err_msg}")
+        raise Exception ("Not able to request to LLM: "+err_msg)
         
     return msg
 
