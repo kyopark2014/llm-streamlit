@@ -297,8 +297,7 @@ projectName = "nova-agent"
 # api key to get weather information in agent
 secretsmanager = boto3.client(
     service_name='secretsmanager',
-    region_name=bedrock_region,
-    region=bedrock_region,
+    region_name=bedrock_region
 )
 try:
     get_weather_api_secret = secretsmanager.get_secret_value(
