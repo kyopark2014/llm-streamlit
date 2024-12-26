@@ -26,6 +26,9 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 
 bedrock_region = "us-west-2"
+projectName = os.environ.get('projectName')
+if projectName is None:
+    projectName = "llm-streamlit"
 
 multi_region_models = [   # Nova Pro
     {   
@@ -293,7 +296,6 @@ def search_by_tavily(keyword: str) -> str:
 tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily]        
 
 reference_docs = []
-projectName = "nova-agent"
 # api key to get weather information in agent
 secretsmanager = boto3.client(
     service_name='secretsmanager',
