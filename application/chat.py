@@ -25,7 +25,7 @@ from typing_extensions import Annotated, TypedDict
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 
-region = "us-west-2"
+bedrock_region = "us-west-2"
 
 multi_region_models = [   # Nova Pro
     {   
@@ -74,7 +74,7 @@ def get_chat():
     boto3_bedrock = boto3.client(
         service_name='bedrock-runtime',
         region_name=bedrock_region,
-        region=region,
+        region=bedrock_region,
         config=Config(
             retries = {
                 'max_attempts': 30
@@ -183,48 +183,6 @@ def get_current_time(format: str=f"%Y-%m-%d %H:%M:%S")->str:
     timestr = datetime.datetime.now(timezone('Asia/Seoul')).strftime(format)
     print('timestr:', timestr)
     
-    return timestr
-
-def get_lambda_client(region):
-    return boto3.client(
-        service_name='lambda',
-        region_name=region
-    )
-
-@tool    
-def get_system_time() -> str:
-    """
-    retrive system time to earn the current date and time.
-    return: a string of date and time
-    """    
-    
-    function_name = "lambda-datetime-for-llm-agent"
-    lambda_region = 'ap-northeast-2'
-    
-    try:
-        lambda_client = get_lambda_client(region=lambda_region)
-        payload = {}
-        print("Payload: ", payload)
-            
-        response = lambda_client.invoke(
-            FunctionName=function_name,
-            Payload=json.dumps(payload),
-        )
-        print("Invoked function %s.", function_name)
-        print("Response: ", response)
-    except ClientError:
-        print("Couldn't invoke function %s.", function_name)
-        raise
-    
-    payload = response['Payload']
-    print('payload: ', payload)
-    body = json.load(payload)['body']
-    print('body: ', body)
-    jsonBody = json.loads(body) 
-    print('jsonBody: ', jsonBody)    
-    timestr = jsonBody['timestr']
-    print('timestr: ', timestr)
-     
     return timestr
 
 @tool
@@ -337,7 +295,11 @@ tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily]
 reference_docs = []
 projectName = "nova-agent"
 # api key to get weather information in agent
-secretsmanager = boto3.client('secretsmanager')
+secretsmanager = boto3.client(
+    service_name='secretsmanager',
+    region_name=bedrock_region,
+    region=bedrock_region,
+)
 try:
     get_weather_api_secret = secretsmanager.get_secret_value(
         SecretId=f"openweathermap-{projectName}"
