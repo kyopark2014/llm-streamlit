@@ -8,7 +8,7 @@ import * as elbv2_tg from 'aws-cdk-lib/aws-elasticloadbalancingv2-targets'
 const projectName = `llm-streamlit`; 
 const region = process.env.CDK_DEFAULT_REGION;    
 const accountId = process.env.CDK_DEFAULT_ACCOUNT;
-const targetPort = '8080';
+const targetPort = 8080;
 
 export class CdkLlmStreamlitStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
