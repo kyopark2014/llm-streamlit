@@ -77,7 +77,6 @@ def get_chat():
     boto3_bedrock = boto3.client(
         service_name='bedrock-runtime',
         region_name=bedrock_region,
-        region=bedrock_region,
         config=Config(
             retries = {
                 'max_attempts': 30
