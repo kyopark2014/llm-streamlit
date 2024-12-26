@@ -8,7 +8,7 @@ import * as elbv2_tg from 'aws-cdk-lib/aws-elasticloadbalancingv2-targets'
 const projectName = `llm-streamlit`; 
 const region = process.env.CDK_DEFAULT_REGION;    
 const accountId = process.env.CDK_DEFAULT_ACCOUNT;
-const targetPort = 80;
+const targetPort = 8080;
 
 export class CdkLlmStreamlitStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -102,7 +102,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
         'service nginx start',
       ];
     }
-    else if(targetPort == 8501) {
+    else if(targetPort == 8080) {
       commands = [
         'yum install git python-pip -y',
         'pip install pip --upgrade',            
@@ -120,8 +120,15 @@ ExecStart=/home/ec2-user/.local/bin/streamlit run /home/ec2-user/llm-streamlit/a
 [Install]
 WantedBy=multi-user.target
 EOF"`,
+        `runuser -l ec2-user -c "mkdir -p /home/ec2-user/.streamlit"`,
+        `runuser -l ec2-user -c "cat <<EOF > /home/ec2-user/.streamlit/config.toml
+[server]
+port=8080
+EOF"`,
         `runuser -l ec2-user -c 'cd && git clone https://github.com/kyopark2014/llm-streamlit'`,
-        `runuser -l ec2-user -c 'pip install streamlit boto3'`,
+        `runuser -l ec2-user -c 'pip install streamlit streamlit_chat'`,        
+        `runuser -l ec2-user -c 'pip install boto3 langchain_aws langchain langchain_community langgraph'`,
+        `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python'`,
         'systemctl enable streamlit.service',
         'systemctl start streamlit'
       ];
