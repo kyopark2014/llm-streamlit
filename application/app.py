@@ -79,7 +79,16 @@ if uploaded_file is not None:
 
 clear_button = st.sidebar.button("Clear Conversation", key="clear")
 
-st.title(option)
+if option == 'general conversation':
+    st.title("일상적인 대화")
+if option == 'Agent':
+    st.title("Agentic Workflow (Tool Use)")
+if option == 'Translation':
+    st.title("번역하기")
+if option == 'Grammer':
+    st.title("문법 검토하기")
+else:
+    st.title(option)
 #st.header('this is header')
 #st.subheader('this is subheader')
 
@@ -109,5 +118,4 @@ if user_input := st.chat_input("메시지를 입력하세요."):
 
     chat.save_chat_history(user_input, msg)
 
-if option == 'general conversation':
-    st.title("General Conversation")
+
