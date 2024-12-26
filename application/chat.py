@@ -141,7 +141,7 @@ def general_conversation(query):
     except Exception:
         err_msg = traceback.format_exc()
         print('error message: ', err_msg)        
-        raise Exception ("Not able to request to LLM")
+        raise Exception ("Not able to request to LLM: {err_msg}")
         
     return msg
 
@@ -414,7 +414,7 @@ def traslation(chat, text, input_language, output_language):
     except Exception:
         err_msg = traceback.format_exc()
         print('error message: ', err_msg)                    
-        raise Exception ("Not able to request to LLM: {err_msg}")
+        raise Exception ("Not able to request to LLM")
 
     return msg[msg.find('<result>')+8:len(msg)-9] # remove <result> tag
 
