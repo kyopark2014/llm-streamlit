@@ -96,6 +96,7 @@ def get_chat():
         model_id=modelId,
         client=boto3_bedrock, 
         model_kwargs=parameters,
+        region_name=bedrock_region
     )    
     
     selected_chat = selected_chat + 1
