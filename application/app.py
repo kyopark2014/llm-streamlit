@@ -5,8 +5,8 @@ import chat
 st.sidebar.subheader("Upload Image")
 uploaded_file = st.sidebar.file_uploader("Choose an image", type=["png", "jpg", "jpeg"])
 
-option = st.sidebar.selectbox('Please select in selectbox!',('일상적인 대화', 'Agentic Workflow (Tool Use)', '번역하기', '문법 검토하기'))
-st.sidebar.write('Selected application:', option)
+option = st.sidebar.selectbox('대화 형태를 선택하세요.',('일상적인 대화', 'Agentic Workflow (Tool Use)', '번역하기', '문법 검토하기'))
+st.sidebar.write('선택된 대화:', option)
 
 st.title(option)
 
