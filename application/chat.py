@@ -6,7 +6,10 @@ import re
 import requests
 import datetime
 import functools
+import uuid
 
+from io import BytesIO
+from PIL import Image
 from pytz import timezone
 from langchain_aws import ChatBedrock
 from botocore.config import Config
@@ -29,6 +32,13 @@ bedrock_region = "us-west-2"
 projectName = os.environ.get('projectName')
 if projectName is None:
     projectName = "llm-streamlit"
+    print('projectName: ', projectName)
+
+accountId = os.environ.get('accountId')
+print('accountId: ', accountId)
+
+bucketName = os.environ.get('bucketName')
+print('bucketName: ', bucketName)
 
 multi_region_models = [   # Nova Pro
     {   
@@ -687,3 +697,62 @@ def check_grammer(text):
         raise Exception ("Not able to request to LLM")
     
     return msg
+
+def upload_to_s3(file_bytes, file_name):
+    """
+    Upload a file to S3 and return the URL
+    """
+    try:
+        s3_client = boto3.client(
+            service_name='s3',
+            region_name=bedrock_region
+        )
+
+        # Generate a unique file name to avoid collisions
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        unique_id = str(uuid.uuid4())[:8]
+        s3_key = f"uploaded_images/{timestamp}_{unique_id}_{file_name}"
+
+        content_type = (
+            "image/jpeg"
+            if file_name.lower().endswith((".jpg", ".jpeg"))
+            else "image/png"
+        )
+
+        s3_client.put_object(
+            Bucket=bucketName, Key=s3_key, Body=file_bytes, ContentType=content_type
+        )
+
+        url = f"https://{bucketName}.s3.amazonaws.com/{s3_key}"
+        return url
+    
+    except Exception as e:
+        err_msg = f"Error uploading to S3: {str(e)}"
+        print(err_msg)
+        return None
+
+def extract_and_display_s3_images(text, s3_client):
+    """
+    Extract S3 URLs from text, download images, and return them for display
+    """
+    s3_pattern = r"https://[\w\-\.]+\.s3\.amazonaws\.com/[\w\-\./]+"
+    s3_urls = re.findall(s3_pattern, text)
+
+    images = []
+    for url in s3_urls:
+        try:
+            bucket = url.split(".s3.amazonaws.com/")[0].split("//")[1]
+            key = url.split(".s3.amazonaws.com/")[1]
+
+            response = s3_client.get_object(Bucket=bucket, Key=key)
+            image_data = response["Body"].read()
+
+            image = Image.open(BytesIO(image_data))
+            images.append(image)
+
+        except Exception as e:
+            err_msg = f"Error downloading image from S3: {str(e)}"
+            print(err_msg)
+            continue
+
+    return images

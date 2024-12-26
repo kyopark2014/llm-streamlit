@@ -6,63 +6,6 @@ import os
 import re
 import chat
 
-from io import BytesIO
-from PIL import Image
-
-def upload_to_s3(file_bytes, file_name):
-    """
-    Upload a file to S3 and return the URL
-    """
-    try:
-        s3_client = boto3.client("s3")
-        bucket_name = os.getenv("S3_BUCKET_NAME")
-
-        # Generate a unique file name to avoid collisions
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        unique_id = str(uuid.uuid4())[:8]
-        s3_key = f"uploaded_images/{timestamp}_{unique_id}_{file_name}"
-
-        content_type = (
-            "image/jpeg"
-            if file_name.lower().endswith((".jpg", ".jpeg"))
-            else "image/png"
-        )
-
-        s3_client.put_object(
-            Bucket=bucket_name, Key=s3_key, Body=file_bytes, ContentType=content_type
-        )
-
-        url = f"https://{bucket_name}.s3.amazonaws.com/{s3_key}"
-        return url
-    except Exception as e:
-        st.error(f"Error uploading to S3: {str(e)}")
-        return None
-
-def extract_and_display_s3_images(text, s3_client):
-    """
-    Extract S3 URLs from text, download images, and return them for display
-    """
-    s3_pattern = r"https://[\w\-\.]+\.s3\.amazonaws\.com/[\w\-\./]+"
-    s3_urls = re.findall(s3_pattern, text)
-
-    images = []
-    for url in s3_urls:
-        try:
-            bucket = url.split(".s3.amazonaws.com/")[0].split("//")[1]
-            key = url.split(".s3.amazonaws.com/")[1]
-
-            response = s3_client.get_object(Bucket=bucket, Key=key)
-            image_data = response["Body"].read()
-
-            image = Image.open(BytesIO(image_data))
-            images.append(image)
-
-        except Exception as e:
-            st.error(f"Error downloading image from S3: {str(e)}")
-            continue
-
-    return images
-
 # Add file uploader to sidebar
 st.sidebar.subheader("Upload Image")
 uploaded_file = st.sidebar.file_uploader("Choose an image", type=["png", "jpg", "jpeg"])

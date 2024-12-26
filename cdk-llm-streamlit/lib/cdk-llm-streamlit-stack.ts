@@ -5,16 +5,43 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as elbv2_tg from 'aws-cdk-lib/aws-elasticloadbalancingv2-targets'
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as s3 from 'aws-cdk-lib/aws-s3';
 
 const projectName = `llm-streamlit`; 
 const region = process.env.CDK_DEFAULT_REGION;    
 const accountId = process.env.CDK_DEFAULT_ACCOUNT;
 const targetPort = 8080;
+const bucketName = `storage-for-${projectName}-${accountId}-${region}`; 
 
 export class CdkLlmStreamlitStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // s3 
+    const s3Bucket = new s3.Bucket(this, `storage-${projectName}`,{
+      bucketName: bucketName,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      publicReadAccess: false,
+      versioned: false,
+      cors: [
+        {
+          allowedHeaders: ['*'],
+          allowedMethods: [
+            s3.HttpMethods.POST,
+            s3.HttpMethods.PUT,
+          ],
+          allowedOrigins: ['*'],
+        },
+      ],
+    });
+    new cdk.CfnOutput(this, 'bucketName', {
+      value: s3Bucket.bucketName,
+      description: 'The nmae of bucket',
+    });
+    
+    // EC2 Role
     const ec2Role = new iam.Role(this, `role-ec2-for-${projectName}`, {
       roleName: `role-ec2-for-${projectName}-${region}`,
       assumedBy: new iam.CompositePrincipal(
@@ -23,6 +50,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       )
     });
 
+    // Secret
     const weatherApiSecret = new secretsmanager.Secret(this, `weather-api-secret-for-${projectName}`, {
       description: 'secret for weather api key', // openweathermap
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -157,6 +185,9 @@ EOF"`,
       `runuser -l ec2-user -c 'pip install streamlit streamlit_chat'`,        
       `runuser -l ec2-user -c 'pip install boto3 langchain_aws langchain langchain_community langgraph'`,
       `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python'`,
+      `runuser -l ec2-user -c 'export projectName=${projectName}'`,
+      `runuser -l ec2-user -c 'export accountId=${accountId}'`,      
+      `runuser -l ec2-user -c 'export bucketName=${bucketName}'`,
       'systemctl enable streamlit.service',
       'systemctl start streamlit'
     ];
