@@ -22,6 +22,16 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       )
     });
 
+    const SecreatPolicy = new iam.PolicyStatement({  // policy statement for sagemaker
+      resources: ['*'],
+      actions: ['secretsmanager:*'],
+    });        
+    ec2Role.attachInlinePolicy( // add bedrock policy
+      new iam.Policy(this, `secretmanager-policy-lambda-chat-for-${projectName}`, {
+        statements: [SecreatPolicy],
+      }),
+    );
+
     const pvrePolicy = new iam.PolicyStatement({  
       resources: ['*'],
       actions: ['ssm:*', 'ssmmessages:*', 'ec2messages:*', 'tag:*'],
