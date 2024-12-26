@@ -67,7 +67,7 @@ def extract_and_display_s3_images(text, s3_client):
 st.sidebar.subheader("Upload Image")
 uploaded_file = st.sidebar.file_uploader("Choose an image", type=["png", "jpg", "jpeg"])
 
-option = st.sidebar.selectbox('Please select in selectbox!',('General Conversation', 'Agent', 'RAG'))
+option = st.sidebar.selectbox('Please select in selectbox!',('General Conversation', 'Agent', 'Translation'))
 st.sidebar.write('Selected application:', option)
 
 # Preview the uploaded image in the sidebar
@@ -96,6 +96,10 @@ if user_input := st.chat_input("메시지를 입력하세요."):
         msg = chat.general_conversation(user_input)
     elif option == 'Agent':
         msg = chat.run_agent_executor2(user_input)
+    elif option == 'Translation':
+        msg = chat.translate_text(user_input)
+    elif option == 'Grammer':
+        msg = chat.check_grammer(user_input)
     else:
         msg = chat.general_conversation(user_input)
     print('msg: ', msg)
