@@ -8,7 +8,7 @@ import * as elbv2_tg from 'aws-cdk-lib/aws-elasticloadbalancingv2-targets'
 const projectName = `llm-streamlit`; 
 const region = process.env.CDK_DEFAULT_REGION;    
 const accountId = process.env.CDK_DEFAULT_ACCOUNT;
-const targetPort = 8080;
+const targetPort = '8080';
 
 export class CdkLlmStreamlitStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -95,15 +95,9 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
 
     const userData = ec2.UserData.forLinux();
 
-    let commands;
-    if(targetPort == 80) {
-      commands = [
+    const commands = [
         'yum install nginx -y',
         'service nginx start',
-      ];
-    }
-    else if(targetPort == 8080) {
-      commands = [
         'yum install git python-pip -y',
         'pip install pip --upgrade',            
         `sh -c "cat <<EOF > /etc/systemd/system/streamlit.service
@@ -131,9 +125,8 @@ EOF"`,
         `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python'`,
         'systemctl enable streamlit.service',
         'systemctl start streamlit'
-      ];
-      userData.addCommands(...commands);
-    }
+    ];
+    userData.addCommands(...commands);
 
     // EC2 instance
     const appInstance = new ec2.Instance(this, `app-for-${projectName}`, {
