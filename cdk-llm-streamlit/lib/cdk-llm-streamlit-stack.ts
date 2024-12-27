@@ -274,9 +274,9 @@ EOF"`,
 
     new cdk.CfnOutput(this, `albUrl-for-${projectName}`, {
       value: `http://${alb.loadBalancerDnsName}/`,
-      description: 'albUrl',
-      exportName: 'albUrl',
-    });      
+      description: `albUrl-${projectName}`,
+      exportName: `albUrl-${projectName}`
+    });     
   }
 }
     // const cloudfront_distribution = cloudFront.Distribution(this, "StreamLitCloudFrontDistribution",
