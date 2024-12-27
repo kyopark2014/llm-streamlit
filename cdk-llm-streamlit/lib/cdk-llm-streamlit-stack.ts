@@ -135,7 +135,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       ]
     });  
 
-  /*  const s3BucketAcessPoint = vpc.addGatewayEndpoint(`s3Endpoint-${projectName}`, {
+    const s3BucketAcessPoint = vpc.addGatewayEndpoint(`s3Endpoint-${projectName}`, {
       service: ec2.GatewayVpcEndpointAwsService.S3,
     });
 
@@ -145,7 +145,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
         actions: ['s3:*'],
         resources: ['*'],
       }),
-    ); */
+    ); 
 
     // EC2 Security Group
     const ec2Sg = new ec2.SecurityGroup(this, `ec2-sg-for-${projectName}`,
