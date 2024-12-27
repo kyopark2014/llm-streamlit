@@ -132,13 +132,20 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
           name: `private-subnet-for-${projectName}`,
           subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
         },
-      ],
-      gatewayEndpoints: {
-        S3: {
-          service: ec2.GatewayVpcEndpointAwsService.S3
-        }
-      }
+      ]
     });  
+
+    const s3BucketAcessPoint = vpc.addGatewayEndpoint(`s3Endpoint-${projectName}`, {
+      service: ec2.GatewayVpcEndpointAwsService.S3,
+    });
+
+    s3BucketAcessPoint.addToPolicy(
+      new iam.PolicyStatement({
+        principals: [new iam.AnyPrincipal()],
+        actions: ['s3:*'],
+        resources: ['*'],
+      }),
+    );
 
     // EC2 Security Group
     const ec2Sg = new ec2.SecurityGroup(this, `ec2-sg-for-${projectName}`,
