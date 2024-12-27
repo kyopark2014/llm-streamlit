@@ -156,11 +156,11 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
         securityGroupName: `ec2-sg-for-${projectName}`,
       }
     );
-    ec2Sg.addIngressRule(
-      ec2.Peer.anyIpv4(),
-      ec2.Port.tcp(22),
-      'SSH',
-    );
+    // ec2Sg.addIngressRule(
+    //   ec2.Peer.anyIpv4(),
+    //   ec2.Port.tcp(22),
+    //   'SSH',
+    // );
     // ec2Sg.addIngressRule(
     //   ec2.Peer.anyIpv4(),
     //   ec2.Port.tcp(80),
@@ -170,8 +170,8 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     const userData = ec2.UserData.forLinux();
 
     const commands = [
-      'yum install nginx -y',
-      'service nginx start',
+      //'yum install nginx -y',
+      //'service nginx start',
       'yum install git python-pip -y',
       'pip install pip --upgrade',            
       `sh -c "cat <<EOF > /etc/systemd/system/streamlit.service
