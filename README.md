@@ -6,8 +6,7 @@
 
 이때의 Architecture는 아래와 같습니다. 여기서에서는 Streamlit이 설치된 EC2는 private subnet에 둬서 안전하게 관리합니다. S3는 Gateway Endpoint를 이용하여 연결합니다. Bedrock도 Private link를 이용해 연결하여야 하지만 여기서는 multi-region을 사용하므로 편의상 NAT를 이용하여 연결하였습니다.
 
-<img width="800" alt="image" src="https://github.com/user-attachments/assets/1dc0bfce-574e-4703-8f73-e9b355d4523e" />
-
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/6b428aac-5e6d-47c6-91ba-5aa37e4e37f0" />
 
 
 ### CDK 구현 코드
