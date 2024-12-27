@@ -28,14 +28,15 @@ with st.sidebar:
         "Amazon Nova Pro를 이용해 다양한 형태의 대화를 구현합니다." 
         "여기에서는 일상적인 대화와 각종 툴을 이용해 Agent를 구현할 수 있습니다." 
         "또한 번역이나 문법 확인과 같은 용도로 사용할 수 있습니다."
-        "주요 코드는 LangChain과 LangGraph를 이용해 구현되었습니다."
+        "주요 코드는 LangChain과 LangGraph를 이용해 구현되었습니다.\n"
+        "상세한 코드는 [Github](https://github.com/kyopark2014/llm-streamlit)을 참조하세요."
     )
 
     st.subheader("🐱 대화 형태")
     
     # radio selection
     mode = st.radio(
-        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화", "Agentic Workflow (Tool Use)", "번역하기", "문법 검토하기"], index=1
+        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화", "Agentic Workflow (Tool Use)", "번역하기", "문법 검토하기"], index=0
     )   
     st.info(mode_descriptions[mode][0])
     # limit = st.slider(
@@ -53,7 +54,7 @@ with st.sidebar:
 
     print('mode: ', mode)
 
-    st.subheader("🎯 이미지 업로드")
+    st.subheader("🌇 이미지 업로드")
     uploaded_file = st.file_uploader("이미지 선택", type=["png", "jpg", "jpeg"])
 
     st.success("Connected to Nova Pro", icon="💚")
@@ -131,5 +132,4 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             {"role": "assistant", "content": msg}
         )
         chat.save_chat_history(prompt, msg)
-
 
