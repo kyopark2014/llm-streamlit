@@ -6,7 +6,7 @@
 
 이때의 Architecture는 아래와 같습니다. 여기서에서는 Streamlit이 설치된 EC2는 private subnet에 둬서 안전하게 관리합니다. 
 
-![image](https://github.com/user-attachments/assets/5303bdc1-4b69-4421-9fb8-148b1ba2828c)
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/1dc0bfce-574e-4703-8f73-e9b355d4523e" />
 
 
 
