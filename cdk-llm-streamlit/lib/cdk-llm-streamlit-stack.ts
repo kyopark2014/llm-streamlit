@@ -133,9 +133,14 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
           subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
         },
       ],
-    }); 
+      gatewayEndpoints: {
+        S3: {
+          service: ec2.GatewayVpcEndpointAwsService.S3
+        }
+      }
+    });  
 
-    // Ec2 Security Group
+    // EC2 Security Group
     const ec2Sg = new ec2.SecurityGroup(this, `ec2-sg-for-${projectName}`,
       {
         vpc: vpc,
