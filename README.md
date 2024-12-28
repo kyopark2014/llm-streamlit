@@ -114,6 +114,53 @@ Streamlit의 동작 상태는 아래 명령어를 이용해 확인합니다.
 sudo systemctl status streamlit -l
 ```
 
+
+
+## Streamlit
+
+### Streamlit 실행 
+
+아래와 같이 streamlit을 실행합니다.
+
+```text
+streamlit run application/app.py
+```
+
+github 코드를 EC2에 업데이트 할 때에는 아래 명령어를 활용합니다.
+
+```text
+sudo runuser -l ec2-user -c 'cd /home/ec2-user/llm-streamlit && git pull'
+```
+
+Streamlit 재실행을 위한 명령어는 아래와 같습니다.
+
+```text
+sudo systemctl stop streamlit
+sudo systemctl start streamlit
+sudo systemctl status streamlit -l
+```
+
+
+
+## 직접 실습 해보기
+
+### 사전 준비 사항
+
+이 솔루션을 사용하기 위해서는 사전에 아래와 같은 준비가 되어야 합니다.
+
+- [AWS Account 생성](https://repost.aws/ko/knowledge-center/create-and-activate-aws-account)에 따라 계정을 준비합니다.
+
+### CDK를 이용한 인프라 설치
+
+본 실습에서는 us-west-2 리전을 사용합니다. [인프라 설치](./deployment.md)에 따라 CDK로 인프라 설치를 진행합니다. 
+
+## 실행결과
+
+
+
+
+
+
 ### htts로 streamlit 연결의 어려움
 
 ALB에 인증서를 추가해서 https 지원이 가능하나, 여기에서는 CloudFront와 API Gateway(http api)를 이용하여 https 방식의 streamlit 구현을 시도하였습니다. 그러나, CloudFront와 API Gateway (http api)는 websocket을 지원하지 않으므로 구현이 안되는것을 확인하였습니다. 
@@ -124,63 +171,7 @@ ALB에 인증서를 추가해서 https 지원이 가능하나, 여기에서는 C
 
 - [Running streamlit as a System Service](https://medium.com/@stevenjlm/running-streamlit-on-amazon-ec2-with-https-f20e38fffbe7)
 
-
-
-## Streamlit
-
-### Streamlit 실행 
-
-streamlit을 설치합니다.
-
-```text
-pip install streamlit && pip install streamlit_chat
-```
-
-아래와 같이 streamlit을 실행합니다.
-
-```text
-streamlit run titan.py
-```
-
-아래의 External URL을 브라우저를 이용해 접속합니다.
-
-```text
-  You can now view your Streamlit app in your browser.
-
-  Network URL: http://172.31.46.12:8501
-  External URL: http://3.39.22.83:8501
-```
-
-이후, [titan.py](./app/titan.py)를 열어서 수정을 한 후에 저정하면 됩니다. 결과 업데이트는 브라우저를 reflash하면 됩니다. 실행화면은 아래와 같습니다.
-
-![image](https://github.com/kyopark2014/LLM-streamlit/assets/52392004/aa63a2c2-942e-4234-9928-d051f70e3a63)
-
-
-### 예제
-
-#### Title
-title, head, subheader는 아래와 같이 사용합니다.
-
-```python
-st.title('this is title')
-st.header('this is header')
-st.subheader('this is subheader')
-```
-
-#### 입력창
-
-```python
-input_text = st.text_input('**Chat with me**', key='text')
-```
-
-## 설치 및 실행
-
-### Resorces의 삭제
-
-[Endpoints Console](https://us-west-2.console.aws.amazon.com/vpcconsole/home?region=us-west-2#Endpoints:)에서 vpce를 삭제합니다.
-
-
-## Reference 
+#### Reference 
 
 [Amazon Bedrock Knowledge base로 30분 만에 멀티모달 RAG 챗봇 구축하기 실전 가이드](https://aws.amazon.com/ko/blogs/tech/practical-guide-for-bedrock-kb-multimodal-chatbot/)
 
