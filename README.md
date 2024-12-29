@@ -53,8 +53,6 @@ EC2의 userdata는 아래와 같이 설정합니다.
 const userData = ec2.UserData.forLinux();
 
 const commands = [
-  //'yum install nginx -y',
-  //'service nginx start',
   'yum install git python-pip -y',
   'pip install pip --upgrade',            
   `sh -c "cat <<EOF > /etc/systemd/system/streamlit.service
