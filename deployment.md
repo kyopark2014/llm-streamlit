@@ -192,7 +192,7 @@ WantedBy=multi-user.target
 EOF"
 ```
 
-- Streamlit의 포트를 8501에서 8080으로 변경하기 위한 환겨얼정
+- Streamlit의 포트를 8501에서 8080으로 변경하기 위한 환경설정
 
 ```text
 runuser -l ec2-user -c "cat <<EOF > /home/ec2-user/.streamlit/config.toml
