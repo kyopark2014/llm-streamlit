@@ -50,10 +50,14 @@ appInstance.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
 EC2의 userdata는 아래와 같이 설정합니다.
 
 ```java
-commands = [
- 'yum install git python-pip -y',
- 'pip install pip --upgrade',            
- `sh -c "cat <<EOF > /etc/systemd/system/streamlit.service
+const userData = ec2.UserData.forLinux();
+
+const commands = [
+  //'yum install nginx -y',
+  //'service nginx start',
+  'yum install git python-pip -y',
+  'pip install pip --upgrade',            
+  `sh -c "cat <<EOF > /etc/systemd/system/streamlit.service
 [Unit]
 Description=Streamlit
 After=network-online.target
@@ -62,17 +66,27 @@ After=network-online.target
 User=ec2-user
 Group=ec2-user
 Restart=always
-ExecStart=/home/ec2-user/.local/bin/streamlit run /home/ec2-user/llm-streamlit/application/app.py
+ExecStart=/home/ec2-user/.local/bin/streamlit run /home/ec2-user/${projectName}/application/app.py
 
 [Install]
 WantedBy=multi-user.target
 EOF"`,
- `runuser -l ec2-user -c 'cd && git clone https://github.com/kyopark2014/llm-streamlit'`,
- `runuser -l ec2-user -c 'pip install streamlit boto3'`,
- 'systemctl enable streamlit.service',
- 'systemctl start streamlit'
+    `runuser -l ec2-user -c "mkdir -p /home/ec2-user/.streamlit"`,
+    `runuser -l ec2-user -c "cat <<EOF > /home/ec2-user/.streamlit/config.toml
+[server]
+port=${targetPort}
+EOF"`,
+  `runuser -l ec2-user -c 'cd && git clone https://github.com/kyopark2014/${projectName}'`,
+  `runuser -l ec2-user -c 'pip install streamlit streamlit_chat'`,        
+  `runuser -l ec2-user -c 'pip install boto3 langchain_aws langchain langchain_community langgraph'`,
+  `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python'`,
+  `runuser -l ec2-user -c 'export projectName=${projectName}'`,
+  `runuser -l ec2-user -c 'export accountId=${accountId}'`,      
+  `runuser -l ec2-user -c 'export region=${region}'`,
+  `runuser -l ec2-user -c 'export bucketName=${bucketName}'`,
+  'systemctl enable streamlit.service',
+  'systemctl start streamlit'
 ];
-
 userData.addCommands(...commands);
 ```
 
