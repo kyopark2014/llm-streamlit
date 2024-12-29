@@ -27,6 +27,7 @@ from typing import Any, List, Tuple, Dict, Optional, cast, Literal, Sequence, Un
 from typing_extensions import Annotated, TypedDict
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
+from langchain_core.output_parsers import StrOutputParser
 
 bedrock_region = "us-west-2"
 projectName = os.environ.get('projectName')
@@ -69,6 +70,7 @@ multi_region_models = [   # Nova Pro
 selected_chat = 0
 HUMAN_PROMPT = "\n\nHuman:"
 AI_PROMPT = "\n\nAssistant:"
+MSG_LENGTH = 100
 
 userId = "demo"
 map_chain = dict() 
@@ -144,30 +146,29 @@ def general_conversation(query):
                 
     history = memory_chain.load_memory_variables({})["chat_history"]
 
-    chain = prompt | chat    
+    chain = prompt | chat | StrOutputParser()
     try: 
-        stream = chain.invoke(
+        stream = chain.stream(
             {
                 "history": history,
                 "input": query,
             }
         )  
-        
-        msg = ""
-        if stream.content:
-            for event in stream.content:
-                msg = msg + event
-
+        print('stream: ', stream)
+            
     except Exception:
         err_msg = traceback.format_exc()
         print('error message: ', err_msg)        
         raise Exception ("Not able to request to LLM: "+err_msg)
         
-    return msg
+    return stream
 
 def save_chat_history(text, msg):
     memory_chain.chat_memory.add_user_message(text)
-    memory_chain.chat_memory.add_ai_message(msg)
+    if len(msg) > MSG_LENGTH:
+        memory_chain.chat_memory.add_ai_message(msg[:MSG_LENGTH])                          
+    else:
+        memory_chain.chat_memory.add_ai_message(msg) 
 
 @tool 
 def get_book_list(keyword: str) -> str:
@@ -597,10 +598,19 @@ def run_agent_executor2(query):
     #         msg = event["messages"][-1].content
     #     # print('message: ', message)
 
+    # output = app.astream_events({"messages": inputs}, config, version="v2")
+    # print('output: ', output)
+
     output = app.invoke({"messages": inputs}, config)
     print('output: ', output)
 
-    msg = output['answer']
+    msg = output['messages'][-1].content
+    print('msg: ', msg)
+    
+    if msg.find('<thinking>') != -1:
+        print('Remove <thinking> tag.')
+        msg = msg[msg.find('</thinking>')+12:]
+        print('msg without tag: ', msg)
 
     return msg
 
@@ -667,7 +677,7 @@ def translate_text(text):
         print('error message: ', err_msg)                    
         raise Exception ("Not able to request to LLM")
 
-    return msg[msg.find('<result>')+8:len(msg)-9] # remove <result> tag
+    return msg[msg.find('<result>')+8:msg.find('</result>')] # remove <result> tag
 
 def clear_chat_history():
     memory_chain.clear()

@@ -103,7 +103,10 @@ if uploaded_file is not None and clear_button == False:
 
     image_url = chat.upload_to_s3(uploaded_file.getvalue(), uploaded_file.name)
     print('image_url: ', image_url)
-        
+
+if "messages" not in st.session_state:
+    st.session_state['messages'] = []
+            
 # Always show the chat input
 if prompt := st.chat_input("메시지를 입력하세요."):
     with st.chat_message("user"):  # display user message in chat message container
@@ -115,21 +118,27 @@ if prompt := st.chat_input("메시지를 입력하세요."):
 
     with st.chat_message("assistant"):
         if mode == '일상적인 대화':
-            msg = chat.general_conversation(prompt)
-        elif mode == 'Agentic Workflow (Tool Use)':
-            msg = chat.run_agent_executor2(prompt)
-        elif mode == '번역하기':
-            msg = chat.translate_text(prompt)
-        elif mode == 'Grammer':
-            msg = chat.check_grammer(prompt)
-        else:
-            msg = chat.general_conversation(prompt)
-        print('msg: ', msg)
-        
-        st.write(msg)
-        
-        st.session_state.messages.append(
-            {"role": "assistant", "content": msg}
-        )
-        chat.save_chat_history(prompt, msg)
+            stream = chat.general_conversation(prompt)
 
+            response = st.write_stream(stream)
+            print('response: ', response)
+
+        elif mode == 'Agentic Workflow (Tool Use)':
+            response = chat.run_agent_executor2(prompt)
+            st.write(response)
+
+        elif mode == '번역하기':
+            response = chat.translate_text(prompt)
+            st.write(response)
+
+        elif mode == '문법 검토하기':
+            response = chat.check_grammer(prompt)
+            st.write(response)
+        else:
+            stream = chat.general_conversation(prompt)
+
+            response = st.write_stream(stream)
+            print('response: ', response)
+        
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        chat.save_chat_history(prompt, response)
