@@ -113,11 +113,8 @@ if prompt := st.chat_input("메시지를 입력하세요."):
         st.markdown(prompt)
 
     st.session_state.messages.append({"role": "user", "content": prompt})  # add user message to chat history
-
     prompt = prompt.replace('"', "").replace("'", "")
-
     
-    from langchain.callbacks import StreamlitCallbackHandler
     with st.chat_message("assistant"):
         
         if mode == '일상적인 대화':
