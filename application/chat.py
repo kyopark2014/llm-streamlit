@@ -30,11 +30,15 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from langchain_core.output_parsers import StrOutputParser
 
-print("use local configuration: config.json")
-with open("application/config.json", "r", encoding="utf-8") as f:
-    config = json.load(f)
-print('config: ', config)
-
+try:
+    with open("/home/ec2-user/application/config.json", "r", encoding="utf-8") as f:
+        config = json.load(f)
+    print('config: ', config)
+except Exception:
+    print("use local configuration")
+    with open("application/config.json", "r", encoding="utf-8") as f:
+        config = json.load(f)
+    print('config: ', config)
 bedrock_region = "us-west-2"
 projectName = config["projectName"] if "projectName" in config else "bedrock-agent"
 
