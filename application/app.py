@@ -132,6 +132,7 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             response = st.write_stream(stream)
             print('response: ', response)
             st.session_state.messages.append({"role": "assistant", "content": response})
+            st.rerun()
 
         elif mode == 'Agentic Workflow (Tool Use)':
             with st.status("thinking...", expanded=True, state="running") as status:
@@ -151,14 +152,22 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             response = chat.translate_text(prompt)
             st.write(response)
 
+            st.session_state.messages.append({"role": "assistant", "content": response})
+            chat.save_chat_history(prompt, response)
+
         elif mode == '문법 검토하기':
             response = chat.check_grammer(prompt)
             st.write(response)
+
+            st.session_state.messages.append({"role": "assistant", "content": response})
+            chat.save_chat_history(prompt, response)
         else:
             stream = chat.general_conversation(prompt)
 
             response = st.write_stream(stream)
             print('response: ', response)
+
+            st.session_state.messages.append({"role": "assistant", "content": response})
+            chat.save_chat_history(prompt, response)
         
-        st.session_state.messages.append({"role": "assistant", "content": response})
-        #chat.save_chat_history(prompt, response)
+        
