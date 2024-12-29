@@ -55,7 +55,7 @@ with st.sidebar:
     print('mode: ', mode)
 
     st.subheader("🌇 이미지 분석")
-    uploaded_file = st.file_uploader("이미지의 의미를 분석합니다.", type=["png", "jpg", "jpeg"])
+    uploaded_file = st.file_uploader("이미지를 요약합니다.", type=["png", "jpg", "jpeg"])
 
     st.success("Connected to Nova Pro", icon="💚")
     clear_button = st.button("대화 초기화", key="clear")
