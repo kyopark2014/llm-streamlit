@@ -1,11 +1,6 @@
 import streamlit as st 
 import chat
 
-
-#st.sidebar.write('선택된 대화:', option)
-
-# Add file uploader to sidebar
-
 mode_descriptions = {
     "일상적인 대화": [
         "대화이력을 바탕으로 챗봇과 일상의 대화를 편안히 즐길수 있습니다."
@@ -19,6 +14,9 @@ mode_descriptions = {
     "문법 검토하기": [
         "영어와 한국어 문법의 문제점을 설명하고, 수정된 결과를 함께 제공합니다."
     ],
+    "이미지 분석": [
+        "이미지를 업로드하면 이미지의 내용을 요약할 수 있습니다."
+    ]
 }
 
 with st.sidebar:
@@ -36,7 +34,7 @@ with st.sidebar:
     
     # radio selection
     mode = st.radio(
-        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화", "Agentic Workflow (Tool Use)", "번역하기", "문법 검토하기"], index=0
+        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화", "Agentic Workflow (Tool Use)", "번역하기", "문법 검토하기", "이미지 분석"], index=0
     )   
     st.info(mode_descriptions[mode][0])
     # limit = st.slider(
@@ -54,8 +52,8 @@ with st.sidebar:
 
     print('mode: ', mode)
 
-    st.subheader("🌇 이미지 분석")
-    uploaded_file = st.file_uploader("이미지를 요약합니다.", type=["png", "jpg", "jpeg"])
+    st.subheader("🌇 이미지 업로드")
+    uploaded_file = st.file_uploader("이미지를 요약할 파일을 선택합니다.", type=["png", "jpg", "jpeg"])
 
     st.success("Connected to Nova Pro", icon="💚")
     clear_button = st.button("대화 초기화", key="clear")
@@ -98,11 +96,13 @@ if clear_button or "messages" not in st.session_state:
     chat.clear_chat_history()
 
 # Preview the uploaded image in the sidebar
-if uploaded_file is not None and clear_button == False:
+file_name = ""
+if uploaded_file and clear_button==False and mode == '이미지 분석':
     st.image(uploaded_file, caption="이미지 미리보기", use_container_width=True)
 
-    image_url = chat.upload_to_s3(uploaded_file.getvalue(), uploaded_file.name)
-    print('image_url: ', image_url)
+    file_name = uploaded_file.name
+    image_url = chat.upload_to_s3(uploaded_file.getvalue(), file_name)
+    print('image_url: ', image_url)    
 
 if "messages" not in st.session_state:
     st.session_state['messages'] = []
@@ -161,6 +161,23 @@ if prompt := st.chat_input("메시지를 입력하세요."):
 
             st.session_state.messages.append({"role": "assistant", "content": response})
             chat.save_chat_history(prompt, response)
+        elif mode == '이미지 분석':
+            if uploaded_file is None or uploaded_file == "":
+                st.error("파일을 먼저 업로드하세요.")
+                st.stop()
+
+            else:                
+                with st.status("thinking...", expanded=True, state="running") as status:
+                    summary, img_base64 = chat.summary_image(file_name, prompt)
+                    st.write(summary)
+                    print('summary: ', summary)
+                    st.session_state.messages.append({"role": "assistant", "content": summary})
+
+                    text = chat.extract_text(img_base64)
+                    st.write(text)
+                    st.session_state.messages.append({"role": "assistant", "content": text})
+
+                    st.rerun()
         else:
             stream = chat.general_conversation(prompt)
 
