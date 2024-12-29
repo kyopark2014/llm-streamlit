@@ -116,16 +116,36 @@ if prompt := st.chat_input("메시지를 입력하세요."):
 
     prompt = prompt.replace('"', "").replace("'", "")
 
+    
+    from langchain.callbacks import StreamlitCallbackHandler
     with st.chat_message("assistant"):
+        
         if mode == '일상적인 대화':
-            stream = chat.general_conversation(prompt)
+            # with st.status("thinking...", expanded=True, state="running") as status:
+            #     stream = chat.general_conversation(prompt)            
+            #     response = st.write_stream(stream)
+            #     print('response: ', response)
+            #     st.session_state.messages.append({"role": "assistant", "content": response})
+            #     st.rerun()                
 
+            stream = chat.general_conversation(prompt)            
             response = st.write_stream(stream)
             print('response: ', response)
+            st.session_state.messages.append({"role": "assistant", "content": response})
 
         elif mode == 'Agentic Workflow (Tool Use)':
-            response = chat.run_agent_executor2(prompt)
-            st.write(response)
+            with st.status("thinking...", expanded=True, state="running") as status:
+                response = chat.run_agent_executor2(prompt)
+                st.write(response)
+                print('response: ', response)
+
+                if response.find('<thinking>') != -1:
+                    print('Remove <thinking> tag.')
+                    response = response[response.find('</thinking>')+12:]
+                    print('response without tag: ', response)
+
+                st.session_state.messages.append({"role": "assistant", "content": response})
+                st.rerun()
 
         elif mode == '번역하기':
             response = chat.translate_text(prompt)
@@ -141,4 +161,4 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             print('response: ', response)
         
         st.session_state.messages.append({"role": "assistant", "content": response})
-        chat.save_chat_history(prompt, response)
+        #chat.save_chat_history(prompt, response)
