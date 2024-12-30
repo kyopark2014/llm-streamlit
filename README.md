@@ -11,7 +11,7 @@
 
 ## System Architecture 
 
-이때의 Architecture는 아래와 같습니다. 여기서에서는 Streamlit이 설치된 EC2는 private subnet에 둬서 안전하게 관리합니다. S3는 Gateway Endpoint를 이용하여 연결합니다. Bedrock도 Private link를 이용해 연결하여야 하지만 여기서는 multi-region을 사용하므로 편의상 NAT를 이용하여 연결하였습니다.
+이때의 Architecture는 아래와 같습니다. 여기서에서는 Streamlit이 설치된 EC2는 private subnet에 둬서 안전하게 관리합니다. Amazon S3는 Gateway Endpoint를 이용하여 연결하고 Bedrock은 Private link를 이용하여 연결하였으므로 EC2의 트래픽은 외부로 나가지 않고 AWS 내부에서 처리가 됩니다. 인터넷 및 날씨의 검색 API는 외부 서비스 공급자의 API를 이용하므로 NAT를 이용하여 연결하였습니다.
 
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/6de1c8a9-c8d3-485f-b836-97a24d635b0d" />
 
