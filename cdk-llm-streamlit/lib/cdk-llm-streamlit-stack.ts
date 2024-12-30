@@ -180,6 +180,18 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
 
     const userData = ec2.UserData.forLinux();
 
+    const environment = {
+      "projectName": projectName,
+      "accountId": accountId,
+      "region": region,
+      "s3_arn": s3Bucket.bucketArn
+    }    
+    new cdk.CfnOutput(this, `environment-for-${projectName}`, {
+      value: JSON.stringify(environment),
+      description: `environment-${projectName}`,
+      exportName: `environment-${projectName}`
+    });
+
     const commands = [
       //'yum install nginx -y',
       //'service nginx start',
@@ -204,14 +216,11 @@ EOF"`,
 [server]
 port=${targetPort}
 EOF"`,
+      `json='${JSON.stringify(environment)}' && echo "$json">/home/config.json`,      
       `runuser -l ec2-user -c 'cd && git clone https://github.com/kyopark2014/${projectName}'`,
       `runuser -l ec2-user -c 'pip install streamlit streamlit_chat'`,        
       `runuser -l ec2-user -c 'pip install boto3 langchain_aws langchain langchain_community langgraph'`,
       `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python'`,
-      // `runuser -l ec2-user -c 'export projectName=${projectName}'`,
-      // `runuser -l ec2-user -c 'export accountId=${accountId}'`,      
-      // `runuser -l ec2-user -c 'export region=${region}'`,
-      // `runuser -l ec2-user -c 'export bucketName=${bucketName}'`,
       'systemctl enable streamlit.service',
       'systemctl start streamlit'
     ];

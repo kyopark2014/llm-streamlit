@@ -31,7 +31,7 @@ from langgraph.prebuilt import ToolNode
 from langchain_core.output_parsers import StrOutputParser
 
 try:
-    with open("/home/ec2-user/llm-streamlit/application/config.json", "r", encoding="utf-8") as f:
+    with open("/home/config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
     print('config: ', config)
 except Exception:
@@ -39,6 +39,7 @@ except Exception:
     with open("application/config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
     print('config: ', config)
+    
 bedrock_region = "us-west-2"
 projectName = config["projectName"] if "projectName" in config else "bedrock-agent"
 
