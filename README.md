@@ -15,7 +15,7 @@
 
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/6de1c8a9-c8d3-485f-b836-97a24d635b0d" />
 
-### CDK 구현 코드
+### CDK로 배포 환경 구현
 
 EC2를 아래와 같이 정의합니다. 
 
@@ -166,6 +166,11 @@ sudo systemctl status streamlit -l
 본 실습에서는 us-west-2 리전을 사용합니다. [인프라 설치](./deployment.md)에 따라 CDK로 인프라 설치를 진행합니다. 
 
 ## 실행결과
+
+왼쪽의 메뉴에서 아래와 같이 일상적인 대화, Agentic Workflow (Tool Use), 번역하기, 문법 검토하기, 이미지 분석을 제공합니다. 각 메뉴를 선택하여 아래와 같이 활용할 수 있습니다. 
+
+![image](https://github.com/user-attachments/assets/7ab0d2e7-3bd0-44b9-b2be-f4d68a6ff60b)
+
 
 ### Agentic Workflow
 
