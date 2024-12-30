@@ -172,15 +172,27 @@ sudo systemctl status streamlit -l
 ![image](https://github.com/user-attachments/assets/7ab0d2e7-3bd0-44b9-b2be-f4d68a6ff60b)
 
 
+
+### 일상적인 대화
+
+메뉴에서 일상적인 대화를 선택하고 아래와 같이 인사와 함께 날씨 질문을 합니다. Prompt에 따라서 챗봇의 이름이 서연이라고 얘기하고 있으며, 일상적인 대화에서는 API를 호출할수 없으므로 날씨 정보는 제공할 수 없습니다. 
+
+![image](https://github.com/user-attachments/assets/a0c305a0-34ca-450f-9cd5-5689aca9a0f9)
+
 ### Agentic Workflow
 
-Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘의 날씨는이라는 질문을 아래와 같이 입력하고 결과를 확인합니다. LangGraph로 구현된 Tool Use 패턴의 agent는 날씨에 대한 요청이 올 경우에 openweathermap의 API를 요청해 날씨정보를 조회하여 활용할 수 있습니다. 
+Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대해 질문을 하면, 아래와 같이 입력하고 결과를 확인합니다. LangGraph로 구현된 Tool Use 패턴의 agent는 날씨에 대한 요청이 올 경우에 openweathermap의 API를 요청해 날씨정보를 조회하여 활용할 수 있습니다. 
 
 ![image](https://github.com/user-attachments/assets/4693c1ff-b7e9-43f5-b7b7-af354b572f07)
 
+아래와 같은 질문은 LLM이 가지고 있지 않은 정보이므로, 인터넷 검색을 수행하고 그 결과로 아래와 같은 답변을 얻었습니다.
+
+![image](https://github.com/user-attachments/assets/8f8d2e94-8be1-4b75-8795-4db9a8fa340f)
+
+
 ### 번역하기
 
-왼쪽의 메뉴에서 "번역하기"를 선택하고 아래와 같이 한국어를 입력하면 영어로 번역을 수행합니다. 만약 입력이 영어였다면 한국어로 번역하도록 프롬프트를 구성하였습니다.
+메뉴에서 "번역하기"를 선택하고 아래와 같이 한국어를 입력하면 영어로 번역을 수행합니다. 만약 입력이 영어였다면 한국어로 번역하도록 프롬프트를 구성하였습니다.
 
 ![image](https://github.com/user-attachments/assets/8649b4c9-3f9d-45ab-8bb2-5693501972cd)
 
