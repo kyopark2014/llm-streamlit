@@ -355,3 +355,5 @@ ALB에 인증서를 추가해서 https로 연결을 제공할 수 있습니다. 
 [자습서: Amazon ECS 서비스에 대한 프라이빗 통합을 통해 HTTP API 생성](https://docs.aws.amazon.com/ko_kr/apigateway/latest/developerguide/http-api-private-integration.html)
 
 [API Gateway to ECS Fargate cluster](https://serverlessland.com/patterns/apigw-vpclink-pvt-alb?ref=search)
+
+[deploy-streamlit-app](https://github.com/aws-samples/deploy-streamlit-app/tree/main)
