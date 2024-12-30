@@ -7,7 +7,7 @@
 
 
 
-여기서는 Streamlit을 이용해 개발한 application을 쉽게 배포하고 안전할게 활용할 수 있는 방법에 대해 설명합니다. AWS CDK를 통해 한번에 배포가 가능하고, 수정된 소스를 쉽게 반영할 수 있습니다. 또한, ALB - EC2의 구조를 가지고 있으므로 필요하다면 scale out도 지원합니다. Streamlit이 설치되는 EC2의 OS는 EKS/ECS와 같은 컨테이너 서비스에 주로 사용되는 Amazon Linux를 base하여, 추후 상용으로 전환할때 수고를 줄일 수 있습니다. 
+여기서는 Streamlit을 이용해 개발한 application을 쉽게 배포하고 안전하게 활용할 수 있는 방법에 대해 설명합니다. AWS CDK를 이용해 한번에 배포가 가능하고, 수정된 소스를 쉽게 반영할 수 있습니다. 또한, ALB - EC2의 구조를 가지고 있으므로 필요하다면 scale out도 지원합니다. Streamlit이 설치되는 EC2의 OS는 EKS/ECS와 같은 컨테이너 서비스에 주로 사용되는 Amazon Linux를 base하여, 추후 상용으로 전환할때 수고를 줄일 수 있습니다. 
 
 ## System Architecture 
 
@@ -46,7 +46,7 @@ const appInstance = new ec2.Instance(this, `app-for-${projectName}`, {
 appInstance.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
 ```
 
-EC2의 userdata는 아래와 같이 설정합니다.
+EC2의 userdata는 아래와 같이 설정합니다. 필요한 패키지를 설치하고 streamlit을 서비스로 배포합니다. Streamlit의 기본 포트는 8501이나 여기서는 config.toml을 이용하여 포트를 8080으로 변경하였습니다. App이 ec2-user 계정에 있어야 하므로 아래와 같이 필요한 패키지를 설치합니다.
 
 ```java
 const userData = ec2.UserData.forLinux();
