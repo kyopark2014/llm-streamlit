@@ -17,7 +17,7 @@
 
 ### CDK로 배포 환경 구현
 
-EC2를 아래와 같이 정의합니다. 
+EC2를 아래와 같이 정의합니다. 상세한 내용은 [cdk-llm-streamlit-stack.ts](./cdk-llm-streamlit/lib/cdk-llm-streamlit-stack.ts)을 참조합니다.
 
 ```java
 const appInstance = new ec2.Instance(this, `app-for-${projectName}`, {
