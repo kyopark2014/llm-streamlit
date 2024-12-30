@@ -151,7 +151,7 @@ sudo runuser -l ec2-user -c 'cd /home/ec2-user/llm-streamlit && git pull'
 
 ### Streamlit 관련 중요한 명령어들
 
-- Streamlit 재실행 및 상태 확인
+- Streamlit 재실행 및 상태 확인은 아래와 같이 수행 가능합니다. 
 
 ```text
 sudo systemctl stop streamlit
@@ -159,13 +159,13 @@ sudo systemctl start streamlit
 sudo systemctl status streamlit -l
 ```
 
-- Streamlit의 환경설정 내용 확인
+- Streamlit의 환경설정 내용을 확인할 수 있습니다. 
 
 ```text
 sudo runuser -l ec2-user -c "/home/ec2-user/.local/bin/streamlit config show"
 ```
 
-- Streamlit의 service 설정을 바꾸고 재실행하는 경우
+- Streamlit의 service 설정을 바꾸고 재실행하는 경우의 명령어는 아래와 같습니다. 
 
 ```text
 sudo systemctl disable streamlit.service
@@ -173,7 +173,7 @@ sudo systemctl enable streamlit.service
 sudo systemctl start streamlit
 ```
 
-- Steam의 지속 실행을 위해 service로 등록할때 필요한 streamlit.service의 생성
+- Steamlit을 service로 등록할때 필요한 streamlit.service의 생성은 아래 값을 참조합니다.
 
 ```text
 sudo sh -c "cat <<EOF > /etc/systemd/system/streamlit.service
@@ -192,7 +192,7 @@ WantedBy=multi-user.target
 EOF"
 ```
 
-- Streamlit의 포트를 8501에서 8080으로 변경하기 위한 환경설정
+- Streamlit의 포트를 8501에서 8080으로 변경하기 위한 환경 설정 방법은 아래와 같습니다. 
 
 ```text
 runuser -l ec2-user -c "cat <<EOF > /home/ec2-user/.streamlit/config.toml
