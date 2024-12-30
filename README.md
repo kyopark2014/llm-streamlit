@@ -113,43 +113,30 @@ listener.addTargets(`WebEc2Target-for-${projectName}`, {
 }) 
 ```
 
-EC2에는 [Console-EC2](https://us-west-2.console.aws.amazon.com/ec2/home?region=us-west-2#Instances:)에 접속하여 "app-for-llm-streamlit"를 선택한 후에 Connect - Sesseion Manager를 선택하여 접속합니다. github에서 app을 업데이트 한 경우에 아래 명령어로 업데이트 합니다. 
+### 활용 방법
+
+EC2는 Private Subnet에 있으므로 SSL로 접속할 수 없습니다. 따라서, [Console-EC2](https://us-west-2.console.aws.amazon.com/ec2/home?region=us-west-2#Instances:)에 접속하여 "app-for-llm-streamlit"를 선택한 후에 Connect에서 sesseion manager를 선택하여 접속합니다. 
+
+Github에서 app에 대한 코드를 업데이트 하였다면, session manager에 접속하여 아래 명령어로 업데이트 합니다. 
 
 ```text
 sudo runuser -l ec2-user -c 'cd /home/ec2-user/llm-streamlit && git pull'
 ```
 
-Streamlit의 동작 상태는 아래 명령어를 이용해 확인합니다.
-
-```text
-sudo systemctl status streamlit -l
-```
-
-
-
-## Streamlit
-
-### Streamlit 실행 
-
-아래와 같이 streamlit을 실행합니다.
-
-```text
-streamlit run application/app.py
-```
-
-github 코드를 EC2에 업데이트 할 때에는 아래 명령어를 활용합니다.
-
-```text
-sudo runuser -l ec2-user -c 'cd /home/ec2-user/llm-streamlit && git pull'
-```
-
-Streamlit 재실행을 위한 명령어는 아래와 같습니다.
+Streamlit의 재시작이 필요하다면 아래 명령어로 service를 stop/start 시키고 동작을 확인할 수 있습니다.
 
 ```text
 sudo systemctl stop streamlit
 sudo systemctl start streamlit
 sudo systemctl status streamlit -l
 ```
+
+Local에서 디버깅을 빠르게 진행하고 싶다면 [Local에서 실행하기](https://github.com/kyopark2014/llm-streamlit/blob/main/deployment.md#local%EC%97%90%EC%84%9C-%EC%8B%A4%ED%96%89%ED%95%98%EA%B8%B0)에 따라서 Local에 필요한 패키지와 환경변수를 업데이트 합니다. 이후 아래 명령어서 실행합니다.
+
+```text
+streamlit run application/app.py
+```
+
 
 
 
