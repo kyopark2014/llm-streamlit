@@ -85,9 +85,9 @@ try:
         logger.info('config: '+json.dumpts(config))
 except Exception:
     logger.info('use local configuration')
-    with open("application/config.json", "r", encoding="utf-8") as f:
-        config = json.load(f)
-        logger.info('config: '+json.dumps(config))
+    # with open("application/config.json", "r", encoding="utf-8") as f:
+    #     config = json.load(f)
+    #     logger.info('config: '+json.dumps(config))
 
 bedrock_region = "us-west-2"
 logger.info('bedrock_region: '+bedrock_region)
