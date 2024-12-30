@@ -113,6 +113,108 @@ listener.addTargets(`WebEc2Target-for-${projectName}`, {
 }) 
 ```
 
+Agentic workflow (tool use)의 workflow는 아래와 같이 구현할 수 있습니다.
+
+```python
+def buildAgentExecutor():
+    workflow = StateGraph(State)
+
+    workflow.add_node("agent", execution_agent_node)
+    workflow.add_node("action", tool_node)
+    workflow.add_node("final_answer", final_answer)
+    
+    workflow.add_edge(START, "agent")
+    workflow.add_conditional_edges(
+        "agent",
+        should_continue,
+        {
+            "continue": "action",
+            "end": "final_answer",
+        },
+    )
+    workflow.add_edge("action", "agent")
+    workflow.add_edge("final_answer", END)
+
+    return workflow.compile()
+```
+
+번역하기는 아래와 같이 한/영이 변환 가능하도록 구성하였습니다. XML tag를 이용해 답변만 추출하는 방식을 사용하였습니다. XML tag는 anthropic의 claude 모델에서 추천하는 방식인데, Nova pro에서도 유용하게 사용할 수 있습니다. 
+
+```python
+def translate_text(text):
+    chat = get_chat()
+
+    system = (
+        "You are a helpful assistant that translates {input_language} to {output_language} in <article> tags. Put it in <result> tags."
+    )
+    human = "<article>{text}</article>"
+    
+    prompt = ChatPromptTemplate.from_messages([("system", system), ("human", human)])
+    # print('prompt: ', prompt)
+    
+    if isKorean(text)==False :
+        input_language = "English"
+        output_language = "Korean"
+    else:
+        input_language = "Korean"
+        output_language = "English"
+                        
+    chain = prompt | chat    
+    try: 
+        result = chain.invoke(
+            {
+                "input_language": input_language,
+                "output_language": output_language,
+                "text": text,
+            }
+        )
+        msg = result.content
+        print('translated text: ', msg)
+    except Exception:
+        err_msg = traceback.format_exc()
+        print('error message: ', err_msg)                    
+        raise Exception ("Not able to request to LLM")
+
+    return msg[msg.find('<result>')+8:msg.find('</result>')] 
+```
+
+이미지 분석하는 방법은 아래와 같습니다. 이미지 분석을 요청할때 "사진속 사람들의 행동을 분석해주세요"와 같이 base64로 encoding된 이미지의 내용에 대해 힌트를 제공하면 훨씬 더 좋은 결과를 얻을 수 있습니다. 여기에서는 아래와 같이 사용자가 입력한 메시지를 힌트로 사용하여 이미지를 분석하고 있습니다.
+
+```python
+def use_multimodal(img_base64, query):    
+    multimodal = get_chat()
+    
+    messages = [
+        SystemMessage(content="답변은 500자 이내의 한국어로 설명해주세요."),
+        HumanMessage(
+            content=[
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/png;base64,{img_base64}", 
+                    },
+                },
+                {
+                    "type": "text", "text": query
+                },
+            ]
+        )
+    ]
+    
+    try: 
+        result = multimodal.invoke(messages)
+        
+        summary = result.content
+        print('result of code summarization: ', summary)
+    except Exception:
+        err_msg = traceback.format_exc()
+        print('error message: ', err_msg)                    
+        raise Exception ("Not able to request to LLM")
+    
+    return summary
+```
+
+
 ### 활용 방법
 
 EC2는 Private Subnet에 있으므로 SSL로 접속할 수 없습니다. 따라서, [Console-EC2](https://us-west-2.console.aws.amazon.com/ec2/home?region=us-west-2#Instances:)에 접속하여 "app-for-llm-streamlit"를 선택한 후에 Connect에서 sesseion manager를 선택하여 접속합니다. 
