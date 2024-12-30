@@ -113,6 +113,8 @@ listener.addTargets(`WebEc2Target-for-${projectName}`, {
 }) 
 ```
 
+## 상세 구현
+
 Agentic workflow (tool use)의 workflow는 아래와 같이 구현할 수 있습니다.
 
 ```python
