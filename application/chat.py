@@ -80,7 +80,7 @@ logger.addHandler(watchtower.CloudWatchLogHandler(
 
 
 try:
-    with open("/home/config.json", "r", encoding="utf-8") as f:
+    with open("/home/ec2-user/config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
         logger.info('config: '+json.dumpts(config))
 except Exception:
