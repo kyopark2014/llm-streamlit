@@ -225,7 +225,7 @@ EOF"`,
       'systemctl start streamlit'
     ];
     userData.addCommands(...commands);
-    /*
+    
     // EC2 instance
     const appInstance = new ec2.Instance(this, `app-for-${projectName}`, {
       instanceName: `app-for-${projectName}`,
@@ -296,7 +296,7 @@ EOF"`,
       value: `http://${alb.loadBalancerDnsName}/`,
       description: `albUrl-${projectName}`,
       exportName: `albUrl-${projectName}`
-    });    */ 
+    });     
   }
 }
     // const cloudfront_distribution = cloudFront.Distribution(this, "StreamLitCloudFrontDistribution",
