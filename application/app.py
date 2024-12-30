@@ -50,14 +50,14 @@ with st.sidebar:
     #     ('일상적인 대화', 'Agentic Workflow (Tool Use)', '번역하기', '문법 검토하기')
     # )
 
-    print('mode: ', mode)
+    # print('mode: ', mode)
 
     st.subheader("🌇 이미지 업로드")
     uploaded_file = st.file_uploader("이미지를 요약할 파일을 선택합니다.", type=["png", "jpg", "jpeg"])
 
     st.success("Connected to Nova Pro", icon="💚")
     clear_button = st.button("대화 초기화", key="clear")
-    print('clear_button: ', clear_button)
+    # print('clear_button: ', clear_button)
 
 st.title('🔮 '+ mode)
 
@@ -109,6 +109,7 @@ if "messages" not in st.session_state:
             
 # Always show the chat input
 if prompt := st.chat_input("메시지를 입력하세요."):
+    print('prompt: ', prompt)
     with st.chat_message("user"):  # display user message in chat message container
         st.markdown(prompt)
 

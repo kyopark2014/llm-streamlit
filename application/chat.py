@@ -33,15 +33,13 @@ from langchain_core.output_parsers import StrOutputParser
 try:
     with open("/home/config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
-        #print('config: ', config)
-        logger.info('config: '+config)
+        print('config: ', config)
 except Exception:
     print("use local configuration")
     with open("application/config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
         print('config: ', config)
-        logger.info('config: '+json.dumps(config))
-
+        
 bedrock_region = "us-west-2"
 projectName = config["projectName"] if "projectName" in config else "bedrock-agent"
 
@@ -99,7 +97,7 @@ def get_chat():
     bedrock_region =  profile['bedrock_region']
     modelId = profile['model_id']
     maxOutputTokens = 4096
-    print(f'LLM: {selected_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}')
+    # print(f'LLM: {selected_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}')
                           
     # bedrock   
     boto3_bedrock = boto3.client(
@@ -161,7 +159,6 @@ def general_conversation(query):
                 "input": query,
             }
         )  
-        print('stream: ', stream)
             
     except Exception:
         err_msg = traceback.format_exc()
