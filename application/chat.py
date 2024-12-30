@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 formatter = logging.Formatter('%(asctime)s : %(levelname)s - %(message)s')
 
-from cloudwatch import cloudwatch
+#from cloudwatch import cloudwatch
 # handler = cloudwatch.CloudwatchHandler(
 #     log_group=os.getenv("CLOUDWATCH_TIINGO_LOG_GROUP"),
 #     stream_name="TiingoSoraStocks-{strftime:%Y-%m-%d}",
