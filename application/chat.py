@@ -30,28 +30,37 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from langchain_core.output_parsers import StrOutputParser
 
+import watchtower, logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+logger.addHandler(watchtower.CloudWatchLogHandler())
+
 try:
     with open("/home/config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
-    print('config: ', config)
+        logger.info('config: '+json.dumpts(config))
 except Exception:
-    print("use local configuration")
+    logger.info('use local configuration')
     with open("application/config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
-    print('config: ', config)
-    
+        logger.info('config: '+json.dumps(config))
+
 bedrock_region = "us-west-2"
+logger.info('bedrock_region: '+bedrock_region)
+
 projectName = config["projectName"] if "projectName" in config else "bedrock-agent"
+logger.info('projectName: '+projectName)
 
 accountId = config["accountId"] if "accountId" in config else None
 if accountId is None:
+    logger.info('No accountId')
     raise Exception ("No accountId")
-
+    
 region = config["region"] if "region" in config else "us-west-2"
-print('region: ', region)
+logger.info('region: '+region)
 
 bucketName = config["bucketName"] if "bucketName" in config else f"storage-for-{projectName}-{accountId}-{region}" 
-print('bucketName: ', bucketName)
+logger.info('bucketName: '+bucketName)
 
 s3_prefix = 'docs'
 
@@ -81,10 +90,10 @@ userId = "demo"
 map_chain = dict() 
 
 if userId in map_chain:  
-        # print('memory exist. reuse it!')
+        # logger.info('memory exist. reuse it!')
         memory_chain = map_chain[userId]
 else: 
-    # print('memory does not exist. create new one!')        
+    # logger.info('memory does not exist. create new one!')        
     memory_chain = ConversationBufferWindowMemory(memory_key="chat_history", output_key='answer', return_messages=True, k=5)
     map_chain[userId] = memory_chain
 
@@ -96,8 +105,8 @@ def get_chat():
         
     bedrock_region =  profile['bedrock_region']
     modelId = profile['model_id']
-    maxOutputTokens = 4096
-    print(f'LLM: {selected_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}')
+    maxOutputTokens = 4096    
+    logger.info(f'LLM: {selected_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}')
                           
     # bedrock   
     boto3_bedrock = boto3.client(
@@ -116,7 +125,7 @@ def get_chat():
         "top_p":0.9,
         "stop_sequences": [HUMAN_PROMPT]
     }
-    # print('parameters: ', parameters)
+    # logger.info('parameters: '+parameters)
 
     chat = ChatBedrock(   # new chat model
         model_id=modelId,
@@ -159,11 +168,10 @@ def general_conversation(query):
                 "input": query,
             }
         )  
-        print('stream: ', stream)
             
     except Exception:
         err_msg = traceback.format_exc()
-        print('error message: ', err_msg)        
+        logger.info('error message: '+err_msg)   
         raise Exception ("Not able to request to LLM: "+err_msg)
         
     return stream
@@ -209,7 +217,7 @@ def get_current_time(format: str=f"%Y-%m-%d %H:%M:%S")->str:
     
     format = format.replace('\'','')
     timestr = datetime.datetime.now(timezone('Asia/Seoul')).strftime(format)
-    print('timestr:', timestr)
+    logger.info('timestr: '+timestr)
     
     return timestr
 
@@ -228,13 +236,13 @@ def get_weather_info(city: str) -> str:
     chat = get_chat()
     if isKorean(city):
         place = traslation(chat, city, "Korean", "English")
-        print('city (translated): ', place)
+        logger.info('city (translated): '+place)
     else:
         place = city
         city = traslation(chat, city, "English", "Korean")
-        print('city (translated): ', city)
+        logger.info('city (translated): '+city)
         
-    print('place: ', place)
+    logger.info('place: '+place)
     
     weather_str: str = f"{city}에 대한 날씨 정보가 없습니다."
     if weather_api_key: 
@@ -242,12 +250,12 @@ def get_weather_info(city: str) -> str:
         lang = 'en' 
         units = 'metric' 
         api = f"https://api.openweathermap.org/data/2.5/weather?q={place}&APPID={apiKey}&lang={lang}&units={units}"
-        # print('api: ', api)
+        # logger.info('api: '+api)
                 
         try:
             result = requests.get(api)
             result = json.loads(result.text)
-            print('result: ', result)
+            logger.info('result: '+str(result))
         
             if 'weather' in result:
                 overall = result['weather'][0]['main']
@@ -262,10 +270,10 @@ def get_weather_info(city: str) -> str:
                 #weather_str = f"Today, the overall of {city} is {overall}, current temperature is {current_temp} degree, min temperature is {min_temp} degree, highest temperature is {max_temp} degree. huminity is {humidity}%, wind status is {wind_speed} meter per second. the amount of cloud is {cloud}%."            
         except Exception:
             err_msg = traceback.format_exc()
-            print('error message: ', err_msg)                    
+            logger.info('error message: '+err_msg)             
             # raise Exception ("Not able to request to LLM")    
         
-    print('weather_str: ', weather_str)                            
+    logger.info('weather_str: '+weather_str)                       
     return weather_str
 
 @tool
@@ -291,10 +299,10 @@ def search_by_tavily(keyword: str) -> str:
                     
         try: 
             output = search.invoke(keyword)
-            print('tavily output: ', output)
+            logger.info('tavily output: '+output)    
             
             for result in output:
-                print('result: ', result)
+                logger.info('result: '+result)    
                 if result:
                     content = result.get("content")
                     url = result.get("url")
@@ -313,7 +321,7 @@ def search_by_tavily(keyword: str) -> str:
         
         except Exception:
             err_msg = traceback.format_exc()
-            print('error message: ', err_msg)                    
+            logger.info('error message: '+err_msg)                 
             # raise Exception ("Not able to request to tavily")   
         
     return answer
@@ -330,9 +338,9 @@ try:
     get_weather_api_secret = secretsmanager.get_secret_value(
         SecretId=f"openweathermap-{projectName}"
     )
-    #print('get_weather_api_secret: ', get_weather_api_secret)
+    #logger.info('get_weather_api_secret: '+get_weather_api_secret)
     secret = json.loads(get_weather_api_secret['SecretString'])
-    #print('secret: ', secret)
+    #logger.info('secret: '+secret)
     weather_api_key = secret['weather_api_key']
 
 except Exception as e:
@@ -344,9 +352,9 @@ try:
     get_langsmith_api_secret = secretsmanager.get_secret_value(
         SecretId=f"langsmithapikey-{projectName}"
     )
-    #print('get_langsmith_api_secret: ', get_langsmith_api_secret)
+    #logger.info('get_langsmith_api_secret: '+get_langsmith_api_secret)
     secret = json.loads(get_langsmith_api_secret['SecretString'])
-    #print('secret: ', secret)
+    #logger.info('secret: '+secret)
     langsmith_api_key = secret['langsmith_api_key']
     langchain_project = secret['langchain_project']
 except Exception as e:
@@ -364,11 +372,11 @@ try:
     get_tavily_api_secret = secretsmanager.get_secret_value(
         SecretId=f"tavilyapikey-{projectName}"
     )
-    #print('get_tavily_api_secret: ', get_tavily_api_secret)
+    #logger.info('get_tavily_api_secret: '+get_tavily_api_secret)
     secret = json.loads(get_tavily_api_secret['SecretString'])
-    #print('secret: ', secret)
+    #logger.info('secret: '+secret)
     tavily_key = secret['tavily_api_key']
-    #print('tavily_api_key: ', tavily_api_key)
+    #logger.info('tavily_api_key: '+tavily_api_key)
 except Exception as e: 
     raise e
 
@@ -380,7 +388,7 @@ def tavily_search(query, k):
     try:
         tavily_client = TavilyClient(api_key=tavily_key)
         response = tavily_client.search(query, max_results=k)
-        # print('tavily response: ', response)
+        # logger.info('tavily response: '+str(response))
             
         for r in response["results"]:
             name = r.get("title")
@@ -398,7 +406,7 @@ def tavily_search(query, k):
                 )
             )                   
     except Exception as e:
-        print('Exception: ', e)
+        logger.info('Exception: '+e)  
 
     return docs
 
@@ -406,13 +414,13 @@ def isKorean(text):
     # check korean
     pattern_hangul = re.compile('[\u3131-\u3163\uac00-\ud7a3]+')
     word_kor = pattern_hangul.search(str(text))
-    # print('word_kor: ', word_kor)
+    # logger.info('word_kor: '+word_kor)
 
     if word_kor and word_kor != 'None':
-        print('Korean: ', word_kor)
+        logger.info('Korean: '+str(word_kor))
         return True
     else:
-        print('Not Korean: ', word_kor)
+        logger.info('Not Korean: '+str(word_kor))
         return False
     
 def traslation(chat, text, input_language, output_language):
@@ -423,7 +431,7 @@ def traslation(chat, text, input_language, output_language):
     human = "<article>{text}</article>"
     
     prompt = ChatPromptTemplate.from_messages([("system", system), ("human", human)])
-    # print('prompt: ', prompt)
+    # logger.info('prompt: '+prompt)
     
     chain = prompt | chat    
     try: 
@@ -436,10 +444,10 @@ def traslation(chat, text, input_language, output_language):
         )
         
         msg = result.content
-        # print('translated text: ', msg)
+        # logger.info('translated text: '+msg)
     except Exception:
         err_msg = traceback.format_exc()
-        print('error message: ', err_msg)                    
+        logger.info('error message: '+err_msg)                
         raise Exception ("Not able to request to LLM")
 
     return msg[msg.find('<result>')+8:len(msg)-9] # remove <result> tag
@@ -457,7 +465,7 @@ def run_agent_executor2(query):
             
     def create_agent(chat, tools):        
         tool_names = ", ".join([tool.name for tool in tools])
-        print("tool_names: ", tool_names)
+        logger.info('tool_names: '+tool_names)  
 
         system = (
             "당신의 이름은 서연이고, 질문에 친근한 방식으로 대답하도록 설계된 대화형 AI입니다."
@@ -482,12 +490,12 @@ def run_agent_executor2(query):
         return prompt | chat.bind_tools(tools)
     
     def agent_node(state, agent, name):
-        print(f"###### agent_node:{name} ######")
+        logger.info(f"###### agent_node:{name} ######")  
 
         last_message = state["messages"][-1]
-        print('last_message: ', last_message)
+        logger.info('last_message: '+str(last_message))
         if isinstance(last_message, ToolMessage) and last_message.content=="":    
-            print('last_message is empty') 
+            logger.info("last_message is empty'")  
             answer = get_basic_answer(state["messages"][0].content)  
             return {
                 "messages": [AIMessage(content=answer)],
@@ -495,7 +503,7 @@ def run_agent_executor2(query):
             }
         
         response = agent.invoke(state["messages"])
-        print('response: ', response)
+        logger.info('response: '+str(response))
 
         if "answer" in state:
             answer = state['answer']
@@ -505,18 +513,18 @@ def run_agent_executor2(query):
         for re in response.content:
             if "type" in re:
                 if re['type'] == 'text':
-                    print(f"--> {re['type']}: {re['text']}")
+                    logger.info(f"--> {re['type']}: {re['text']}") 
                 elif re['type'] == 'tool_use':                
-                    print(f"--> {re['type']}: name: {re['name']}, input: {re['input']}")
+                    logger.info(f"--> {re['type']}: name: {re['name']}, input: {re['input']}") 
                 else:
-                    print(re)
+                    logger.info(re)
             else: # answer
                 answer += '\n'+response.content
-                print(response.content)
+                logger.info(response.content)
                 break
 
         response = AIMessage(**response.dict(exclude={"type", "name"}), name=name)     
-        print('message: ', response)
+        logger.info('message: '+str(response))
         
         return {
             "messages": [response],
@@ -524,7 +532,7 @@ def run_agent_executor2(query):
         }
     
     def final_answer(state):
-        print(f"###### final_answer ######")        
+        logger.info(f"###### final_answer ######")        
 
         answer = ""        
         if "answer" in state:
@@ -533,9 +541,9 @@ def run_agent_executor2(query):
             answer = state["messages"][-1].content
 
         if answer.find('<thinking>') != -1:
-            print('Remove <thinking> tag.')
+            logger.info('Remove <thinking> tag.')
             answer = answer[answer.find('</thinking>')+12:]
-        print('answer: ', answer)
+        logger.info('answer: '+answer)
         
         return {
             "answer": answer
@@ -548,23 +556,23 @@ def run_agent_executor2(query):
     execution_agent_node = functools.partial(agent_node, agent=execution_agent, name="execution_agent")
     
     def should_continue(state: State, config) -> Literal["continue", "end"]:
-        print("###### should_continue ######")
+        logger.info("###### should_continue ######")
         messages = state["messages"]    
-        # print('(should_continue) messages: ', messages)
+        # logger.info('(should_continue) messages: '+messages)
         
         last_message = messages[-1]        
         if not last_message.tool_calls:
-            print("Final: ", last_message.content)
-            print("--- END ---")
+            logger.info("Final: "+last_message.content)
+            logger.info("--- END ---")
             return "end"
         else:      
-            print(f"tool_calls: ", last_message.tool_calls)
+            logger.info(f"tool_calls: "+str(last_message.tool_calls))
 
             for message in last_message.tool_calls:
-                print(f"tool name: {message['name']}, args: {message['args']}")
+                logger.info(f"tool name: {message['name']}, args: {message['args']}")
                 # update_state_message(f"calling... {message['name']}", config)
 
-            print(f"--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
+            logger.info(f"--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
             return "continue"
 
     def buildAgentExecutor():
@@ -595,32 +603,32 @@ def run_agent_executor2(query):
     
     msg = ""
     # for event in app.stream({"messages": inputs}, config, stream_mode="values"):   
-    #     # print('event: ', event)
+    #     # logger.info('event: '+event)
         
     #     if "answer" in event:
     #         msg = event["answer"]
     #     else:
     #         msg = event["messages"][-1].content
-    #     # print('message: ', message)
+    #     # logger.info('message: '+message)
 
     # output = app.astream_events({"messages": inputs}, config, version="v2")
-    # print('output: ', output)
+    # logger.info('output: '+output)
 
     output = app.invoke({"messages": inputs}, config)
-    print('output: ', output)
+    logger.info('output: '+str(output))
 
     msg = output['messages'][-1].content
-    print('msg: ', msg)
+    logger.info('msg: '+str(msg))
     
     if msg.find('<thinking>') != -1:
-        print('Remove <thinking> tag.')
+        logger.info('Remove <thinking> tag.')
         msg = msg[msg.find('</thinking>')+12:]
-        print('msg without tag: ', msg)
+        logger.info('msg without tag: '+msg)
 
     return msg
 
 def get_basic_answer(query):
-    print('#### get_basic_answer ####')
+    logger.info('#### get_basic_answer ####')
     chat = get_chat()
 
     if isKorean(query)==True:
@@ -644,7 +652,7 @@ def get_basic_answer(query):
     
     chain = prompt | chat    
     output = chain.invoke({"input": query})
-    print('output.content: ', output.content)
+    logger.info('output.content: '+output.content)
 
     return output.content
 
@@ -657,7 +665,7 @@ def translate_text(text):
     human = "<article>{text}</article>"
     
     prompt = ChatPromptTemplate.from_messages([("system", system), ("human", human)])
-    # print('prompt: ', prompt)
+    # logger.info('prompt: '+prompt)
     
     if isKorean(text)==False :
         input_language = "English"
@@ -676,10 +684,10 @@ def translate_text(text):
             }
         )
         msg = result.content
-        print('translated text: ', msg)
+        logger.info('translated text: '+msg)
     except Exception:
         err_msg = traceback.format_exc()
-        print('error message: ', err_msg)                    
+        logger.info('error message: '+err_msg)                 
         raise Exception ("Not able to request to LLM")
 
     return msg[msg.find('<result>')+8:msg.find('</result>')] # remove <result> tag
@@ -703,7 +711,7 @@ def check_grammer(text):
     human = "<article>{text}</article>"
     
     prompt = ChatPromptTemplate.from_messages([("system", system), ("human", human)])
-    # print('prompt: ', prompt)
+    # logger.info('prompt: '+prompt)
     
     chain = prompt | chat    
     try: 
@@ -714,10 +722,10 @@ def check_grammer(text):
         )
         
         msg = result.content
-        print('result of grammer correction: ', msg)
+        logger.info('result of grammer correction: '+msg)
     except Exception:
         err_msg = traceback.format_exc()
-        print('error message: ', err_msg)                    
+        logger.info('error message: '+err_msg)                
         raise Exception ("Not able to request to LLM")
     
     return msg
@@ -753,7 +761,7 @@ def upload_to_s3(file_bytes, file_name):
     
     except Exception as e:
         err_msg = f"Error uploading to S3: {str(e)}"
-        print(err_msg)
+        logger.info(err_msg)
         return None
 
 def extract_and_display_s3_images(text, s3_client):
@@ -777,7 +785,7 @@ def extract_and_display_s3_images(text, s3_client):
 
         except Exception as e:
             err_msg = f"Error downloading image from S3: {str(e)}"
-            print(err_msg)
+            logger.info(err_msg)
             continue
     return images
 
@@ -789,20 +797,20 @@ def summary_image(object_name, prompt):
     )
                     
     image_obj = s3_client.get_object(Bucket=bucketName, Key=s3_prefix+'/'+object_name)
-    # print('image_obj: ', image_obj)
+    # logger.info('image_obj: '+image_obj)
     
     image_content = image_obj['Body'].read()
     img = Image.open(BytesIO(image_content))
     
     width, height = img.size 
-    print(f"width: {width}, height: {height}, size: {width*height}")
+    logger.info(f"width: {width}, height: {height}, size: {width*height}")
     
     isResized = False
     while(width*height > 5242880):                    
         width = int(width/2)
         height = int(height/2)
         isResized = True
-        print(f"width: {width}, height: {height}, size: {width*height}")
+        logger.info(f"width: {width}, height: {height}, size: {width*height}")
     
     if isResized:
         img = img.resize((width, height))
@@ -848,10 +856,10 @@ def use_multimodal(img_base64, query):
         result = multimodal.invoke(messages)
         
         summary = result.content
-        print('result of code summarization: ', summary)
+        logger.info('result of code summarization: '+summary)
     except Exception:
         err_msg = traceback.format_exc()
-        print('error message: ', err_msg)                    
+        logger.info('error message: '+err_msg)               
         raise Exception ("Not able to request to LLM")
     
     return summary
@@ -880,14 +888,14 @@ def extract_text(img_base64):
         result = multimodal.invoke(messages)
         
         extracted_text = result.content
-        print('result of text extraction from an image: ', extracted_text)
+        logger.info('result of text extraction from an image: ', extracted_text)
     except Exception:
         err_msg = traceback.format_exc()
-        print('error message: ', err_msg)                    
+        logger.info('error message: '+err_msg)               
         raise Exception ("Not able to request to LLM")
     
     #extracted_text = text[text.find('<result>')+8:text.find('</result>')] # remove <result> tag
-    print('extracted_text: ', extracted_text)
+    logger.info('extracted_text: '+extracted_text)
     if len(extracted_text)>10:
         msg = f"{extracted_text}\n"    
     else:
