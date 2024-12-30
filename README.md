@@ -184,6 +184,23 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘의 날씨는이라는 �
 
 ![image](https://github.com/user-attachments/assets/8649b4c9-3f9d-45ab-8bb2-5693501972cd)
 
+### 문법 검토하기
+
+문법 검토하기를 선택후 문장을 입력하면 아래와 같이 수정이 필요한 부분을 알려주고 수정된 문장도 함께 제시합니다. 
+
+![image](https://github.com/user-attachments/assets/0afc2778-772c-4505-b901-67eae5beeb90)
+
+### 이미지 분석
+
+이미지를 분석할 수 있는 프롬프트를 테스트해 볼 수 있습니다. 왼쪽의 "Browse files"를 선택하고, "ReAct의 장점에 대해 설명해주세요."라고 입력합니다. 
+
+이때 사용한 이미지는 아래와 같습니다. 이 이미지는 ReAct와 CoT를 비교하고 있습니다.
+
+![image](https://github.com/user-attachments/assets/ec22508a-1569-49a1-a6fb-6442bc972d2a)
+
+이때의 결과는 아래와 같습니다. 입력한 메시지에 맞는 의미를 그림파일에서 찾고 아래와 같이 먼저 결과를 제시합니다. 실제 LLM이 인식한 표를 아래와 같이 확인할 수 있습니다.
+
+![image](https://github.com/user-attachments/assets/39fb2235-c6ef-42e0-8f43-f158cb088db4)
 
 
 
