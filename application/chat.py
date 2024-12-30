@@ -31,11 +31,53 @@ from langgraph.prebuilt import ToolNode
 from langchain_core.output_parsers import StrOutputParser
 
 import watchtower, logging
+from boto3.session import Session
+
 #logging.basicConfig(level=logging.INFO)
 #logging.basicConfig(format='[%(asctime)s] p%(process)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.INFO)
 logging.basicConfig(format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
-logger.addHandler(watchtower.CloudWatchLogHandler())
+#logger.addHandler(watchtower.CloudWatchLogHandler())
+
+formatter = logging.Formatter('%(asctime)s : %(levelname)s - %(message)s')
+
+from cloudwatch import cloudwatch
+# handler = cloudwatch.CloudwatchHandler(
+#     log_group=os.getenv("CLOUDWATCH_TIINGO_LOG_GROUP"),
+#     stream_name="TiingoSoraStocks-{strftime:%Y-%m-%d}",
+#     use_queues=True,  # Set to True for better performance in production
+#     boto3_client=boto3_session,
+#     create_log_group=True
+# )
+# #    'AWS_KEY_ID',
+# #    'AWS_SECRET_KEY',
+# #    'AWS_REGION',
+# #    'AWS_LOG_GROUP',
+#     log_group_name='llm-streamlit',
+#     log_group_retention_days=30
+# )
+
+
+logger.addHandler(watchtower.CloudWatchLogHandler(
+    log_group_name='bedrockchat',
+    boto3_client=boto3.client("logs", region_name="us-west-2")
+))
+
+#     log_group="log-chat",
+#     stream_name='chat',
+#     use_queues=True,
+#     boto3_client=
+#     log_group_name="llm-streamlit-chat",
+#     stream_name="chat",
+#     send_interval=10,
+#     max_batch_size=10000,
+#     max_queue_size=10000,
+#     use_threads=True,
+#     create_log_group=True,
+#     log_group_retention_days=30,
+#     boto3_session=boto3.Session(region_name='us-west-2')
+# ))
+
 
 try:
     with open("/home/config.json", "r", encoding="utf-8") as f:
