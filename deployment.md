@@ -91,7 +91,7 @@ cdk deploy --require-approval never --all
 
 [Secret manager](https://us-west-2.console.aws.amazon.com/secretsmanager/listsecrets?region=us-west-2)에 접속하여, [openweathermap-llm-streamlit](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=openweathermap-llm-streamlit&region=us-west-2), [tavilyapikey-llm-streamlit](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=tavilyapikey-llm-streamlit&region=us-west-2), [langsmithapikey-llm-streamlit](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=langsmithapikey-llm-streamlit&region=us-west-2)에 접속하여, [Retrieve secret value]를 선택 후, api key를 입력합니다.
 
-6) AWS Credential을 입력하기 위해, [Console-EC2](https://us-west-2.console.aws.amazon.com/ec2/home?region=us-west-2#Instances:instanceState=running)에서 "app-for-bedrock-agent"을 선택한 후에 [Connect]를 선택합니다. 여러가지 옵션 중에서 Session Manager를 선택한 후에 [connect]를 접속한 후에 console로 접속합니다. 아래 명령어를 이용하여 ec2-user에 AWS Credential을 입력합니다.
+6) AWS Credential을 입력하기 위해, [Console-EC2](https://us-west-2.console.aws.amazon.com/ec2/home?region=us-west-2#Instances:instanceState=running)에서 "app-for-llm-streamlit"을 선택한 후에 [Connect]를 선택합니다. 여러가지 옵션 중에서 Session Manager를 선택한 후에 [connect]를 접속한 후에 console로 접속합니다. 아래 명령어를 이용하여 ec2-user에 AWS Credential을 입력합니다.
 
 ```text
 sudo runuser -l ec2-user -c 'aws configure'
@@ -102,7 +102,7 @@ AWS Credential을 입력합니다.
 ![noname](https://github.com/user-attachments/assets/bd372ce9-9e9b-403c-8d87-220cec1b1b90)
 
 
-7) Output의 albUrlforbedrockagent을 이용하여 아래와 같이 접속합니다. 처음 접속시에는 Knowledge base 생성등의 초기화를 하므로 수초에서 수십초 정도 기다릴 수 있습니다.
+7) Output의 albUrlforllmstreamlit을 이용하여 아래와 같이 접속합니다. 처음 접속시에는 Knowledge base 생성등의 초기화를 하므로 수초에서 수십초 정도 기다릴 수 있습니다.
 
 ![noname](https://github.com/user-attachments/assets/48824379-b2ad-4377-916b-82988be90182)
 
