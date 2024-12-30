@@ -297,7 +297,7 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대
 
 이미지를 분석할 수 있는 프롬프트를 테스트해 볼 수 있습니다. 왼쪽의 "Browse files"를 선택하고, "ReAct의 장점에 대해 설명해주세요."라고 입력합니다. 
 
-이때 사용한 이미지는 아래와 같습니다. 이 이미지는 ReAct와 CoT를 비교하고 있습니다.
+이때 [사용한 이미지](./contents/example-table.png)는 아래와 같습니다. 이 이미지는 ReAct와 CoT를 비교하고 있습니다.
 
 ![image](https://github.com/user-attachments/assets/ec22508a-1569-49a1-a6fb-6442bc972d2a)
 
