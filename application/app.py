@@ -1,13 +1,6 @@
 import streamlit as st 
 import chat
 
-import watchtower, logging
-#logging.basicConfig(level=logging.INFO)
-logging.basicConfig(format='[%(asctime)s] p%(process)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.INFO)
-
-logger = logging.getLogger(__name__)
-logger.addHandler(watchtower.CloudWatchLogHandler())
-
 mode_descriptions = {
     "일상적인 대화": [
         "대화이력을 바탕으로 챗봇과 일상의 대화를 편안히 즐길수 있습니다."
@@ -57,14 +50,14 @@ with st.sidebar:
     #     ('일상적인 대화', 'Agentic Workflow (Tool Use)', '번역하기', '문법 검토하기')
     # )
 
-    # logger.info('mode: '+mode)
+    print('mode: ', mode)
 
     st.subheader("🌇 이미지 업로드")
     uploaded_file = st.file_uploader("이미지를 요약할 파일을 선택합니다.", type=["png", "jpg", "jpeg"])
 
     st.success("Connected to Nova Pro", icon="💚")
     clear_button = st.button("대화 초기화", key="clear")
-    # logger.info('clear_button: '+str(clear_button))
+    print('clear_button: ', clear_button)
 
 st.title('🔮 '+ mode)
 
@@ -75,7 +68,7 @@ if "messages" not in st.session_state:
 
 # Display chat messages from history on app rerun
 def display_chat_messages() -> None:
-    """logger.info message history
+    """Print message history
     @returns None
     """
     for message in st.session_state.messages:
@@ -98,8 +91,9 @@ if clear_button or "messages" not in st.session_state:
     uploaded_file = None
     
     st.session_state.greetings = False
-    chat.clear_chat_history()
     st.rerun()
+
+    chat.clear_chat_history()
 
 # Preview the uploaded image in the sidebar
 file_name = ""
@@ -108,14 +102,13 @@ if uploaded_file and clear_button==False and mode == '이미지 분석':
 
     file_name = uploaded_file.name
     image_url = chat.upload_to_s3(uploaded_file.getvalue(), file_name)
-    logger.info('image_url: '+image_url)    
+    print('image_url: ', image_url)    
 
 if "messages" not in st.session_state:
     st.session_state['messages'] = []
             
 # Always show the chat input
 if prompt := st.chat_input("메시지를 입력하세요."):
-    logger.info('prompt: '+str(prompt))
     with st.chat_message("user"):  # display user message in chat message container
         st.markdown(prompt)
 
@@ -128,13 +121,13 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             # with st.status("thinking...", expanded=True, state="running") as status:
             #     stream = chat.general_conversation(prompt)            
             #     response = st.write_stream(stream)
-            #     logger.info('response: '+response)
+            #     print('response: ', response)
             #     st.session_state.messages.append({"role": "assistant", "content": response})
             #     st.rerun()                
 
             stream = chat.general_conversation(prompt)            
             response = st.write_stream(stream)
-            logger.info('response: '+str(response))
+            print('response: ', response)
             st.session_state.messages.append({"role": "assistant", "content": response})
             st.rerun()
 
@@ -142,12 +135,12 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             with st.status("thinking...", expanded=True, state="running") as status:
                 response = chat.run_agent_executor2(prompt)
                 st.write(response)
-                logger.info('response: '+str(response))
+                print('response: ', response)
 
                 if response.find('<thinking>') != -1:
-                    logger.info('Remove <thinking> tag.')
+                    print('Remove <thinking> tag.')
                     response = response[response.find('</thinking>')+12:]
-                    logger.info('response without tag: '+str(response))
+                    print('response without tag: ', response)
 
                 st.session_state.messages.append({"role": "assistant", "content": response})
                 st.rerun()
@@ -174,7 +167,7 @@ if prompt := st.chat_input("메시지를 입력하세요."):
                 with st.status("thinking...", expanded=True, state="running") as status:
                     summary, img_base64 = chat.summary_image(file_name, prompt)
                     st.write(summary)
-                    logger.info('summary: '+summary)
+                    print('summary: ', summary)
                     st.session_state.messages.append({"role": "assistant", "content": summary})
 
                     text = chat.extract_text(img_base64)
@@ -186,7 +179,7 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             stream = chat.general_conversation(prompt)
 
             response = st.write_stream(stream)
-            logger.info('response: '+str(response))
+            print('response: ', response)
 
             st.session_state.messages.append({"role": "assistant", "content": response})
             chat.save_chat_history(prompt, response)
