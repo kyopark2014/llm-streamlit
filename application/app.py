@@ -2,7 +2,9 @@ import streamlit as st
 import chat
 
 import watchtower, logging
-logging.basicConfig(level=logging.INFO)
+#logging.basicConfig(level=logging.INFO)
+logging.basicConfig(format='[%(asctime)s] p%(process)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s', level=logging.INFO)
+
 logger = logging.getLogger(__name__)
 logger.addHandler(watchtower.CloudWatchLogHandler())
 
@@ -55,14 +57,14 @@ with st.sidebar:
     #     ('일상적인 대화', 'Agentic Workflow (Tool Use)', '번역하기', '문법 검토하기')
     # )
 
-    logger.info('mode: '+mode)
+    # logger.info('mode: '+mode)
 
     st.subheader("🌇 이미지 업로드")
     uploaded_file = st.file_uploader("이미지를 요약할 파일을 선택합니다.", type=["png", "jpg", "jpeg"])
 
     st.success("Connected to Nova Pro", icon="💚")
     clear_button = st.button("대화 초기화", key="clear")
-    logger.info('clear_button: '+clear_button)
+    # logger.info('clear_button: '+str(clear_button))
 
 st.title('🔮 '+ mode)
 
@@ -113,6 +115,7 @@ if "messages" not in st.session_state:
             
 # Always show the chat input
 if prompt := st.chat_input("메시지를 입력하세요."):
+    logger.info('prompt: '+str(prompt))
     with st.chat_message("user"):  # display user message in chat message container
         st.markdown(prompt)
 
@@ -131,7 +134,7 @@ if prompt := st.chat_input("메시지를 입력하세요."):
 
             stream = chat.general_conversation(prompt)            
             response = st.write_stream(stream)
-            logger.info('response: '+response)
+            logger.info('response: '+str(response))
             st.session_state.messages.append({"role": "assistant", "content": response})
             st.rerun()
 

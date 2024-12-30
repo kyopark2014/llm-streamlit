@@ -150,11 +150,11 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
 
     // Bedrock endpoint
     new ec2.InterfaceVpcEndpoint(this, `VPC Endpoint-${projectName}`, {
-      vpc,
+      privateDnsEnabled: true,
+      vpc: vpc,
       service: new ec2.InterfaceVpcEndpointService('com.amazonaws.us-west-2.bedrock', 443),
       subnets: {
-        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
-        // availabilityZones: ['us-west-2a', 'us-west-2b', 'us-west-2c', 'us-west-2d']
+        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
       }
     });
 
