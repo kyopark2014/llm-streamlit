@@ -115,7 +115,7 @@ listener.addTargets(`WebEc2Target-for-${projectName}`, {
 
 ## 상세 구현
 
-Agentic workflow (tool use)의 workflow는 아래와 같이 구현할 수 있습니다.
+Agentic workflow (tool use)의 workflow는 아래와 같이 구현할 수 있습니다. 상세한 내용은 [chat.py](./application/chat.py)을 참조합니다.
 
 ```python
 def buildAgentExecutor():
