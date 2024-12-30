@@ -135,6 +135,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       ]
     });  
 
+    // s3 endpoint
     const s3BucketAcessPoint = vpc.addGatewayEndpoint(`s3Endpoint-${projectName}`, {
       service: ec2.GatewayVpcEndpointAwsService.S3,
     });
@@ -146,6 +147,16 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
         resources: ['*'],
       }),
     ); 
+
+    // Bedrock endpoint
+    new ec2.InterfaceVpcEndpoint(this, `VPC Endpoint-${projectName}`, {
+      vpc,
+      service: new ec2.InterfaceVpcEndpointService('com.amazonaws.us-west-2.bedrock', 443),
+      subnets: {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+        availabilityZones: ['us-west-2a', 'us-west-2b', 'us-west-2c', 'us-west-2d']
+      }
+    });
 
     // EC2 Security Group
     const ec2Sg = new ec2.SecurityGroup(this, `ec2-sg-for-${projectName}`,

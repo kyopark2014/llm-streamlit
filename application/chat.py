@@ -684,7 +684,7 @@ def translate_text(text):
     return msg[msg.find('<result>')+8:msg.find('</result>')] # remove <result> tag
 
 def clear_chat_history():
-    memory_chain.clear()
+    memory_chain = []
     map_chain[userId] = memory_chain
     
 def check_grammer(text):
