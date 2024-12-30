@@ -153,7 +153,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       vpc,
       service: new ec2.InterfaceVpcEndpointService('com.amazonaws.us-west-2.bedrock', 443),
       subnets: {
-        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
         availabilityZones: ['us-west-2a', 'us-west-2b', 'us-west-2c', 'us-west-2d']
       }
     });
@@ -218,14 +218,14 @@ port=${targetPort}
 EOF"`,
       `json='${JSON.stringify(environment)}' && echo "$json">/home/config.json`,      
       `runuser -l ec2-user -c 'cd && git clone https://github.com/kyopark2014/${projectName}'`,
-      `runuser -l ec2-user -c 'pip install streamlit streamlit_chat'`,        
+      `runuser -l ec2-user -c 'pip install streamlit streamlit_chat watchtower'`,        
       `runuser -l ec2-user -c 'pip install boto3 langchain_aws langchain langchain_community langgraph'`,
       `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python'`,
       'systemctl enable streamlit.service',
       'systemctl start streamlit'
     ];
     userData.addCommands(...commands);
-
+    /*
     // EC2 instance
     const appInstance = new ec2.Instance(this, `app-for-${projectName}`, {
       instanceName: `app-for-${projectName}`,
@@ -296,7 +296,7 @@ EOF"`,
       value: `http://${alb.loadBalancerDnsName}/`,
       description: `albUrl-${projectName}`,
       exportName: `albUrl-${projectName}`
-    });     
+    });    */ 
   }
 }
     // const cloudfront_distribution = cloudFront.Distribution(this, "StreamLitCloudFrontDistribution",
