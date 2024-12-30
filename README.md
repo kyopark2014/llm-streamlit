@@ -7,7 +7,7 @@
 
 
 
-여기서는 Streamlit을 이용해 개발한 application을 쉽게 배포하고 안전할게 활용할 수 있는 방법에 대해 설명합니다. AWS CDK를 통해 한번에 배포가 가능하고, ALB - EC2의 구조를 가지고 있으므로 필요하다면 scale out도 지원할 수 있습니다. Streamlit이 설치되는 EC2의 OS는 EKS/ECS와 같은 컨테이너 서비스에 주로 사용되는 Amazon Linux를 base하여, 추후 상용으로 전환할때 수고를 줄일 수 있습니다. 
+여기서는 Streamlit을 이용해 개발한 application을 쉽게 배포하고 안전할게 활용할 수 있는 방법에 대해 설명합니다. AWS CDK를 통해 한번에 배포가 가능하고, 수정된 소스를 쉽게 반영할 수 있습니다. 또한, ALB - EC2의 구조를 가지고 있으므로 필요하다면 scale out도 지원합니다. Streamlit이 설치되는 EC2의 OS는 EKS/ECS와 같은 컨테이너 서비스에 주로 사용되는 Amazon Linux를 base하여, 추후 상용으로 전환할때 수고를 줄일 수 있습니다. 
 
 ## System Architecture 
 
