@@ -167,6 +167,11 @@ sudo systemctl status streamlit -l
 
 ## 실행결과
 
+### Agentic Workflow
+
+Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘의 날씨는이라는 질문을 아래와 같이 입력하고 결과를 확인합니다. LangGraph로 구현된 Tool Use 패턴의 agent는 날씨에 대한 요청이 올 경우에 openweathermap의 API를 요청해 날씨정보를 조회하여 활용할 수 있습니다. 
+
+![image](https://github.com/user-attachments/assets/4693c1ff-b7e9-43f5-b7b7-af354b572f07)
 
 
 
