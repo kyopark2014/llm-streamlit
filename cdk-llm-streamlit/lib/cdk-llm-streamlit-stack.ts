@@ -337,12 +337,20 @@ EOF"`,
           targetGroups: [targetGroup]
     })
 
-    const default_action = elbv2.ListenerAction.forward([targetGroup])    
+    const default_action = elbv2.ListenerAction.fixedResponse(403, {
+        contentType: "text/plain",
+        messageBody: 'Access denied',
+    })
     listener.addAction(`RedirectHttpListener-for-${projectName}`, {
-      action: default_action,
-      //conditions: [elbv2.ListenerCondition.httpHeader(custom_header_name, [custom_header_value])],
-      //priority: 5,
-    });    
+      action: default_action
+    });   
+
+    const action_streamlit = elbv2.ListenerAction.forward([targetGroup])    
+    listener.addAction(`RedirectHttpListener-for-${projectName}`, {
+      action: action_streamlit,
+      // conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
+      // priority: 5,
+    });      
   }
 }
     // const cloudfront_distribution = cloudFront.Distribution(this, "StreamLitCloudFrontDistribution",
