@@ -290,9 +290,12 @@ EOF"`,
       exportName: `albUrl-${projectName}`
     });    
 
+    const CUSTOM_HEADER_NAME = "X-Custom-Header"
+    const CUSTOM_HEADER_VALUE = `${projectName}_12dab15e4s31` // Temporary value
+
     const origin = new origins.LoadBalancerV2Origin(alb, {      
       httpPort: targetPort,
-    //  customHeaders: { CUSTOM_HEADER_NAME : CUSTOM_HEADER_VALUE },
+      customHeaders: { CUSTOM_HEADER_NAME : CUSTOM_HEADER_VALUE },
       originShieldEnabled: false,
       protocolPolicy: cloudFront.OriginProtocolPolicy.HTTP_ONLY      
     });
@@ -320,10 +323,7 @@ EOF"`,
       open: true
       // defaultAction: default_group
     }); 
-
-    const CUSTOM_HEADER_NAME = "X-Custom-Header"
-    const CUSTOM_HEADER_VALUE = `${projectName}_12dab15e4s31` // Temporary value
-
+    
     const targetGroup = listener.addTargets(`WebEc2Target-for-${projectName}`, {
       targetGroupName: `TG-for-${projectName}`,
       targets: targets,
