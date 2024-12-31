@@ -333,9 +333,9 @@ EOF"`,
       // priority: 10      
     });
 
-    // listener.addTargetGroups("demoTargetGroupInt", {
-    //   targetGroups: [targetGroup]
-    // })
+    listener.addTargetGroups("demoTargetGroupInt", {
+      targetGroups: [targetGroup]
+    })
 
     const default_action = elbv2.ListenerAction.fixedResponse(403, {
         contentType: "text/plain",
