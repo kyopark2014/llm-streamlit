@@ -312,9 +312,9 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대
 ![noname](https://github.com/user-attachments/assets/fccbd35b-09a8-4676-a406-13beed3d1dc9)
 
 
-### (참고) HTTPS로 streamlit 연결 방안
+### HTTPS로 streamlit 연결
 
-ALB에 인증서를 추가해서 https로 연결을 제공할 수 있습니다. 참고로, CloudFront와 API Gateway(http api)를 이용하여 https 방식의 streamlit 구현을 시도하였으나, CloudFront와 API Gateway (http api)는 websocket을 지원하지 않으므로 구현이 안되는것을 확인하였습니다. 
+ALB에 인증서를 추가하거나 CloudFront를 이용해 HTTPS로 연결할 수 있습니다. Streamlit은 주로 PoC나 테스트 앱 용도로 활용하므로 별도 인증서를 받지 않고 CloudFront로 손쉽게 HTTS 커텍션을 제공할 수 있습니다.
 
 - [Serverless Streamlit app on AWS with HTTPS](https://kawsaur.medium.com/serverless-streamlit-app-on-aws-with-https-b5e5ff889590)
 
