@@ -250,7 +250,7 @@ streamlit run application/app.py
 EC2에서 debug을 하면서 개발할때 사용하는 명령어입니다.
 
 ```text
-sudo runuser -l ec2-user -c "/home/ec2-user/.local/bin/streamlit config show"
+sudo runuser -l ec2-user -c 'cd /home/ec2-user/llm-streamlit && git pull'
 ```
 
 
