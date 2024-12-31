@@ -7,11 +7,11 @@
 
 
 
-여기서는 Streamlit을 이용해 개발한 application을 쉽게 배포하고 안전하게 활용할 수 있는 방법에 대해 설명합니다. AWS CDK를 이용해 한번에 배포가 가능하고, 수정된 소스를 쉽게 반영할 수 있습니다. 또한, ALB - EC2의 구조를 가지고 있으므로 필요하다면 scale out도 지원합니다. Streamlit이 설치되는 EC2의 OS는 EKS/ECS와 같은 컨테이너 서비스에 주로 사용되는 Amazon Linux를 base하여, 추후 상용으로 전환할때 수고를 줄일 수 있습니다. 
+여기서는 [Streamlit](https://streamlit.io/)을 이용해 개발한 GenAI application을 쉽게 배포하고 안전하게 활용할 수 있는 방법에 대해 설명합니다. 한번에 배포하고 바로 활용할 수 있도록 [AWS CDK](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-construct-library.html)를 이용하고 ALB - EC2의 구조를 이용해 scale out도 구현할 수 있습니다. 또한, [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html) - ALB 구조를 이용해 배포후 바로 HTTPS로 접속할 수 있습니다. Streamlit이 설치되는 EC2의 OS는 EKS/ECS와 같은 컨테이너 서비스에 주로 사용되는 [Amazon Linux](https://docs.aws.amazon.com/linux/al2023/ug/what-is-amazon-linux.html)를 base하여, 추후 상용으로 전환할때 수고를 줄일 수 있도록 하였습니다.
 
 ## System Architecture 
 
-이때의 Architecture는 아래와 같습니다. 여기서에서는 Streamlit이 설치된 EC2는 private subnet에 둬서 안전하게 관리합니다. Amazon S3는 Gateway Endpoint를 이용하여 연결하고 Bedrock은 Private link를 이용하여 연결하였으므로 EC2의 트래픽은 외부로 나가지 않고 AWS 내부에서 처리가 됩니다. 인터넷 및 날씨의 검색 API는 외부 서비스 공급자의 API를 이용하므로 NAT를 이용하여 연결하였습니다.
+이때의 architecture는 아래와 같습니다. 여기서에서는 streamlit이 설치된 EC2는 private subnet에 둬서 안전하게 관리합니다. [Amazon S3는 Gateway Endpoint](https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html)를 이용하여 연결하고 Bedrock은 [Private link](https://docs.aws.amazon.com/ko_kr/bedrock/latest/userguide/usingVPC.html)를 이용하여 연결하였으므로 EC2의 트래픽은 외부로 나가지 않고 AWS 내부에서 처리가 됩니다. 인터넷 및 날씨의 검색 API는 외부 서비스 공급자의 API를 이용하므로 [NAT gateway](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html)를 이용하여 연결하였습니다.
 
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/2fd4a38c-170c-401a-8103-e5641ed25378" />
 
