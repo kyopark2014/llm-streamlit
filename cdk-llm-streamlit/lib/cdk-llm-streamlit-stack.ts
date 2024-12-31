@@ -295,7 +295,7 @@ EOF"`,
 
     const origin = new origins.LoadBalancerV2Origin(alb, {      
       httpPort: 80,
-      customHeaders: { CUSTOM_HEADER_NAME : CUSTOM_HEADER_VALUE },
+      customHeaders: {[CUSTOM_HEADER_NAME] : CUSTOM_HEADER_VALUE},
       originShieldEnabled: false,
       protocolPolicy: cloudFront.OriginProtocolPolicy.HTTP_ONLY      
     });
@@ -344,6 +344,7 @@ EOF"`,
     listener.addAction(`RedirectHttpListener-for-${projectName}`, {
       action: default_action
     });   
+    
 
     
 
