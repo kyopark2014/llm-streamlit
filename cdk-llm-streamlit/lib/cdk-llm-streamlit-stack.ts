@@ -292,15 +292,9 @@ EOF"`,
       // defaultAction: default_group
     }); 
 
-    listener.addAction(`DefaultAction-for-${projectName}`, {
-      action: elbv2.ListenerAction.fixedResponse(403, {
-        contentType: "text/plain",
-        messageBody: 'Access denied',
-      }),
-    });
-
     const CUSTOM_HEADER_NAME = "X-Custom-Header"
     const CUSTOM_HEADER_VALUE = `${projectName}_12dab15e4s31` // Temporary value
+
     listener.addTargets(`WebEc2Target-for-${projectName}`, {
       targetGroupName: `TG-for-${projectName}`,
       targets: targets,
@@ -309,6 +303,30 @@ EOF"`,
       conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
       priority: 1      
     });
+    
+    listener.addAction(`DefaultAction-for-${projectName}`, {
+      action: elbv2.ListenerAction.fixedResponse(403, {
+        contentType: "text/plain",
+        messageBody: 'Access denied',
+      }),
+      conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
+      priority: 5
+    });
+
+    // listener.addAction(`RedirectHttpListener-for-${projectName}`, {
+    //   action: default_action,
+    //   conditions: [elbv2.ListenerCondition.httpHeader(custom_header_name, [custom_header_value])],
+    //   priority: 5,
+    // });
+    // listener.addAction('DefaultAction', {
+    //   action: elbv2.ListenerAction.fixedResponse(404, {
+    //     contentType: "text/html",
+    //     messageBody: 'Cannot route your request; no matching project found.',
+    //   }),
+    // });    
+
+    
+    
     new cdk.CfnOutput(this, `albUrl-for-${projectName}`, {
       value: `http://${alb.loadBalancerDnsName}/`,
       description: `albUrl-${projectName}`,
