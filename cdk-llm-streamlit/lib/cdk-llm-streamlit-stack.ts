@@ -300,7 +300,7 @@ EOF"`,
       targets: targets,
       protocol: elbv2.ApplicationProtocol.HTTP,
       port: targetPort,
-      conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
+    //  conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
       priority: 10      
     });
 
@@ -327,7 +327,7 @@ EOF"`,
         contentType: "text/plain",
         messageBody: 'Access denied',
       }),
-      conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
+     // conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
       priority: 5
     });
 
@@ -353,7 +353,7 @@ EOF"`,
 
     const origin = new origins.LoadBalancerV2Origin(alb, {      
       httpPort: targetPort,
-      customHeaders: { CUSTOM_HEADER_NAME : CUSTOM_HEADER_VALUE },
+    //  customHeaders: { CUSTOM_HEADER_NAME : CUSTOM_HEADER_VALUE },
       originShieldEnabled: false,
       protocolPolicy: cloudFront.OriginProtocolPolicy.HTTP_ONLY      
     });
