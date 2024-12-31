@@ -139,7 +139,6 @@ streamlit run application/app.py
 아래의 명령어로 실행중인 streamlit을 중지시키고, session manager에서 streamlit을 실행합니다.
 
 ```text
-sudo systemctl stop streamlit
 sudo runuser -l ec2-user -c "/home/ec2-user/.local/bin/streamlit run /home/ec2-user/llm-streamlit/application/app.py"
 ```
 
