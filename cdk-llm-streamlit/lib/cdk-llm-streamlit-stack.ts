@@ -14,6 +14,8 @@ const targetPort = 8080;
 const bucketName = `storage-for-${projectName}-${accountId}-${region}`; 
 import * as cloudFront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
+import { Action } from 'aws-cdk-lib/aws-appconfig';
+import { STATUS_CODES } from 'http';
 
 export class CdkLlmStreamlitStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -285,9 +287,17 @@ EOF"`,
     // ALB Listener
     const listener = alb.addListener(`HttpListener-for-${projectName}`, {   
       port: 80,
-      protocol: elbv2.ApplicationProtocol.HTTP,      
+      //protocol: elbv2.ApplicationProtocol.HTTP,      
+      open: true
       // defaultAction: default_group
     }); 
+
+    listener.addAction(`DefaultAction-for-${projectName}`, {
+      action: elbv2.ListenerAction.fixedResponse(403, {
+        contentType: "text/plain",
+        messageBody: 'Access denied',
+      }),
+    });
 
     const CUSTOM_HEADER_NAME = "X-Custom-Header"
     const CUSTOM_HEADER_VALUE = `${projectName}_12dab15e4s31` // Temporary value
@@ -303,30 +313,23 @@ EOF"`,
       value: `http://${alb.loadBalancerDnsName}/`,
       description: `albUrl-${projectName}`,
       exportName: `albUrl-${projectName}`
-    });     
-
-    listener.addAction(`DefaultAction-for-${projectName}`, {
-      action: elbv2.ListenerAction.fixedResponse(403, {
-        contentType: "text/plain",
-        messageBody: 'Access denied',
-      }),
-    });
+    });         
 
     const origin = new origins.LoadBalancerV2Origin(alb, {      
-      protocolPolicy: cloudFront.OriginProtocolPolicy.HTTP_ONLY,
       httpPort: targetPort,
       customHeaders: { CUSTOM_HEADER_NAME : CUSTOM_HEADER_VALUE },
       originShieldEnabled: false,
+      protocolPolicy: cloudFront.OriginProtocolPolicy.HTTP_ONLY      
     });
 
     const distribution = new cloudFront.Distribution(this, `cloudfront-for-${projectName}`, {
       comment: "CloudFront distribution for Streamlit frontend application",
       defaultBehavior: {
         origin: origin,
+        viewerProtocolPolicy: cloudFront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         allowedMethods: cloudFront.AllowedMethods.ALLOW_ALL,
         cachePolicy: cloudFront.CachePolicy.CACHING_DISABLED,
-        originRequestPolicy: cloudFront.OriginRequestPolicy.ALL_VIEWER,
-        viewerProtocolPolicy: cloudFront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        originRequestPolicy: cloudFront.OriginRequestPolicy.ALL_VIEWER        
       },
       priceClass: cloudFront.PriceClass.PRICE_CLASS_200
     }); 
