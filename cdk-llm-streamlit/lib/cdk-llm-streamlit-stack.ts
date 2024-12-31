@@ -317,7 +317,7 @@ EOF"`,
     });    
 
     // ALB Listener
-    const listener = alb.addListener(`HttpListener-for-${projectName}`, {   
+  /*  const listener = alb.addListener(`HttpListener-for-${projectName}`, {   
       port: 80,
       //protocol: elbv2.ApplicationProtocol.HTTP,      
       open: true
@@ -334,7 +334,7 @@ EOF"`,
     });
 
     listener.addTargetGroups("demoTargetGroupInt", {
-          targetGroups: [targetGroup]
+      targetGroups: [targetGroup]
     })
 
     const default_action = elbv2.ListenerAction.fixedResponse(403, {
@@ -350,7 +350,7 @@ EOF"`,
       action: action_streamlit,
       // conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
       // priority: 5,
-    });      
+    });      */
   }
 }
     // const cloudfront_distribution = cloudFront.Distribution(this, "StreamLitCloudFrontDistribution",
