@@ -345,12 +345,28 @@ EOF"`,
       action: default_action
     });   
 
-    const action_streamlit = elbv2.ListenerAction.forward([targetGroup])    
-    listener.addAction(`RedirectHttpListener-for-${projectName}`, {
-      action: action_streamlit,
-      conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
-      priority: 5,
-    });      
+    
+
+    new elbv2.ApplicationListenerRule(this, `forwarding-rule-for-${projectName}`, {
+        listener: listener,
+        priority: 1,
+        action: default_action,
+        conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
+        targetGroups: [targetGroup],
+    });
+
+    // default_action.renderRuleActions(
+    // )
+
+      
+     
+
+    // const action_streamlit = elbv2.ListenerAction.forward([targetGroup])    
+    // listener.addAction(`RedirectHttpListener-for-${projectName}`, {
+    //   action: action_streamlit,
+    //   conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
+    //   priority: 5,
+    // });      
   }
 }
     // const cloudfront_distribution = cloudFront.Distribution(this, "StreamLitCloudFrontDistribution",
