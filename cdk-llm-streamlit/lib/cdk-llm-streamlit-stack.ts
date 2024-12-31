@@ -329,8 +329,8 @@ EOF"`,
       targets: targets,
       protocol: elbv2.ApplicationProtocol.HTTP,
       port: targetPort,
-      // conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
-      // priority: 10      
+      conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
+      priority: 10      
     });
 
     listener.addTargetGroups("demoTargetGroupInt", {
@@ -347,13 +347,13 @@ EOF"`,
 
     
 
-    new elbv2.ApplicationListenerRule(this, `forwarding-rule-for-${projectName}`, {
-        listener: listener,
-        priority: 1,
-        action: default_action,
-        conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
-        targetGroups: [targetGroup],
-    });
+    // new elbv2.ApplicationListenerRule(this, `forwarding-rule-for-${projectName}`, {
+    //     listener: listener,
+    //     priority: 1,
+    //     action: default_action,
+    //     conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
+    //     targetGroups: [targetGroup],
+    // });
 
     // default_action.renderRuleActions(
     // )
