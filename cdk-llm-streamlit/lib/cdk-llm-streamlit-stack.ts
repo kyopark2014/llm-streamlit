@@ -294,7 +294,7 @@ EOF"`,
     const CUSTOM_HEADER_VALUE = `${projectName}_12dab15e4s31` // Temporary value
 
     const origin = new origins.LoadBalancerV2Origin(alb, {      
-      httpPort: targetPort,
+      httpPort: 80,
       customHeaders: { CUSTOM_HEADER_NAME : CUSTOM_HEADER_VALUE },
       originShieldEnabled: false,
       protocolPolicy: cloudFront.OriginProtocolPolicy.HTTP_ONLY      
