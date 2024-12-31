@@ -304,11 +304,11 @@ EOF"`,
       // priority: 10      
     });
 
-    listener.addTargetGroups("demoTargetGroupInt", {
+    const target = listener.addTargetGroups("demoTargetGroupInt", {
           targetGroups: [targetGroup]
     })
 
-        // const demoTargetGroup = listener.addTargets("demoTargetGroup", {
+    // const demoTargetGroup = listener.addTargets("demoTargetGroup", {
     //   port: 80,
     //   priority: 10,
     //   protocol: elbv2.ApplicationProtocol.HTTP,  
@@ -350,13 +350,19 @@ EOF"`,
       description: 'The domain name of the Distribution'
     });    
 
-    const default_action = elbv2.ListenerAction.redirect({
-      host: distribution.domainName, 
-      path: "/", 
-      permanent: true, 
-      port: "443", 
-      protocol: "HTTPS"
-    })
+    const default_action = elbv2.ListenerAction.forward([targetGroup])    
+
+    // const default_action = elbv2.ListenerAction.forward({
+    //   targetGroups: [targetGroup]
+    // })
+
+    // const default_action = elbv2.ListenerAction.redirect({
+    //   host: distribution.domainName, 
+    //   path: "/", 
+    //   permanent: true, 
+    //   port: "443", 
+    //   protocol: "HTTPS"
+    // })
 
     listener.addAction(`RedirectHttpListener-for-${projectName}`, {
       action: default_action,
