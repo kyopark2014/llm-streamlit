@@ -96,6 +96,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       }),
     );  
 
+    // Bedrock Policy
     const BedrockPolicy = new iam.PolicyStatement({  
       resources: ['*'],
       actions: ['bedrock:*'],
@@ -116,7 +117,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       }),
     );
 
-    // vpc
+    // VPC
     const vpc = new ec2.Vpc(this, `vpc-for-${projectName}`, {
       vpcName: `vpc-for-${projectName}`,
       maxAzs: 2,
@@ -137,7 +138,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       // ]
     });  
 
-    // s3 endpoint
+    // S3 endpoint
     const s3BucketAcessPoint = vpc.addGatewayEndpoint(`s3Endpoint-${projectName}`, {
       service: ec2.GatewayVpcEndpointAwsService.S3,
     });
