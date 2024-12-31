@@ -14,8 +14,6 @@ const targetPort = 8080;
 const bucketName = `storage-for-${projectName}-${accountId}-${region}`; 
 import * as cloudFront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
-import { Action } from 'aws-cdk-lib/aws-appconfig';
-import { STATUS_CODES } from 'http';
 
 export class CdkLlmStreamlitStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -290,16 +288,15 @@ EOF"`,
       exportName: `albUrl-${projectName}`
     });    
 
+    // CloudFront
     const CUSTOM_HEADER_NAME = "X-Custom-Header"
     const CUSTOM_HEADER_VALUE = `${projectName}_12dab15e4s31` // Temporary value
-
     const origin = new origins.LoadBalancerV2Origin(alb, {      
       httpPort: 80,
       customHeaders: {[CUSTOM_HEADER_NAME] : CUSTOM_HEADER_VALUE},
       originShieldEnabled: false,
       protocolPolicy: cloudFront.OriginProtocolPolicy.HTTP_ONLY      
     });
-
     const distribution = new cloudFront.Distribution(this, `cloudfront-for-${projectName}`, {
       comment: "CloudFront distribution for Streamlit frontend application",
       defaultBehavior: {
@@ -319,11 +316,8 @@ EOF"`,
     // ALB Listener
     const listener = alb.addListener(`HttpListener-for-${projectName}`, {   
       port: 80,
-      //protocol: elbv2.ApplicationProtocol.HTTP,      
       open: true
-      // defaultAction: default_group
-    }); 
-    
+    });     
     const targetGroup = listener.addTargets(`WebEc2Target-for-${projectName}`, {
       targetGroupName: `TG-for-${projectName}`,
       targets: targets,
@@ -332,236 +326,15 @@ EOF"`,
       conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
       priority: 10      
     });
-
     listener.addTargetGroups("demoTargetGroupInt", {
       targetGroups: [targetGroup]
     })
-
-    const default_action = elbv2.ListenerAction.fixedResponse(403, {
+    const defaultAction = elbv2.ListenerAction.fixedResponse(403, {
         contentType: "text/plain",
         messageBody: 'Access denied',
     })
     listener.addAction(`RedirectHttpListener-for-${projectName}`, {
-      action: default_action
+      action: defaultAction
     });   
-    
-
-    
-
-    // new elbv2.ApplicationListenerRule(this, `forwarding-rule-for-${projectName}`, {
-    //     listener: listener,
-    //     priority: 1,
-    //     action: default_action,
-    //     conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
-    //     targetGroups: [targetGroup],
-    // });
-
-    // default_action.renderRuleActions(
-    // )
-
-      
-     
-
-    // const action_streamlit = elbv2.ListenerAction.forward([targetGroup])    
-    // listener.addAction(`RedirectHttpListener-for-${projectName}`, {
-    //   action: action_streamlit,
-    //   conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
-    //   priority: 5,
-    // });      
   }
 }
-    // const cloudfront_distribution = cloudFront.Distribution(this, "StreamLitCloudFrontDistribution",
-    //   minimum_protocol_version=cloudFront.SecurityPolicyProtocol.SSL_V3,
-    //   comment="CloudFront distribution for Streamlit frontend application",
-    //   default_behavior=cloudfront.BehaviorOptions(
-    //       origin=origins.LoadBalancerV2Origin(fargate_service.load_balancer, 
-    //           protocol_policy=cloudfront.OriginProtocolPolicy.HTTP_ONLY, 
-    //           http_port=80, 
-    //           origin_path="/", 
-    //           custom_headers = { custom_header_name : custom_header_value } ),
-    //       viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-    //       allowed_methods=cloudfront.AllowedMethods.ALLOW_ALL,
-    //       cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
-    //       origin_request_policy=cloudfront.OriginRequestPolicy.ALL_VIEWER_AND_CLOUDFRONT_2022,
-    //       response_headers_policy=cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS,
-    //       compress=False
-    //   ),
-    // );
-
-    // const nlb = new elbv2.NetworkLoadBalancer(this, `nlb-for-${projectName}`, {
-    //   vpc,
-    //   loadBalancerName: `nlb-for-${projectName}`
-    // });
-
-    // const listener = nlb.addListener(`listener-${projectName}`, { port: 80 });
-    // listener.addTargets('target', {
-    //   targets,
-    //   port: 80,
-    // });
-
-    // const httpEndpoint = new apigatewayv2.HttpApi(this, 'HttpProxyPrivateApi', {
-    //   defaultIntegration: new apigatewayv2_integrations.HttpNlbIntegration('DefaultIntegration', listener),
-    // });
-
-
-    // // cloudfront
-    // const custom_header_name = "X-Verify-Origin"
-    // const custom_header_value = this.stackName+"_StreamLitCloudFrontDistribution"
-
-    // const distribution = new cloudFront.Distribution(this, `cloudfront-for-${projectName}`, {
-    //   comment: "CloudFront distribution for Streamlit frontend application",
-    //   defaultBehavior: {
-    //     origin: new origins.LoadBalancerV2Origin(alb, {
-    //       protocolPolicy: cloudFront.OriginProtocolPolicy.HTTP_ONLY,
-    //       httpPort: 80,
-    //       originPath: "/",
-    //       customHeaders: { [custom_header_name] : custom_header_value }
-    //     }),
-    //     allowedMethods: cloudFront.AllowedMethods.ALLOW_ALL,
-    //     cachePolicy: cloudFront.CachePolicy.CACHING_DISABLED,
-    //     viewerProtocolPolicy: cloudFront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-    //   },
-    //   priceClass: cloudFront.PriceClass.PRICE_CLASS_200,  
-    // }); 
-
-     /*   new cdk.CfnOutput(this, `WebUrl-for-${projectName}`, {
-      value: 'https://'+distribution.domainName+'/',      
-      description: 'The web url of request for chat',
-    });     */
-
-
-        // const autoScalingGroup = new autoscaling.AutoScalingGroup(this, 'AutoScalingGroup', {      
-    //   autoScalingGroupName: `asg-for-${projectName}`,
-    //   instanceType: new ec2.InstanceType('t2.small'),
-    //   machineImage: new ec2.AmazonLinuxImage({
-    //     generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2023
-    //   }), 
-    //   vpc: vpc, 
-    //   vpcSubnets: {
-    //     subnets: vpc.publicSubnets  
-    //   },
-    //   securityGroup: ec2Sg,
-    //   role: ec2Role,
-    //   allowAllOutbound: true,
-    //   minCapacity: 1,
-    //   maxCapacity: 1,
-    //   desiredCapacity: 1,
-    //   healthCheck: autoscaling.HealthCheck.ec2()
-    // });
-
-    // const my_target_group = elbv2.ListenerAction.fixedResponse(200, {
-    //   messageBody: 'OK',
-    //   contentType: 'text/plain'
-    // })
-
-    // const default_action =elbv2.ListenerAction.redirect({
-    //   host: distribution.domainName, 
-    //   path: "/", 
-    //   permanent: true, 
-    //   port: "443", 
-    //   protocol: "HTTPS"
-    // })
-
-     
-    
-    // listener.addAction(`RedirectHttpListener-for-${projectName}`, {
-    //   action: default_action,
-    //   conditions: [elbv2.ListenerCondition.httpHeader(custom_header_name, [custom_header_value])],
-    //   priority: 5,
-    // });
-    // listener.addAction('DefaultAction', {
-    //   action: elbv2.ListenerAction.fixedResponse(404, {
-    //     contentType: "text/html",
-    //     messageBody: 'Cannot route your request; no matching project found.',
-    //   }),
-    // });
-
-    // const demoTargetGroup = listener.addTargets("demoTargetGroup", {
-    //   port: 80,
-    //   priority: 10,
-    //   protocol: elbv2.ApplicationProtocol.HTTP,  
-    //   conditions: [elbv2.ListenerCondition.httpHeader(custom_header_name, [custom_header_value])],
-    //   targetGroupName: "demoTargetGroup",
-    //   healthCheck: {
-    //       path: "/content/de.html",
-    //   }
-    // });
-    // listener.addTargetGroups("demoTargetGroupInt", {
-    //     targetGroups: [demoTargetGroup]
-    // })
-    
-    // elbv2.ListenerAction.redirect({ permanent: true, port: '443', protocol: 'HTTPS' })
-          
-    // listener.addTargets(`WebEc2Target-for-${projectName}`, {
-    //   targets,
-    //   priority: 1,
-    //   conditions: [elbv2.ListenerCondition.httpHeader(custom_header_name, [custom_header_value])],
-    //   protocol: elbv2.ApplicationProtocol.HTTP,
-    //   port: targetPort
-    // })
-    // new elbv2.ApplicationListenerRule(this, 'RedirectApplicationListenerRule', {
-    //   listener: listener,
-    //   priority: 5,
-    
-    //   // the properties below are optional
-    //   conditions: [elbv2.ListenerCondition.pathPatterns(["*"])],
-    //   action: elbv2.ListenerAction.redirect()
-    // });
-
-
-    // API Gateway
-    // const api = new apigwv2.HttpApi(this, `api-for-${projectName}`, {
-    //   description: 'API Gateway for streamlit',
-    //   apiName: `api-for-${projectName}`,      
-    //   createDefaultStage: true,
-    // });
-
-    // new cdk.CfnOutput(this, `apigwUrl-for-${projectName}`, {
-    //   value: `${api.url}`,
-    //   description: 'api gateway Url',
-    //   exportName: 'apigwUrl',
-    // });   
-
-
-    // // VPC Link Security Group    
-    // const vpcLinkSg = new ec2.SecurityGroup(this, `vpclink-sg-for-${projectName}`, {
-    //   vpc,      
-    //   allowAllOutbound: true,
-    //   securityGroupName: `vpclink-sg-for-${projectName}`,
-    //   description: 'security group for vpclink'
-    // })
-    // vpcLinkSg.addIngressRule(
-    //   ec2.Peer.anyIpv4(),
-    //   ec2.Port.tcp(80),
-    //   'HTTP',
-    // );
-
-    // const proxyIntegration = new HttpAlbIntegration(`integration-for-${projectName}`, alb.listeners[0], {
-    //   vpcLink: vpcLink
-    // }) 
-
-    // api.addRoutes({
-    //   path: '/{proxy+}',
-    //   methods: [apigwv2.HttpMethod.ANY],
-    //   // integration: new HttpAlbIntegration(`albIntegration-for-${projectName}`, listener),
-    //   integration: proxyIntegration
-    // }) 
-
-    // // VPC Link
-    // const vpcLink = new apigwv2.VpcLink(this, `VpcLink-for-${projectName}`, { 
-    //   vpc,
-    //   // subnets: vpc.selectSubnets({subnetType: ec2.SubnetType.PUBLIC}),
-    //   subnets: vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS}),
-    //   securityGroups: [vpcLinkSg],
-    //   vpcLinkName: `VpcLink-for-${projectName}`,
-    // });    
-
-
-        // listener.addAction(`DefaultAction-for-${projectName}`, {
-    //   action: elbv2.ListenerAction.fixedResponse(403, {
-    //     contentType: "text/plain",
-    //     messageBody: 'Access denied',
-    //   }),
-    //  // conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
-    //   //priority: 5
-    // });
