@@ -316,13 +316,16 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대
 
 ALB에 인증서를 추가하거나 CloudFront를 이용해 HTTPS로 연결할 수 있습니다. Streamlit은 주로 PoC나 테스트 앱 용도로 활용하므로 별도 인증서를 받지 않고 CloudFront로 손쉽게 HTTS 커텍션을 제공할 수 있습니다.
 
-- [Serverless Streamlit app on AWS with HTTPS](https://kawsaur.medium.com/serverless-streamlit-app-on-aws-with-https-b5e5ff889590)
-
-- [frontend_stack.py](https://github.com/kawsark/streamlit-serverless/blob/main/streamlit_serverless_app/frontend_stack.py)
-
-- [Running streamlit as a System Service](https://medium.com/@stevenjlm/running-streamlit-on-amazon-ec2-with-https-f20e38fffbe7)
 
 #### Reference 
+
+[deploy-streamlit-app](https://github.com/aws-samples/deploy-streamlit-app/tree/main)
+
+[Serverless Streamlit app on AWS with HTTPS](https://kawsaur.medium.com/serverless-streamlit-app-on-aws-with-https-b5e5ff889590)
+
+[frontend_stack.py](https://github.com/kawsark/streamlit-serverless/blob/main/streamlit_serverless_app/frontend_stack.py)
+
+[Running streamlit as a System Service](https://medium.com/@stevenjlm/running-streamlit-on-amazon-ec2-with-https-f20e38fffbe7)
 
 [Amazon Bedrock Knowledge base로 30분 만에 멀티모달 RAG 챗봇 구축하기 실전 가이드](https://aws.amazon.com/ko/blogs/tech/practical-guide-for-bedrock-kb-multimodal-chatbot/)
 
@@ -356,4 +359,3 @@ ALB에 인증서를 추가하거나 CloudFront를 이용해 HTTPS로 연결할 �
 
 [API Gateway to ECS Fargate cluster](https://serverlessland.com/patterns/apigw-vpclink-pvt-alb?ref=search)
 
-[deploy-streamlit-app](https://github.com/aws-samples/deploy-streamlit-app/tree/main)
