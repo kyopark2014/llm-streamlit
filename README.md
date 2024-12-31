@@ -13,7 +13,7 @@
 
 이때의 Architecture는 아래와 같습니다. 여기서에서는 Streamlit이 설치된 EC2는 private subnet에 둬서 안전하게 관리합니다. Amazon S3는 Gateway Endpoint를 이용하여 연결하고 Bedrock은 Private link를 이용하여 연결하였으므로 EC2의 트래픽은 외부로 나가지 않고 AWS 내부에서 처리가 됩니다. 인터넷 및 날씨의 검색 API는 외부 서비스 공급자의 API를 이용하므로 NAT를 이용하여 연결하였습니다.
 
-<img width="800" alt="image" src="https://github.com/user-attachments/assets/06eb0522-0fdb-48bc-9706-795777105cd1" />
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/2fd4a38c-170c-401a-8103-e5641ed25378" />
 
 ### CDK로 배포 환경 구현
 
