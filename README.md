@@ -113,6 +113,12 @@ listener.addTargets(`WebEc2Target-for-${projectName}`, {
 }) 
 ```
 
+### HTTPS로 streamlit 연결
+
+ALB에 인증서를 추가하거나 CloudFront를 이용해 HTTPS로 연결할 수 있습니다. Streamlit은 주로 PoC나 테스트 앱 용도로 활용하므로 별도 인증서를 받지 않고 CloudFront로 손쉽게 HTTS 커텍션을 제공할 수 있습니다.
+
+
+
 ## 상세 구현
 
 Agentic workflow (tool use)의 workflow는 아래와 같이 구현할 수 있습니다. 상세한 내용은 [chat.py](./application/chat.py)을 참조합니다.
@@ -311,10 +317,6 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대
 
 ![noname](https://github.com/user-attachments/assets/fccbd35b-09a8-4676-a406-13beed3d1dc9)
 
-
-### HTTPS로 streamlit 연결
-
-ALB에 인증서를 추가하거나 CloudFront를 이용해 HTTPS로 연결할 수 있습니다. Streamlit은 주로 PoC나 테스트 앱 용도로 활용하므로 별도 인증서를 받지 않고 CloudFront로 손쉽게 HTTS 커텍션을 제공할 수 있습니다.
 
 
 #### Reference 
