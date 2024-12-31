@@ -329,8 +329,8 @@ EOF"`,
       targets: targets,
       protocol: elbv2.ApplicationProtocol.HTTP,
       port: targetPort,
-      conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
-      priority: 10      
+      // conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
+      // priority: 10      
     });
 
     listener.addTargetGroups("demoTargetGroupInt", {
@@ -348,8 +348,8 @@ EOF"`,
     const action_streamlit = elbv2.ListenerAction.forward([targetGroup])    
     listener.addAction(`RedirectHttpListener-for-${projectName}`, {
       action: action_streamlit,
-      // conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
-      // priority: 5,
+      conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
+      priority: 5,
     });      
   }
 }
