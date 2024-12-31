@@ -321,30 +321,6 @@ EOF"`,
     // listener.addTargetGroups("demoTargetGroupInt", {
     //     targetGroups: [demoTargetGroup]
     // })
-
-    listener.addAction(`DefaultAction-for-${projectName}`, {
-      action: elbv2.ListenerAction.fixedResponse(403, {
-        contentType: "text/plain",
-        messageBody: 'Access denied',
-      }),
-     // conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
-      //priority: 5
-    });
-
-    // listener.addAction(`RedirectHttpListener-for-${projectName}`, {
-    //   action: default_action,
-    //   conditions: [elbv2.ListenerCondition.httpHeader(custom_header_name, [custom_header_value])],
-    //   priority: 5,
-    // });
-    // listener.addAction('DefaultAction', {
-    //   action: elbv2.ListenerAction.fixedResponse(404, {
-    //     contentType: "text/html",
-    //     messageBody: 'Cannot route your request; no matching project found.',
-    //   }),
-    // });    
-
-    
-    
     new cdk.CfnOutput(this, `albUrl-for-${projectName}`, {
       value: `http://${alb.loadBalancerDnsName}/`,
       description: `albUrl-${projectName}`,
@@ -373,6 +349,44 @@ EOF"`,
       value: 'https://'+distribution.domainName,
       description: 'The domain name of the Distribution'
     });    
+
+    const default_action = elbv2.ListenerAction.redirect({
+      host: distribution.domainName, 
+      path: "/", 
+      permanent: true, 
+      port: "443", 
+      protocol: "HTTPS"
+    })
+
+    listener.addAction(`RedirectHttpListener-for-${projectName}`, {
+      action: default_action,
+      // conditions: [elbv2.ListenerCondition.httpHeader(custom_header_name, [custom_header_value])],
+      // priority: 5,
+    });
+    listener.addAction(`DefaultAction-for-${projectName}`, {
+      action: elbv2.ListenerAction.fixedResponse(403, {
+        contentType: "text/plain",
+        messageBody: 'Access denied',
+      }),
+     // conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
+      //priority: 5
+    });
+
+    // listener.addAction(`RedirectHttpListener-for-${projectName}`, {
+    //   action: default_action,
+    //   conditions: [elbv2.ListenerCondition.httpHeader(custom_header_name, [custom_header_value])],
+    //   priority: 5,
+    // });
+    // listener.addAction('DefaultAction', {
+    //   action: elbv2.ListenerAction.fixedResponse(404, {
+    //     contentType: "text/html",
+    //     messageBody: 'Cannot route your request; no matching project found.',
+    //   }),
+    // });    
+
+    
+    
+    
   }
 }
     // const cloudfront_distribution = cloudFront.Distribution(this, "StreamLitCloudFrontDistribution",
