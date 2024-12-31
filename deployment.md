@@ -104,8 +104,9 @@ AWS Credential을 입력합니다.
 -->
 
 7) Output의 distributionDomainNameforllmstreamlit의 URL을 접속합니다.
+
+![image](https://github.com/user-attachments/assets/a41a1ccf-7fd0-45cf-a807-17a0a2309ee3)
    
-![noname](https://github.com/user-attachments/assets/48824379-b2ad-4377-916b-82988be90182)
 
 이때 실행된 결과는 아래와 같습니다.
 
