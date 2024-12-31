@@ -12,6 +12,8 @@ const region = process.env.CDK_DEFAULT_REGION;
 const accountId = process.env.CDK_DEFAULT_ACCOUNT;
 const targetPort = 8080;
 const bucketName = `storage-for-${projectName}-${accountId}-${region}`; 
+import * as cloudFront from 'aws-cdk-lib/aws-cloudfront';
+import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 
 export class CdkLlmStreamlitStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -121,18 +123,18 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       ipAddresses: ec2.IpAddresses.cidr("20.64.0.0/16"),
       natGateways: 1,
       createInternetGateway: true,
-      subnetConfiguration: [
-        {
-          cidrMask: 24,
-          name: `public-subnet-for-${projectName}`,
-          subnetType: ec2.SubnetType.PUBLIC
-        }, 
-        {
-          cidrMask: 24,
-          name: `private-subnet-for-${projectName}`,
-          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
-        }
-      ]
+      // subnetConfiguration: [
+      //   {
+      //     cidrMask: 24,
+      //     name: `public-subnet-for-${projectName}`,
+      //     subnetType: ec2.SubnetType.PUBLIC
+      //   }, 
+      //   {
+      //     cidrMask: 24,
+      //     name: `private-subnet-for-${projectName}`,
+      //     subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
+      //   }
+      // ]
     });  
 
     // s3 endpoint
@@ -287,17 +289,51 @@ EOF"`,
       // defaultAction: default_group
     }); 
 
+    const CUSTOM_HEADER_NAME = "X-Custom-Header"
+    const CUSTOM_HEADER_VALUE = `${projectName}_12dab15e4s31` // Temporary value
     listener.addTargets(`WebEc2Target-for-${projectName}`, {
-      targets,
+      targetGroupName: `TG-for-${projectName}`,
+      targets: targets,
       protocol: elbv2.ApplicationProtocol.HTTP,
-      port: targetPort
-    }); 
-
+      port: targetPort,
+      conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
+      priority: 1      
+    });
     new cdk.CfnOutput(this, `albUrl-for-${projectName}`, {
       value: `http://${alb.loadBalancerDnsName}/`,
       description: `albUrl-${projectName}`,
       exportName: `albUrl-${projectName}`
     });     
+
+    listener.addAction(`DefaultAction-for-${projectName}`, {
+      action: elbv2.ListenerAction.fixedResponse(403, {
+        contentType: "text/plain",
+        messageBody: 'Access denied',
+      }),
+    });
+
+    const origin = new origins.LoadBalancerV2Origin(alb, {      
+      protocolPolicy: cloudFront.OriginProtocolPolicy.HTTP_ONLY,
+      httpPort: targetPort,
+      customHeaders: { [CUSTOM_HEADER_NAME] : CUSTOM_HEADER_VALUE },
+      originShieldEnabled: false,
+    });
+
+    const distribution = new cloudFront.Distribution(this, `cloudfront-for-${projectName}`, {
+      comment: "CloudFront distribution for Streamlit frontend application",
+      defaultBehavior: {
+        origin: origin,
+        allowedMethods: cloudFront.AllowedMethods.ALLOW_ALL,
+        cachePolicy: cloudFront.CachePolicy.CACHING_DISABLED,
+        originRequestPolicy: cloudFront.OriginRequestPolicy.ALL_VIEWER,
+        viewerProtocolPolicy: cloudFront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      },
+      priceClass: cloudFront.PriceClass.PRICE_CLASS_200
+    }); 
+    new cdk.CfnOutput(this, `distributionDomainName-for-${projectName}`, {
+      value: 'https://'+distribution.domainName,
+      description: 'The domain name of the Distribution'
+    });    
   }
 }
     // const cloudfront_distribution = cloudFront.Distribution(this, "StreamLitCloudFrontDistribution",
