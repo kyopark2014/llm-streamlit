@@ -295,15 +295,33 @@ EOF"`,
     const CUSTOM_HEADER_NAME = "X-Custom-Header"
     const CUSTOM_HEADER_VALUE = `${projectName}_12dab15e4s31` // Temporary value
 
-    listener.addTargets(`WebEc2Target-for-${projectName}`, {
+    const targetGroup = listener.addTargets(`WebEc2Target-for-${projectName}`, {
       targetGroupName: `TG-for-${projectName}`,
       targets: targets,
       protocol: elbv2.ApplicationProtocol.HTTP,
       port: targetPort,
       conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
-      priority: 1      
+      priority: 10      
     });
-    
+
+    listener.addTargetGroups("demoTargetGroupInt", {
+          targetGroups: [targetGroup]
+    })
+
+        // const demoTargetGroup = listener.addTargets("demoTargetGroup", {
+    //   port: 80,
+    //   priority: 10,
+    //   protocol: elbv2.ApplicationProtocol.HTTP,  
+    //   conditions: [elbv2.ListenerCondition.httpHeader(custom_header_name, [custom_header_value])],
+    //   targetGroupName: "demoTargetGroup",
+    //   healthCheck: {
+    //       path: "/content/de.html",
+    //   }
+    // });
+    // listener.addTargetGroups("demoTargetGroupInt", {
+    //     targetGroups: [demoTargetGroup]
+    // })
+
     listener.addAction(`DefaultAction-for-${projectName}`, {
       action: elbv2.ListenerAction.fixedResponse(403, {
         contentType: "text/plain",
