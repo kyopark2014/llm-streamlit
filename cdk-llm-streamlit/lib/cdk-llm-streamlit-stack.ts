@@ -284,48 +284,11 @@ EOF"`,
     });
     alb.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY); 
 
-    // ALB Listener
-    const listener = alb.addListener(`HttpListener-for-${projectName}`, {   
-      port: 80,
-      //protocol: elbv2.ApplicationProtocol.HTTP,      
-      open: true
-      // defaultAction: default_group
-    }); 
-
-    const CUSTOM_HEADER_NAME = "X-Custom-Header"
-    const CUSTOM_HEADER_VALUE = `${projectName}_12dab15e4s31` // Temporary value
-
-    const targetGroup = listener.addTargets(`WebEc2Target-for-${projectName}`, {
-      targetGroupName: `TG-for-${projectName}`,
-      targets: targets,
-      protocol: elbv2.ApplicationProtocol.HTTP,
-      port: targetPort,
-    //  conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
-      // priority: 10      
-    });
-
-    const target = listener.addTargetGroups("demoTargetGroupInt", {
-          targetGroups: [targetGroup]
-    })
-
-    // const demoTargetGroup = listener.addTargets("demoTargetGroup", {
-    //   port: 80,
-    //   priority: 10,
-    //   protocol: elbv2.ApplicationProtocol.HTTP,  
-    //   conditions: [elbv2.ListenerCondition.httpHeader(custom_header_name, [custom_header_value])],
-    //   targetGroupName: "demoTargetGroup",
-    //   healthCheck: {
-    //       path: "/content/de.html",
-    //   }
-    // });
-    // listener.addTargetGroups("demoTargetGroupInt", {
-    //     targetGroups: [demoTargetGroup]
-    // })
     new cdk.CfnOutput(this, `albUrl-for-${projectName}`, {
       value: `http://${alb.loadBalancerDnsName}/`,
       description: `albUrl-${projectName}`,
       exportName: `albUrl-${projectName}`
-    });         
+    });    
 
     const origin = new origins.LoadBalancerV2Origin(alb, {      
       httpPort: targetPort,
@@ -350,49 +313,36 @@ EOF"`,
       description: 'The domain name of the Distribution'
     });    
 
+    // ALB Listener
+    const listener = alb.addListener(`HttpListener-for-${projectName}`, {   
+      port: 80,
+      //protocol: elbv2.ApplicationProtocol.HTTP,      
+      open: true
+      // defaultAction: default_group
+    }); 
+
+    const CUSTOM_HEADER_NAME = "X-Custom-Header"
+    const CUSTOM_HEADER_VALUE = `${projectName}_12dab15e4s31` // Temporary value
+
+    const targetGroup = listener.addTargets(`WebEc2Target-for-${projectName}`, {
+      targetGroupName: `TG-for-${projectName}`,
+      targets: targets,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      port: targetPort,
+    //  conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
+      // priority: 10      
+    });
+
+    listener.addTargetGroups("demoTargetGroupInt", {
+          targetGroups: [targetGroup]
+    })
+
     const default_action = elbv2.ListenerAction.forward([targetGroup])    
-
-    // const default_action = elbv2.ListenerAction.forward({
-    //   targetGroups: [targetGroup]
-    // })
-
-    // const default_action = elbv2.ListenerAction.redirect({
-    //   host: distribution.domainName, 
-    //   path: "/", 
-    //   permanent: true, 
-    //   port: "443", 
-    //   protocol: "HTTPS"
-    // })
-
     listener.addAction(`RedirectHttpListener-for-${projectName}`, {
       action: default_action,
       // conditions: [elbv2.ListenerCondition.httpHeader(custom_header_name, [custom_header_value])],
       // priority: 5,
-    });
-    listener.addAction(`DefaultAction-for-${projectName}`, {
-      action: elbv2.ListenerAction.fixedResponse(403, {
-        contentType: "text/plain",
-        messageBody: 'Access denied',
-      }),
-     // conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
-      //priority: 5
-    });
-
-    // listener.addAction(`RedirectHttpListener-for-${projectName}`, {
-    //   action: default_action,
-    //   conditions: [elbv2.ListenerCondition.httpHeader(custom_header_name, [custom_header_value])],
-    //   priority: 5,
-    // });
-    // listener.addAction('DefaultAction', {
-    //   action: elbv2.ListenerAction.fixedResponse(404, {
-    //     contentType: "text/html",
-    //     messageBody: 'Cannot route your request; no matching project found.',
-    //   }),
-    // });    
-
-    
-    
-    
+    });    
   }
 }
     // const cloudfront_distribution = cloudFront.Distribution(this, "StreamLitCloudFrontDistribution",
@@ -580,3 +530,13 @@ EOF"`,
     //   securityGroups: [vpcLinkSg],
     //   vpcLinkName: `VpcLink-for-${projectName}`,
     // });    
+
+
+        // listener.addAction(`DefaultAction-for-${projectName}`, {
+    //   action: elbv2.ListenerAction.fixedResponse(403, {
+    //     contentType: "text/plain",
+    //     messageBody: 'Access denied',
+    //   }),
+    //  // conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
+    //   //priority: 5
+    // });
