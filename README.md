@@ -350,12 +350,6 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대
 
 ![image](https://github.com/user-attachments/assets/39fb2235-c6ef-42e0-8f43-f158cb088db4)
 
-## 로그의 확인
-
-여기에서는 cloudwatch에서 로그 확인을 위하여 [watchtower](https://github.com/kislyuk/watchtower)을 이용합니다. AWS configures로 계정을 등록하면 아래와 같이 로그 확인이 가능합니다.
-
-![noname](https://github.com/user-attachments/assets/fccbd35b-09a8-4676-a406-13beed3d1dc9)
-
 
 
 #### Reference 
