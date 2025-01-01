@@ -60,16 +60,6 @@ multi_region_models = [   # Nova Pro
         "bedrock_region": "us-west-2", # Oregon
         "model_type": "nova",
         "model_id": "us.amazon.nova-pro-v1:0"
-    },
-    {
-        "bedrock_region": "us-east-1", # N.Virginia
-        "model_type": "nova",
-        "model_id": "us.amazon.nova-pro-v1:0"
-    },
-    {
-        "bedrock_region": "us-east-2", # Ohio
-        "model_type": "nova",
-        "model_id": "us.amazon.nova-pro-v1:0"
     }
 ]
 selected_chat = 0
