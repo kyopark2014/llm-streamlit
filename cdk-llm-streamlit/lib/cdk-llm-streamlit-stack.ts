@@ -327,7 +327,7 @@ EOF"`,
       conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
       priority: 10      
     });
-    listener.addTargetGroups("demoTargetGroupInt", {
+    listener.addTargetGroups(`addTG-for-${projectName}`, {
       targetGroups: [targetGroup]
     })
     const defaultAction = elbv2.ListenerAction.fixedResponse(403, {
