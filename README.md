@@ -102,9 +102,9 @@ const alb = new elbv2.ApplicationLoadBalancer(this, `alb-for-${projectName}`, {
 alb.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
 ```
 
-CloudFront가 ALB의 HTTP 80포트와 연결가능하도록 사용하도록 준비합니다. 
+HTTPS로 streamlit을 이용하기 위해서는 ALB에 인증서를 추가하거나 CloudFront를 이용할 수 있습니다. Streamlit은 주로 PoC나 테스트 앱 용도로 활용하므로 별도 인증서를 받지 않고 CloudFront로 손쉽게 HTTPS 커텍션을 제공합니다. 이를 위해, CloudFront가 ALB의 HTTP 80포트와 연결가능하도록 사용하도록 준비합니다. 
+
 ```java
-// CloudFront
 const CUSTOM_HEADER_NAME = "X-Custom-Header"
 const CUSTOM_HEADER_VALUE = `xxxx`
 const origin = new origins.LoadBalancerV2Origin(alb, {      
@@ -153,15 +153,9 @@ listener.addAction(`RedirectHttpListener-for-${projectName}`, {
 });  
 ```
 
-### HTTPS로 streamlit 연결
-
-ALB에 인증서를 추가하거나 CloudFront를 이용해 HTTPS로 연결할 수 있습니다. Streamlit은 주로 PoC나 테스트 앱 용도로 활용하므로 별도 인증서를 받지 않고 CloudFront로 손쉽게 HTTS 커텍션을 제공할 수 있습니다.
-
-
-
 ## 상세 구현
 
-Agentic workflow (tool use)의 workflow는 아래와 같이 구현할 수 있습니다. 상세한 내용은 [chat.py](./application/chat.py)을 참조합니다.
+Agentic workflow (tool use)는 아래와 같이 구현할 수 있습니다. 상세한 내용은 [chat.py](./application/chat.py)을 참조합니다.
 
 ```python
 def buildAgentExecutor():
