@@ -87,7 +87,7 @@ EOF"`,
 userData.addCommands(...commands);
 ```
 
-ALB와 EC2를 연결합니다.
+ALB를 준비합니다.
 
 ```java
 const alb = new elbv2.ApplicationLoadBalancer(this, `alb-for-${projectName}`, {
@@ -100,17 +100,57 @@ const alb = new elbv2.ApplicationLoadBalancer(this, `alb-for-${projectName}`, {
   loadBalancerName: `alb-for-${projectName}`
 })
 alb.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
+```
 
+CloudFront가 ALB의 HTTP 80포트와 연결가능하도록 사용하도록 준비합니다. 
+```java
+// CloudFront
+const CUSTOM_HEADER_NAME = "X-Custom-Header"
+const CUSTOM_HEADER_VALUE = `xxxx`
+const origin = new origins.LoadBalancerV2Origin(alb, {      
+  httpPort: 80,
+  customHeaders: {[CUSTOM_HEADER_NAME] : CUSTOM_HEADER_VALUE},
+  originShieldEnabled: false,
+  protocolPolicy: cloudFront.OriginProtocolPolicy.HTTP_ONLY      
+});
+const distribution = new cloudFront.Distribution(this, `cloudfront-for-${projectName}`, {
+  comment: "CloudFront distribution for Streamlit frontend application",
+  defaultBehavior: {
+    origin: origin,
+    viewerProtocolPolicy: cloudFront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+    allowedMethods: cloudFront.AllowedMethods.ALLOW_ALL,
+    cachePolicy: cloudFront.CachePolicy.CACHING_DISABLED,
+    originRequestPolicy: cloudFront.OriginRequestPolicy.ALL_VIEWER        
+  },
+  priceClass: cloudFront.PriceClass.PRICE_CLASS_200
+}); 
+```
+
+ALB의 Listener가 stremlit이 설치되는 EC2로 라우팅 되도록 설정합니다. 
+    
+```java
 const listener = alb.addListener(`HttpListener-for-${projectName}`, {   
   port: 80,
-  protocol: elbv2.ApplicationProtocol.HTTP,      
-}); 
-
-listener.addTargets(`WebEc2Target-for-${projectName}`, {
-  targets,
+  open: true
+});     
+const targetGroup = listener.addTargets(`WebEc2Target-for-${projectName}`, {
+  targetGroupName: `TG-for-${projectName}`,
+  targets: targets,
   protocol: elbv2.ApplicationProtocol.HTTP,
-  port: targetPort
-}) 
+  port: targetPort,
+  conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
+  priority: 10      
+});
+listener.addTargetGroups(`addTG-for-${projectName}`, {
+  targetGroups: [targetGroup]
+})
+const defaultAction = elbv2.ListenerAction.fixedResponse(403, {
+    contentType: "text/plain",
+    messageBody: 'Access denied',
+})
+listener.addAction(`RedirectHttpListener-for-${projectName}`, {
+  action: defaultAction
+});  
 ```
 
 ### HTTPS로 streamlit 연결
