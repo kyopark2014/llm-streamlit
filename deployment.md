@@ -2,7 +2,7 @@
 
 ## Bedrock 사용 권한 설정하기
 
-LLM으로 Amazon Nova Pro을 사용하기 위하여, Amazon Bedrock의 us-west-2, us-east-1, us-east-2 리전을 사용합니다. [Model access](https://us-west-2.console.aws.amazon.com/bedrock/home?region=us-west-2#/modelaccess)에 접속해서 [Edit]를 선택하여 "Amazon Nova Pro"을 enable 합니다.
+LLM으로 Amazon Nova Pro을 사용하기 위하여, Amazon Bedrock의 us-west-2 리전을 사용합니다. [Model access](https://us-west-2.console.aws.amazon.com/bedrock/home?region=us-west-2#/modelaccess)에 접속해서 [Edit]를 선택하여 "Amazon Nova Pro"을 enable 합니다.
 
 ## 설치하기
 
