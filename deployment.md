@@ -111,7 +111,7 @@ AWS Credential을 입력합니다.
 
 ### Local에서 실행하기 
 
-Output의 environmentforbedrockagent의 내용을 복사하여 [config.json](./application/config.json)을 업데이트 합니다. 이미 "aws configure"가 설정되어 있어야합니다.
+Output의 environmentforbedrockagent의 내용을 복사하여 [config.json](./application/config.json)을 업데이트 합니다. "aws configure"로 credential이 설정되어 있어야합니다.
 
 아래와 같이 필요한 패키지를 설치합니다.
 
@@ -169,6 +169,8 @@ sudo systemctl disable streamlit.service
 sudo systemctl enable streamlit.service
 sudo systemctl start streamlit
 ```
+
+### 기타 유용한 명령어들
 
 - Steamlit을 service로 등록할때 필요한 streamlit.service의 생성은 아래 값을 참조합니다.
 
