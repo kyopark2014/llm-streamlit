@@ -540,7 +540,7 @@ def run_agent_executor(query, st, debugMode):
 
                         print('status: ', status)
                         response = ToolMessage(content=status, name=re['name'], args=re['input'], tool_call_id=re['id'], type='tool_call')
-                        
+                        print('response: ', response)
                     else:
                         print(re)
                 else: # answer
