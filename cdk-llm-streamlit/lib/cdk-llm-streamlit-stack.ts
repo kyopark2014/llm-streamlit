@@ -269,7 +269,7 @@ EOF"`,
       instanceInitiatedShutdownBehavior: ec2.InstanceInitiatedShutdownBehavior.TERMINATE,
     }); 
     s3Bucket.grantReadWrite(appInstance);
-    appInstance.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY); 
+    appInstance.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
 
     // ALB Target
     const targets: elbv2_tg.InstanceTarget[] = new Array();
