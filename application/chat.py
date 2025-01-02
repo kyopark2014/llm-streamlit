@@ -704,17 +704,16 @@ def run_agent_executor2(query, st, debugMode):
         print('(should_continue) messages: ', messages)
         
         last_message = messages[-1]        
-        print('last)message: ', last_message)
+        print('last_message: ', last_message)
                     
-        if isinstance(last_message, ToolMessage):
-            print(f"tool_calls: ", last_message.tool_calls)
-
-            for message in last_message.tool_calls:
-                print(f"tool name: {message['name']}, args: {message['args']}")
-                # update_state_message(f"calling... {message['name']}", config)
-
-            print(f"--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
-            return "continue"
+        if isinstance(last_message, AIMessage):
+            for task in last_message.content:
+                if task['type']=='text':
+                    print(f"type: {task['type']}, text: {task['text']}")
+                elif task['type']=='tool_use':
+                    print(f"tool name: {task['name']}, input: {task['input']}")
+                    print(f"--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
+                    return "continue"
         else:
             print("Final: ", last_message.content)
             print("--- END ---")
