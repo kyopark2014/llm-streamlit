@@ -621,14 +621,20 @@ def run_agent_executor2(query, st, debugMode):
 
         last_message = state["messages"][-1]
         print('last_message: ', last_message)
-        if last_message.tool_calls and last_message.content=="":    
-            print('last_message is empty') 
-            answer = get_basic_answer(state["messages"][0].content)  
-            return {
-                "messages": [AIMessage(content=answer)],
-                "answer": answer
-            }
-        
+
+        tasks = last_message.content
+        print('tasks: ', tasks)
+
+        for task in tasks:
+            print('task: ', task)
+            if 'type' in task:
+                if task['type'] != 'tool_call':
+                    answer = get_basic_answer(state["messages"][0].content)  
+                    return {
+                        "messages": [AIMessage(content=answer)],
+                        "answer": answer
+                    }
+                
         response = agent.invoke(state["messages"])
         print('response: ', response)
 
