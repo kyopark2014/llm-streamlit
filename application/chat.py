@@ -618,6 +618,7 @@ def run_agent_executor2(query, st, debugMode):
     
     def agent_node(state, agent, name):
         print(f"###### agent_node:{name} ######")
+        print('state: ', state)
 
         last_message = state["messages"][-1]
         print('last_message: ', last_message)
