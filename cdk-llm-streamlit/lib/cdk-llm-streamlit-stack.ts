@@ -334,7 +334,7 @@ EOF"`,
     });     
     const targetGroup = listener.addTargets(`WebEc2Target-for-${projectName}`, {
       targetGroupName: `TG-for-${projectName}`,
-      targets: targets,
+      // targets: targets,
       protocol: elbv2.ApplicationProtocol.HTTP,
       port: targetPort,
       conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
