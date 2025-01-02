@@ -44,11 +44,11 @@ with st.sidebar:
     #     value=6,
     # )
 
-    # selectionbox
-    # option = st.selectbox(
-    #     '🖊️ 대화 형태를 선택하세요. ',
-    #     ('일상적인 대화', 'Agentic Workflow (Tool Use)', '번역하기', '문법 검토하기')
-    # )
+    # debug Mode
+    debugMode = st.selectbox(
+        '🖊️ 디버그 모드를 설정하세요',
+        ('Normal', 'Debug')
+    )
 
     # print('mode: ', mode)
 
@@ -134,7 +134,8 @@ if prompt := st.chat_input("메시지를 입력하세요."):
 
         elif mode == 'Agentic Workflow (Tool Use)':
             with st.status("thinking...", expanded=True, state="running") as status:
-                response = chat.run_agent_executor2(prompt)
+                response = chat.run_agent_executor(prompt, st, debugMode)
+                # response = chat.run_agent_executor2(prompt st, debugMode)
                 st.write(response)
                 print('response: ', response)
 
