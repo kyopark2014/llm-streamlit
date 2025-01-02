@@ -415,9 +415,6 @@ def search_by_tavily(keyword: str) -> str:
                 if result:
                     content = result.get("content")
                     url = result.get("url")
-
-                    content = content.replace('"', "").replace("'", "")
-                    print('content: ', content)
                     
                     reference_docs.append(
                         Document(
