@@ -223,7 +223,6 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     // });
 
     vpc.addInterfaceEndpoint(`bedrock-endpoint--${projectName}`, {
-      privateDnsEnabled: true,
       service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${region}.bedrock`, 443),
       subnets: {
         subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
