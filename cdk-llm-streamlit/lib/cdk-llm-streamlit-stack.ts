@@ -191,7 +191,59 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     //   'HTTP',
     // );
 
-    const userData = ec2.UserData.forLinux();
+    // ALB SG
+    const albSg = new ec2.SecurityGroup(this, `alb-sg-for-${projectName}`, {
+      vpc: vpc,
+      allowAllOutbound: true,
+      securityGroupName: `alb-sg-for-${projectName}`,
+      description: 'security group for alb'
+    });
+    ec2Sg.connections.allowFrom(albSg, ec2.Port.tcp(targetPort), 'allow traffic from alb') // alb -> ec2
+    
+    // ALB
+    const alb = new elbv2.ApplicationLoadBalancer(this, `alb-for-${projectName}`, {
+      internetFacing: true,
+      vpc: vpc,
+      vpcSubnets: {
+        subnets: vpc.publicSubnets
+      },
+      securityGroup: albSg,
+      loadBalancerName: `alb-for-${projectName}`
+    });
+    alb.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY); 
+
+    new cdk.CfnOutput(this, `albUrl-for-${projectName}`, {
+      value: `http://${alb.loadBalancerDnsName}/`,
+      description: `albUrl-${projectName}`,
+      exportName: `albUrl-${projectName}`
+    });    
+
+    // CloudFront
+    const CUSTOM_HEADER_NAME = "X-Custom-Header"
+    const CUSTOM_HEADER_VALUE = `${projectName}_12dab15e4s31` // Temporary value
+    const origin = new origins.LoadBalancerV2Origin(alb, {      
+      httpPort: 80,
+      customHeaders: {[CUSTOM_HEADER_NAME] : CUSTOM_HEADER_VALUE},
+      originShieldEnabled: false,
+      protocolPolicy: cloudFront.OriginProtocolPolicy.HTTP_ONLY      
+    });
+    const distribution = new cloudFront.Distribution(this, `cloudfront-for-${projectName}`, {
+      comment: "CloudFront distribution for Streamlit frontend application",
+      defaultBehavior: {
+        origin: origin,
+        viewerProtocolPolicy: cloudFront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        allowedMethods: cloudFront.AllowedMethods.ALLOW_ALL,
+        cachePolicy: cloudFront.CachePolicy.CACHING_DISABLED,
+        originRequestPolicy: cloudFront.OriginRequestPolicy.ALL_VIEWER        
+      },
+      priceClass: cloudFront.PriceClass.PRICE_CLASS_200
+    }); 
+    new cdk.CfnOutput(this, `distributionDomainName-for-${projectName}`, {
+      value: 'https://'+distribution.domainName,
+      description: 'The domain name of the Distribution'
+    });    
+
+  /*  const userData = ec2.UserData.forLinux();
 
     const environment = {
       "projectName": projectName,
@@ -274,59 +326,7 @@ EOF"`,
     // ALB Target
     const targets: elbv2_tg.InstanceTarget[] = new Array();
     targets.push(new elbv2_tg.InstanceTarget(appInstance)); 
-
-    // ALB SG
-    const albSg = new ec2.SecurityGroup(this, `alb-sg-for-${projectName}`, {
-      vpc: vpc,
-      allowAllOutbound: true,
-      securityGroupName: `alb-sg-for-${projectName}`,
-      description: 'security group for alb'
-    });
-    ec2Sg.connections.allowFrom(albSg, ec2.Port.tcp(targetPort), 'allow traffic from alb') // alb -> ec2
     
-    // ALB
-    const alb = new elbv2.ApplicationLoadBalancer(this, `alb-for-${projectName}`, {
-      internetFacing: true,
-      vpc: vpc,
-      vpcSubnets: {
-        subnets: vpc.publicSubnets
-      },
-      securityGroup: albSg,
-      loadBalancerName: `alb-for-${projectName}`
-    });
-    alb.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY); 
-
-    new cdk.CfnOutput(this, `albUrl-for-${projectName}`, {
-      value: `http://${alb.loadBalancerDnsName}/`,
-      description: `albUrl-${projectName}`,
-      exportName: `albUrl-${projectName}`
-    });    
-
-    // CloudFront
-    const CUSTOM_HEADER_NAME = "X-Custom-Header"
-    const CUSTOM_HEADER_VALUE = `${projectName}_12dab15e4s31` // Temporary value
-    const origin = new origins.LoadBalancerV2Origin(alb, {      
-      httpPort: 80,
-      customHeaders: {[CUSTOM_HEADER_NAME] : CUSTOM_HEADER_VALUE},
-      originShieldEnabled: false,
-      protocolPolicy: cloudFront.OriginProtocolPolicy.HTTP_ONLY      
-    });
-    const distribution = new cloudFront.Distribution(this, `cloudfront-for-${projectName}`, {
-      comment: "CloudFront distribution for Streamlit frontend application",
-      defaultBehavior: {
-        origin: origin,
-        viewerProtocolPolicy: cloudFront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        allowedMethods: cloudFront.AllowedMethods.ALLOW_ALL,
-        cachePolicy: cloudFront.CachePolicy.CACHING_DISABLED,
-        originRequestPolicy: cloudFront.OriginRequestPolicy.ALL_VIEWER        
-      },
-      priceClass: cloudFront.PriceClass.PRICE_CLASS_200
-    }); 
-    new cdk.CfnOutput(this, `distributionDomainName-for-${projectName}`, {
-      value: 'https://'+distribution.domainName,
-      description: 'The domain name of the Distribution'
-    });    
-
     // ALB Listener
     const listener = alb.addListener(`HttpListener-for-${projectName}`, {   
       port: 80,
@@ -349,6 +349,6 @@ EOF"`,
     })
     listener.addAction(`RedirectHttpListener-for-${projectName}`, {
       action: defaultAction
-    });   
+    });   */
   }
 }
