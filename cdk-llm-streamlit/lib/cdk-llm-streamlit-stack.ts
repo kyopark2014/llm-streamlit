@@ -132,7 +132,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       vpcName: `vpc-for-${projectName}`,
       maxAzs: 2,
       ipAddresses: ec2.IpAddresses.cidr("10.20.0.0/16"),
-      natGateways: 0,
+      natGateways: 1,
       createInternetGateway: true,
       subnetConfiguration: [
         {
@@ -165,7 +165,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       privateDnsEnabled: true,
       service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${region}.bedrock-runtime`, 443)
     });
-    bedrockEndpoint.connections.allowDefaultPortFrom(ec2.Peer.ipv4(vpc.vpcCidrBlock), 'allowDefaultPortFrom')
+    bedrockEndpoint.connections.allowDefaultPortFrom(ec2.Peer.ipv4(vpc.vpcCidrBlock), `allowBedrockPortFrom-${projectName}`)
 
     bedrockEndpoint.addToPolicy(
       new iam.PolicyStatement({
