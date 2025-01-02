@@ -498,18 +498,19 @@ def run_agent_executor(query, st, debugMode):
                         status = re['text']
                         print('status: ',status)
                         
-                        status = status.replace('`','')
-                        status = status.replace('\"','')
-                        status = status.replace("\'",'')
+                        # status = status.replace('`','')
+                        # status = status.replace('\"','')
+                        # status = status.replace("\'",'')
                         
-                        print('status: ',status)
-                        if status.find('<thinking>') != -1:
-                            print('Remove <thinking> tag.')
-                            status = status[status.find('<thinking>')+11:status.find('</thinking>')]
-                            print('status without tag: ', status)
+                        # print('status: ',status)
+                        # if status.find('<thinking>') != -1:
+                        #     print('Remove <thinking> tag.')
+                        #     status = status[status.find('<thinking>')+11:status.find('</thinking>')]
+                        #     print('status without tag: ', status)
 
-                        if debugMode=="Debug":
-                            st.info(status)
+                        # if debugMode=="Debug":
+                        #     st.info(status)
+                        st.info(status)
 
                     elif re['type'] == 'tool_use':                
                         print(f"--> {re['type']}: {re['name']}, {re['input']}")
