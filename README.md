@@ -351,6 +351,31 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대
 ![image](https://github.com/user-attachments/assets/39fb2235-c6ef-42e0-8f43-f158cb088db4)
 
 
+### Endpoint 확인 방법
+
+[cdk-llm-streamlit-stack.ts](./cdk-llm-streamlit/lib/cdk-llm-streamlit-stack.ts)의 VPC 설정은 아래와 같습니다. 아래의 natGateways을 0으로 설정한 후에 메시지 전송 또는 이미지 업로드를 했는지 확인하면 endpoint로 정상적으로 처리되는것을 확인할 수 있습니다.
+
+```java
+const vpc = new ec2.Vpc(this, `vpc-for-${projectName}`, {
+  vpcName: `vpc-for-${projectName}`,
+  maxAzs: 2,
+  ipAddresses: ec2.IpAddresses.cidr("10.20.0.0/16"),
+  natGateways: 1,
+  createInternetGateway: true,
+  subnetConfiguration: [
+    {
+      cidrMask: 24,
+      name: `public-subnet-for-${projectName}`,
+      subnetType: ec2.SubnetType.PUBLIC
+    }, 
+    {
+      cidrMask: 24,
+      name: `private-subnet-for-${projectName}`,
+      subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
+    }
+  ]
+}); 
+```
 
 ### Reference 
 
