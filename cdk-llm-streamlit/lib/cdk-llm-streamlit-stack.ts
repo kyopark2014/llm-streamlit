@@ -328,13 +328,13 @@ EOF"`,
     });    
 
     // ALB Listener
-    const listener = alb.addListener(`HttpListener-for-${projectName}`, {   
+  /*  const listener = alb.addListener(`HttpListener-for-${projectName}`, {   
       port: 80,
       open: true
     });     
     const targetGroup = listener.addTargets(`WebEc2Target-for-${projectName}`, {
       targetGroupName: `TG-for-${projectName}`,
-      // targets: targets,
+      targets: targets,
       protocol: elbv2.ApplicationProtocol.HTTP,
       port: targetPort,
       conditions: [elbv2.ListenerCondition.httpHeader(CUSTOM_HEADER_NAME, [CUSTOM_HEADER_VALUE])],
@@ -349,6 +349,6 @@ EOF"`,
     })
     listener.addAction(`RedirectHttpListener-for-${projectName}`, {
       action: defaultAction
-    });   
+    });   */
   }
 }
