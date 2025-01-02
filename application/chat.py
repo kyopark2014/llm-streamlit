@@ -450,14 +450,30 @@ def run_agent_executor(query, st, debugMode):
 
     def should_continue(state: State) -> Literal["continue", "end"]:
         print("###### should_continue ######")
+
+        print('state: ', state)
         messages = state["messages"]    
 
         last_message = messages[-1]
-        print('last_message: ', last_message)
         
-        if not isinstance(last_message, ToolMessage):
+        # print('last_message: ', last_message)
+        
+        # if not isinstance(last_message, ToolMessage):
+        #     return "end"
+        # else:                
+        #     return "continue"
+        if not last_message.tool_calls:
+            print("Final: ", last_message.content)
+            print("--- END ---")
             return "end"
-        else:                
+        else:      
+            print(f"tool_calls: ", last_message.tool_calls)
+
+            for message in last_message.tool_calls:
+                print(f"tool name: {message['name']}, args: {message['args']}")
+                # update_state_message(f"calling... {message['name']}", config)
+
+            print(f"--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
             return "continue"
 
     def call_model(state: State, config):

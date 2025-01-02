@@ -139,11 +139,6 @@ if prompt := st.chat_input("메시지를 입력하세요."):
                 st.write(response)
                 print('response: ', response)
 
-                response = response.replace('`','')
-                response = response.replace('\"','')
-                response = response.replace("\'",'')                        
-                print('status: ',response)
-
                 if response.find('<thinking>') != -1:
                     print('Remove <thinking> tag.')
                     response = response[response.find('</thinking>')+12:]
