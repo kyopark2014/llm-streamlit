@@ -454,7 +454,7 @@ def run_agent_executor(query, st, debugMode):
         print('last_message: ', messages[-1])
         
         last_message = messages[-1]
-        if not isinstance(last_message, ToolMessage):
+        if not last_message.tool_calls:
             return "end"
         else:                
             return "continue"
@@ -490,21 +490,18 @@ def run_agent_executor(query, st, debugMode):
             print('call_model response: ', response)
         
             for re in response.content:
-                print("re: ", json.dumps(re))
                 if "type" in re:
                     if re['type'] == 'text':
                         print(f"--> {re['type']}: {re['text']}")
 
                         status = re['text']
-                        status = status.replace('\'','')
-                        status = status.replace('\"','')
                         if status.find('<thinking>') != -1:
                             print('Remove <thinking> tag.')
                             status = status[status.find('<thinking>')+11:status.find('</thinking>')]
                             print('status without tag: ', status)
 
-                            if debugMode=="Debug":
-                                st.info(status)
+                        if debugMode=="Debug":
+                            st.info(status)
 
                     elif re['type'] == 'tool_use':                
                         print(f"--> {re['type']}: {re['name']}, {re['input']}")
@@ -617,21 +614,18 @@ def run_agent_executor2(query, st, debugMode):
             answer = ""
 
         for re in response.content:
-            print("re: ", json.dumps(re))
             if "type" in re:
                 if re['type'] == 'text':
                     print(f"--> {re['type']}: {re['text']}")
 
                     status = re['text']
-                    status = status.replace('\'','')
-                    status = status.replace('\"','')
                     if status.find('<thinking>') != -1:
                         print('Remove <thinking> tag.')
                         status = status[status.find('<thinking>')+11:status.find('</thinking>')]
                         print('status without tag: ', status)
 
-                        if debugMode=="Debug":
-                            st.info(status)
+                    if debugMode=="Debug":
+                        st.info(status)
 
                 elif re['type'] == 'tool_use':                
                     print(f"--> {re['type']}: name: {re['name']}, input: {re['input']}")
@@ -662,8 +656,6 @@ def run_agent_executor2(query, st, debugMode):
         else:
             answer = state["messages"][-1].content
 
-        status = status.replace('\'','')
-        status = status.replace('\"','')
         if answer.find('<thinking>') != -1:
             print('Remove <thinking> tag.')
             answer = answer[answer.find('</thinking>')+12:]
@@ -685,7 +677,7 @@ def run_agent_executor2(query, st, debugMode):
         # print('(should_continue) messages: ', messages)
         
         last_message = messages[-1]        
-        if not isinstance(last_message, ToolMessage):
+        if not last_message.tool_calls:
             print("Final: ", last_message.content)
             print("--- END ---")
             return "end"
