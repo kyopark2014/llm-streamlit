@@ -178,6 +178,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       //   subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
       // }
     });
+    bedrockEndpoint.connections.allowDefaultPortFrom(ec2.Peer.ipv4(vpc.vpcCidrBlock), 'allowDefaultPortFrom')
 
     bedrockEndpoint.addToPolicy(
       new iam.PolicyStatement({
