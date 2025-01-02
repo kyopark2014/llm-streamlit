@@ -538,7 +538,7 @@ def run_agent_executor(query, st, debugMode):
                         if debugMode=="Debug":
                             st.info(f"{re['type']}: {re['name']}, {re['input']}")
 
-                        response = ToolMessage(content="", name=re['name'], args=re['input'], tool_call_id=re['id'])
+                        response = ToolMessage(content="", tool_calls=re['name'], args=re['input'], tool_call_id=re['id'])
                         
                     else:
                         print(re)
