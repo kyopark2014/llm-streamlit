@@ -698,8 +698,10 @@ def run_agent_executor2(query, st, debugMode):
     
     def should_continue(state: State, config) -> Literal["continue", "end"]:
         print("###### should_continue ######")
+        print('state: ', state)
+
         messages = state["messages"]    
-        # print('(should_continue) messages: ', messages)
+        print('(should_continue) messages: ', messages)
         
         last_message = messages[-1]        
         if isinstance(last_message, AIMessage):
