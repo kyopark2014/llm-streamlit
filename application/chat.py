@@ -490,11 +490,14 @@ def run_agent_executor(query, st, debugMode):
             print('call_model response: ', response)
         
             for re in response.content:
+                print("re: ", json.dumps(re))
                 if "type" in re:
                     if re['type'] == 'text':
                         print(f"--> {re['type']}: {re['text']}")
 
-                        status = str(re['text'])
+                        status = re['text']
+                        status = status.replace('\'','')
+                        status = status.replace('\"','')
                         if status.find('<thinking>') != -1:
                             print('Remove <thinking> tag.')
                             status = status[status.find('<thinking>')+11:status.find('</thinking>')]
@@ -614,11 +617,14 @@ def run_agent_executor2(query, st, debugMode):
             answer = ""
 
         for re in response.content:
+            print("re: ", json.dumps(re))
             if "type" in re:
                 if re['type'] == 'text':
                     print(f"--> {re['type']}: {re['text']}")
 
-                    status = str(re['text'])
+                    status = re['text']
+                    status = status.replace('\'','')
+                    status = status.replace('\"','')
                     if status.find('<thinking>') != -1:
                         print('Remove <thinking> tag.')
                         status = status[status.find('<thinking>')+11:status.find('</thinking>')]
