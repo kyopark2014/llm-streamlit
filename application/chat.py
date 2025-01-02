@@ -617,59 +617,76 @@ def run_agent_executor2(query, st, debugMode):
         return prompt | chat.bind_tools(tools)
     
     def agent_node(state, agent, name):
-        print(f"###### agent_node:{name} ######")
-
-        last_message = state["messages"][-1]
-        print('last_message: ', last_message)
-        if isinstance(last_message, ToolMessage):    
-            print('messages', state["messages"]) 
-            answer = get_basic_answer(state["messages"])  
-            return {
-                "messages": [AIMessage(content=answer)],
-                "answer": answer
-            }
+        print(f"###### agent_node:{name} ######")        
+        print('state: ', state["messages"])
         
         response = agent.invoke(state["messages"])
         print('response: ', response)
-
-        if "answer" in state:
-            answer = state['answer']
+                
+        # We convert the agent output into a format that is suitable to append to the global state
+        if isinstance(response, ToolMessage):
+            pass
         else:
-            answer = ""
-
-        for re in response.content:
-            if "type" in re:
-                if re['type'] == 'text':
-                    print(f"--> {re['type']}: {re['text']}")
-
-                    status = re['text']
-                    if status.find('<thinking>') != -1:
-                        print('Remove <thinking> tag.')
-                        status = status[status.find('<thinking>')+11:status.find('</thinking>')]
-                        print('status without tag: ', status)
-
-                    if debugMode=="Debug":
-                        st.info(status)
-
-                elif re['type'] == 'tool_use':                
-                    print(f"--> {re['type']}: name: {re['name']}, input: {re['input']}")
-
-                    if debugMode=="Debug":
-                        st.info(f"{re['type']}: name: {re['name']}, input: {re['input']}")
-                else:
-                    print(re)
-            else: # answer
-                answer += '\n'+response.content
-                print(response.content)
-                break
-
-        response = AIMessage(**response.dict(exclude={"type", "name"}), name=name)     
-        print('message: ', response)
-        
+            response = AIMessage(**response.dict(exclude={"type", "name"}), name=name)            
+            
         return {
             "messages": [response],
-            "answer": answer
+            "sender": name,
         }
+    # def agent_node(state, agent, name):
+    #     print(f"###### agent_node:{name} ######")
+
+    #     last_message = state["messages"][-1]
+    #     print('last_message: ', last_message)
+    #     if isinstance(last_message, ToolMessage):    
+    #         print('messages', state["messages"]) 
+    #         answer = get_basic_answer(state["messages"])  
+    #         return {
+    #             "messages": [AIMessage(content=answer)],
+    #             "answer": answer
+    #         }
+        
+    #     response = agent.invoke(state["messages"])
+    #     print('response: ', response)
+
+    #     if "answer" in state:
+    #         answer = state['answer']
+    #     else:
+    #         answer = ""
+
+    #     for re in response.content:
+    #         if "type" in re:
+    #             if re['type'] == 'text':
+    #                 print(f"--> {re['type']}: {re['text']}")
+
+    #                 status = re['text']
+    #                 if status.find('<thinking>') != -1:
+    #                     print('Remove <thinking> tag.')
+    #                     status = status[status.find('<thinking>')+11:status.find('</thinking>')]
+    #                     print('status without tag: ', status)
+
+    #                 if debugMode=="Debug":
+    #                     st.info(status)
+
+    #             elif re['type'] == 'tool_use':                
+    #                 print(f"--> {re['type']}: name: {re['name']}, input: {re['input']}")
+
+    #                 if debugMode=="Debug":
+    #                     st.info(f"{re['type']}: name: {re['name']}, input: {re['input']}")
+    #             else:
+    #                 print(re)
+    #         else: # answer
+    #             answer += '\n'+response.content
+    #             print(response.content)
+    #             break
+
+    #     response = AIMessage(**response.dict(exclude={"type", "name"}), name=name)     
+    #     print('message: ', response)
+        
+    #     return {
+    #         "messages": [response],
+    #         "answer": answer
+    #     }
     
     def final_answer(state):
         print(f"###### final_answer ######")        
