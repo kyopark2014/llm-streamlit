@@ -145,7 +145,8 @@ if prompt := st.chat_input("메시지를 입력하세요."):
                     print('response without tag: ', response)
 
                 st.session_state.messages.append({"role": "assistant", "content": response})
-                st.rerun()
+                if debugMode != "Debug":
+                    st.rerun()
 
         elif mode == '번역하기':
             response = chat.translate_text(prompt)
