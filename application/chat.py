@@ -463,11 +463,7 @@ def run_agent_executor(query, st, debugMode):
         #     return "end"
         # else:                
         #     return "continue"
-        if not last_message.tool_calls and last_message.content:
-            print("Final: ", last_message.content)
-            print("--- END ---")
-            return "end"
-        else:      
+        if isinstance(last_message, ToolMessage) or last_message.tool_calls:
             print(f"tool_calls: ", last_message.tool_calls)
 
             for message in last_message.tool_calls:
@@ -476,6 +472,13 @@ def run_agent_executor(query, st, debugMode):
 
             print(f"--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
             return "continue"
+        
+        #if not last_message.tool_calls:
+        else:
+            print("Final: ", last_message.content)
+            print("--- END ---")
+            return "end"
+           
 
     def call_model(state: State, config):
         print("###### call_model ######")
