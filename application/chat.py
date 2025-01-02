@@ -455,6 +455,7 @@ def run_agent_executor(query, st, debugMode):
         messages = state["messages"]    
 
         last_message = messages[-1]
+        print('last_message: ', last_message)
         
         # print('last_message: ', last_message)
         
@@ -462,7 +463,7 @@ def run_agent_executor(query, st, debugMode):
         #     return "end"
         # else:                
         #     return "continue"
-        if not last_message.tool_calls:
+        if not last_message.tool_calls and last_message.content:
             print("Final: ", last_message.content)
             print("--- END ---")
             return "end"
