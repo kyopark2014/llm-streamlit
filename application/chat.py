@@ -495,11 +495,13 @@ def run_agent_executor(query, st, debugMode):
                     if re['type'] == 'text':
                         print(f"--> {re['type']}: {re['text']}")
 
+                        print('status: ',status)
                         status = re['text']
                         status = status.replace('`','')
                         status = status.replace('\"','')
                         status = status.replace("\'",'')
                         
+                        print('status: ',status)
                         if status.find('<thinking>') != -1:
                             print('Remove <thinking> tag.')
                             status = status[status.find('<thinking>')+11:status.find('</thinking>')]
