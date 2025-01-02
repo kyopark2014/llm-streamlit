@@ -213,9 +213,17 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     });    
 
     // Bedrock endpoint
-    const bedrockEndpoint = new ec2.InterfaceVpcEndpoint(this, `VPC Endpoint-${projectName}`, {
+    // const bedrockEndpoint = new ec2.InterfaceVpcEndpoint(this, `VPC Endpoint-${projectName}`, {
+    //   privateDnsEnabled: true,
+    //   vpc: vpc,
+    //   service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${region}.bedrock`, 443),
+    //   subnets: {
+    //     subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
+    //   }
+    // });
+
+    vpc.addInterfaceEndpoint(`bedrock-endpoint--${projectName}`, {
       privateDnsEnabled: true,
-      vpc: vpc,
       service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${region}.bedrock`, 443),
       subnets: {
         subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
@@ -243,7 +251,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     // );    
     
     ec2Sg.connections.allowFrom(albSg, ec2.Port.tcp(targetPort), 'allow traffic from alb') // alb -> ec2
-    ec2Sg.connections.allowTo(bedrockEndpoint, ec2.Port.tcp(443), 'allow traffic to bedrock endpoint')
+    // ec2Sg.connections.allowTo(bedrockEndpoint, ec2.Port.tcp(443), 'allow traffic to bedrock endpoint')
     
     const userData = ec2.UserData.forLinux();
     const environment = {
