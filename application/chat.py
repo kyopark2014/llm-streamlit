@@ -546,7 +546,7 @@ def run_agent_executor(query, st, debugMode):
                         #     tool_call_id=re['id'], 
                         #     type='tool_call')
                         # print('response: ', response)
-                        AIMessage(content=response)
+                        #AIMessage(content=response)
                     else:
                         print(re)
                 else: # answer
