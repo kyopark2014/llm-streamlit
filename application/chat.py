@@ -415,6 +415,8 @@ def search_by_tavily(keyword: str) -> str:
                 if result:
                     content = result.get("content")
                     url = result.get("url")
+
+                    content = content.replace('"', "").replace("'", "")
                     
                     reference_docs.append(
                         Document(
@@ -518,9 +520,7 @@ def run_agent_executor(query, st, debugMode):
                         status = re['text']
                         print('status: ',status)
                         
-                        status = status.replace('`','')
-                        status = status.replace('\"','')
-                        status = status.replace("\'",'')
+                        status = status.replace('"', "").replace("'", "")
                         
                         print('status: ',status)
                         if status.find('<thinking>') != -1:
