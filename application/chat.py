@@ -451,8 +451,8 @@ def run_agent_executor(query, st, debugMode):
     def should_continue(state: State) -> Literal["continue", "end"]:
         print("###### should_continue ######")
 
+        print('state: ', state)
         messages = state["messages"]    
-        print('messages: ', messages)        
 
         last_message = messages[-1]
         print('last_message: ', last_message)
@@ -483,14 +483,6 @@ def run_agent_executor(query, st, debugMode):
     def call_model(state: State, config):
         print("###### call_model ######")
         print('state: ', state["messages"])
-
-        last_message = state["messages"][-1]
-        if isinstance(last_message, ToolMessage):
-            print('--> Tool message: ', last_message)
-        elif isinstance(last_message, HumanMessage):
-            print('--> Human message: ', last_message.content)
-        else:
-            print('--> AI message: ', last_message.content)
                 
         if isKorean(state["messages"][0].content)==True:
             system = (
@@ -526,7 +518,9 @@ def run_agent_executor(query, st, debugMode):
                         status = re['text']
                         print('status: ',status)
                         
-                        status = status.replace('"', "").replace("'", "")
+                        status = status.replace('`','')
+                        status = status.replace('\"','')
+                        status = status.replace("\'",'')
                         
                         print('status: ',status)
                         if status.find('<thinking>') != -1:
@@ -542,16 +536,6 @@ def run_agent_executor(query, st, debugMode):
 
                         if debugMode=="Debug":
                             st.info(f"{re['type']}: {re['name']}, {re['input']}")
-
-                        # print('status: ', status)
-                        # response = ToolMessage(
-                        #     content=status, 
-                        #     name=re['name'], 
-                        #     args=re['input'], 
-                        #     tool_call_id=re['id'], 
-                        #     type='tool_call')
-                        # print('response: ', response)
-                        #AIMessage(content=response)
                     else:
                         print(re)
                 else: # answer
