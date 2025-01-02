@@ -487,7 +487,13 @@ def run_agent_executor(query, st, debugMode):
         print("###### call_model ######")
         print('state: ', state["messages"])
 
-        print('last input message: ', state["messages"][-1])
+        last_message = state["messages"][-1]
+        if isinstance(last_message, ToolMessage):
+            print('tool message --> ', last_message)
+        elif isinstance(last_message, HumanMessage):
+            print('human message --> ', last_message.content)
+        else:
+            print('AI message --> ', last_message.content)
                 
         if isKorean(state["messages"][0].content)==True:
             system = (
