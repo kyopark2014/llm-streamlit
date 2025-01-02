@@ -454,7 +454,7 @@ def run_agent_executor(query, st, debugMode):
         print('last_message: ', messages[-1])
         
         last_message = messages[-1]
-        if not last_message.tool_calls:
+        if not isinstance(last_message, ToolMessage):
             return "end"
         else:                
             return "continue"
