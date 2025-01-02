@@ -621,7 +621,7 @@ def run_agent_executor2(query, st, debugMode):
 
         last_message = state["messages"][-1]
         print('last_message: ', last_message)
-        if isinstance(last_message, ToolMessage) and last_message.content=="":    
+        if last_message.tool_calls and last_message.content=="":    
             print('last_message is empty') 
             answer = get_basic_answer(state["messages"][0].content)  
             return {
