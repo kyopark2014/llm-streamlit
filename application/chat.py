@@ -704,11 +704,9 @@ def run_agent_executor2(query, st, debugMode):
         print('(should_continue) messages: ', messages)
         
         last_message = messages[-1]        
-        if isinstance(last_message, AIMessage):
-            print("Final: ", last_message.content)
-            print("--- END ---")
-            return "end"
-        else:      
+        print('last)message: ', last_message)
+                    
+        if isinstance(last_message, ToolMessage):
             print(f"tool_calls: ", last_message.tool_calls)
 
             for message in last_message.tool_calls:
@@ -717,6 +715,10 @@ def run_agent_executor2(query, st, debugMode):
 
             print(f"--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
             return "continue"
+        else:
+            print("Final: ", last_message.content)
+            print("--- END ---")
+            return "end"
 
     def buildAgentExecutor():
         workflow = StateGraph(State)
