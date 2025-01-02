@@ -243,7 +243,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       description: 'The domain name of the Distribution'
     });    
 
-  /*  const userData = ec2.UserData.forLinux();
+    const userData = ec2.UserData.forLinux();
 
     const environment = {
       "projectName": projectName,
@@ -349,6 +349,6 @@ EOF"`,
     })
     listener.addAction(`RedirectHttpListener-for-${projectName}`, {
       action: defaultAction
-    });   */
+    });   
   }
 }
