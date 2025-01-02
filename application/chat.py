@@ -592,7 +592,7 @@ def run_agent_executor2(query, st, debugMode):
             
     def create_agent(chat, tools):        
         tool_names = ", ".join([tool.name for tool in tools])
-        print("tool_names: ", tool_names)
+        # print("tool_names: ", tool_names)
 
         system = (
             "당신의 이름은 서연이고, 질문에 친근한 방식으로 대답하도록 설계된 대화형 AI입니다."
@@ -623,7 +623,7 @@ def run_agent_executor2(query, st, debugMode):
         last_message = state["messages"][-1]
         print('last_message: ', last_message)
 
-        if isinstance(last_message, HumanMessage):
+        if isinstance(last_message, ToolMessage):
             answer = get_basic_answer(state["messages"][0].content)  
             return {
                 "messages": [AIMessage(content=answer)],
