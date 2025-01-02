@@ -495,8 +495,9 @@ def run_agent_executor(query, st, debugMode):
                     if re['type'] == 'text':
                         print(f"--> {re['type']}: {re['text']}")
 
-                        print('status: ',status)
                         status = re['text']
+                        print('status: ',status)
+                        
                         status = status.replace('`','')
                         status = status.replace('\"','')
                         status = status.replace("\'",'')
