@@ -132,20 +132,20 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       vpcName: `vpc-for-${projectName}`,
       maxAzs: 2,
       ipAddresses: ec2.IpAddresses.cidr("10.20.0.0/16"),
-      natGateways: 1,
-      createInternetGateway: true,
-      // subnetConfiguration: [
-      //   {
-      //     cidrMask: 24,
-      //     name: `public-subnet-for-${projectName}`,
-      //     subnetType: ec2.SubnetType.PUBLIC
-      //   }, 
-      //   {
-      //     cidrMask: 24,
-      //     name: `private-subnet-for-${projectName}`,
-      //     subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
-      //   }
-      // ]
+      natGateways: 0,
+      createInternetGateway: false,
+      subnetConfiguration: [
+        {
+          cidrMask: 24,
+          name: `public-subnet-for-${projectName}`,
+          subnetType: ec2.SubnetType.PUBLIC
+        }, 
+        {
+          cidrMask: 24,
+          name: `private-subnet-for-${projectName}`,
+          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
+        }
+      ]
     });  
 
     // S3 endpoint
