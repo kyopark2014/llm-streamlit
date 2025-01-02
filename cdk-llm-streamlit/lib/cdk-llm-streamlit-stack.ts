@@ -222,11 +222,11 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     //   }
     // });
 
-    const bedrockEndpoint = vpc.addInterfaceEndpoint(`bedrock-endpoint--${projectName}`, {
+    const bedrockEndpoint = vpc.addInterfaceEndpoint(`bedrock-endpoint-${projectName}`, {
       service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${region}.bedrock`, 443),
-      subnets: {
-        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
-      }
+      // subnets: {
+      //   subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
+      // }
     });
 
     bedrockEndpoint.addToPolicy(
