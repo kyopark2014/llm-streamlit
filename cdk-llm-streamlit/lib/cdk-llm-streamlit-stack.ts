@@ -160,38 +160,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
         resources: ['*'],
       }),
     ); 
-
-    // EC2 Security Group
-    const ec2Sg = new ec2.SecurityGroup(this, `ec2-sg-for-${projectName}`,
-      {
-        vpc: vpc,
-        allowAllOutbound: true,
-        description: "Security group for ec2",
-        securityGroupName: `ec2-sg-for-${projectName}`,
-      }
-    );
-    // ec2Sg.addIngressRule(
-    //   ec2.Peer.anyIpv4(),
-    //   ec2.Port.tcp(22),
-    //   'SSH',
-    // );
-    // ec2Sg.addIngressRule(
-    //   ec2.Peer.anyIpv4(),
-    //   ec2.Port.tcp(80),
-    //   'HTTP',
-    // );
-
-    // Bedrock endpoint
-    const bedrockEndpoint = new ec2.InterfaceVpcEndpoint(this, `VPC Endpoint-${projectName}`, {
-      privateDnsEnabled: true,
-      vpc: vpc,
-      service: new ec2.InterfaceVpcEndpointService('com.amazonaws.us-west-2.bedrock', 443),
-      subnets: {
-        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
-      }
-    });
-    ec2Sg.connections.allowTo(bedrockEndpoint, ec2.Port.tcp(443), 'allow traffic to bedrock endpoint')
-
+    
     // ALB SG
     const albSg = new ec2.SecurityGroup(this, `alb-sg-for-${projectName}`, {
       vpc: vpc,
@@ -199,7 +168,6 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       securityGroupName: `alb-sg-for-${projectName}`,
       description: 'security group for alb'
     });
-    ec2Sg.connections.allowFrom(albSg, ec2.Port.tcp(targetPort), 'allow traffic from alb') // alb -> ec2
     
     // ALB
     const alb = new elbv2.ApplicationLoadBalancer(this, `alb-for-${projectName}`, {
@@ -244,8 +212,40 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       description: 'The domain name of the Distribution'
     });    
 
-    const userData = ec2.UserData.forLinux();
+    // Bedrock endpoint
+    const bedrockEndpoint = new ec2.InterfaceVpcEndpoint(this, `VPC Endpoint-${projectName}`, {
+      privateDnsEnabled: true,
+      vpc: vpc,
+      service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${region}.bedrock`, 443),
+      subnets: {
+        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
+      }
+    });
 
+    // EC2 Security Group
+    const ec2Sg = new ec2.SecurityGroup(this, `ec2-sg-for-${projectName}`,
+      {
+        vpc: vpc,
+        allowAllOutbound: true,
+        description: "Security group for ec2",
+        securityGroupName: `ec2-sg-for-${projectName}`,
+      }
+    );
+    // ec2Sg.addIngressRule(
+    //   ec2.Peer.anyIpv4(),
+    //   ec2.Port.tcp(22),
+    //   'SSH',
+    // );
+    // ec2Sg.addIngressRule(
+    //   ec2.Peer.anyIpv4(),
+    //   ec2.Port.tcp(80),
+    //   'HTTP',
+    // );    
+    
+    ec2Sg.connections.allowFrom(albSg, ec2.Port.tcp(targetPort), 'allow traffic from alb') // alb -> ec2
+    ec2Sg.connections.allowTo(bedrockEndpoint, ec2.Port.tcp(443), 'allow traffic to bedrock endpoint')
+    
+    const userData = ec2.UserData.forLinux();
     const environment = {
       "projectName": projectName,
       "accountId": accountId,
