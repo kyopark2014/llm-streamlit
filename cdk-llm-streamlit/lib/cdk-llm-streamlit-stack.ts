@@ -160,6 +160,31 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
         resources: ['*'],
       }),
     ); 
+
+    // Bedrock endpoint
+    // const bedrockEndpoint = new ec2.InterfaceVpcEndpoint(this, `VPC Endpoint-${projectName}`, {
+    //   privateDnsEnabled: true,
+    //   vpc: vpc,
+    //   service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${region}.bedrock`, 443),
+    //   subnets: {
+    //     subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
+    //   }
+    // });
+
+    const bedrockEndpoint = vpc.addInterfaceEndpoint(`bedrock-endpoint-${projectName}`, {
+      service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${region}.bedrock-runtime`, 443),
+      // subnets: {
+      //   subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
+      // }
+    });
+
+    bedrockEndpoint.addToPolicy(
+      new iam.PolicyStatement({
+        principals: [new iam.AnyPrincipal()],
+        actions: ['bedrock:*'],
+        resources: ['*'],
+      }),
+    ); 
     
     // ALB SG
     const albSg = new ec2.SecurityGroup(this, `alb-sg-for-${projectName}`, {
@@ -211,31 +236,6 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       value: 'https://'+distribution.domainName,
       description: 'The domain name of the Distribution'
     });    
-
-    // Bedrock endpoint
-    // const bedrockEndpoint = new ec2.InterfaceVpcEndpoint(this, `VPC Endpoint-${projectName}`, {
-    //   privateDnsEnabled: true,
-    //   vpc: vpc,
-    //   service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${region}.bedrock`, 443),
-    //   subnets: {
-    //     subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
-    //   }
-    // });
-
-    const bedrockEndpoint = vpc.addInterfaceEndpoint(`bedrock-endpoint-${projectName}`, {
-      service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${region}.bedrock`, 443),
-      // subnets: {
-      //   subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
-      // }
-    });
-
-    bedrockEndpoint.addToPolicy(
-      new iam.PolicyStatement({
-        principals: [new iam.AnyPrincipal()],
-        actions: ['bedrock:*'],
-        resources: ['*'],
-      }),
-    ); 
 
     // EC2 Security Group
     const ec2Sg = new ec2.SecurityGroup(this, `ec2-sg-for-${projectName}`,
