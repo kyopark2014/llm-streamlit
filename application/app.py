@@ -47,7 +47,7 @@ with st.sidebar:
     # debug Mode
     debugMode = st.selectbox(
         '🖊️ 디버그 모드를 설정하세요',
-        ('Normal', 'Debug')
+        ('Debug', 'Normal')
     )
 
     # print('mode: ', mode)
