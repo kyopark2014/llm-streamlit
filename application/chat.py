@@ -486,6 +486,8 @@ def run_agent_executor(query, st, debugMode):
     def call_model(state: State, config):
         print("###### call_model ######")
         print('state: ', state["messages"])
+
+        print('last input message: ', state["messages"][-1])
                 
         if isKorean(state["messages"][0].content)==True:
             system = (
