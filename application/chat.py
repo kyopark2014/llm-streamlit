@@ -451,9 +451,10 @@ def run_agent_executor(query, st, debugMode):
     def should_continue(state: State) -> Literal["continue", "end"]:
         print("###### should_continue ######")
         messages = state["messages"]    
-        print('last_message: ', messages[-1])
-        
+
         last_message = messages[-1]
+        print('last_message: ', last_message)
+        
         if not isinstance(last_message, ToolMessage):
             return "end"
         else:                
@@ -495,6 +496,10 @@ def run_agent_executor(query, st, debugMode):
                         print(f"--> {re['type']}: {re['text']}")
 
                         status = re['text']
+                        status = status.replace('`','')
+                        status = status.replace('\"','')
+                        status = status.replace("\'",'')
+                        
                         if status.find('<thinking>') != -1:
                             print('Remove <thinking> tag.')
                             status = status[status.find('<thinking>')+11:status.find('</thinking>')]
