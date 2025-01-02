@@ -624,9 +624,8 @@ def run_agent_executor2(query, st, debugMode):
 
         print(f"tool_calls: ", last_message.tool_calls)
         
-        if not last_message.tool_calls:
+        if last_message.tool_calls:
             tasks = last_message.content
-
             print('tasks: ', tasks)
 
             for task in tasks:
