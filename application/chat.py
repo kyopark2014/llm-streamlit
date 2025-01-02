@@ -454,8 +454,8 @@ def run_agent_executor(query, st, debugMode):
     def should_continue(state: State) -> Literal["continue", "end"]:
         print("###### should_continue ######")
 
-        print('state: ', state)
         messages = state["messages"]    
+        print('messages: ', messages)        
 
         last_message = messages[-1]
         print('last_message: ', last_message)
@@ -537,6 +537,9 @@ def run_agent_executor(query, st, debugMode):
 
                         if debugMode=="Debug":
                             st.info(f"{re['type']}: {re['name']}, {re['input']}")
+
+                        response = ToolMessage(content="", name=re['name'], args=re['input'])
+                        
                     else:
                         print(re)
                 else: # answer
