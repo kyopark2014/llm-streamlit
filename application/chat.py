@@ -623,7 +623,7 @@ def run_agent_executor2(query, st, debugMode):
         print('last_message: ', last_message)
         if isinstance(last_message, ToolMessage):    
             print('messages', state["messages"]) 
-            answer = get_basic_answer(last_message)  
+            answer = get_basic_answer(state["messages"])  
             return {
                 "messages": [AIMessage(content=answer)],
                 "answer": answer
