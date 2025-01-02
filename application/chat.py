@@ -592,7 +592,7 @@ def run_agent_executor2(query, st, debugMode):
             
     def create_agent(chat, tools):        
         tool_names = ", ".join([tool.name for tool in tools])
-        # print("tool_names: ", tool_names)
+        print("tool_names: ", tool_names)
 
         system = (
             "당신의 이름은 서연이고, 질문에 친근한 방식으로 대답하도록 설계된 대화형 AI입니다."
@@ -618,18 +618,17 @@ def run_agent_executor2(query, st, debugMode):
     
     def agent_node(state, agent, name):
         print(f"###### agent_node:{name} ######")
-        print('state: ', state)
 
         last_message = state["messages"][-1]
         print('last_message: ', last_message)
-
-        if isinstance(last_message, ToolMessage):
+        if isinstance(last_message, ToolMessage) and last_message.content=="":    
+            print('last_message is empty') 
             answer = get_basic_answer(state["messages"][0].content)  
             return {
                 "messages": [AIMessage(content=answer)],
                 "answer": answer
             }
-                
+        
         response = agent.invoke(state["messages"])
         print('response: ', response)
 
@@ -698,26 +697,23 @@ def run_agent_executor2(query, st, debugMode):
     
     def should_continue(state: State, config) -> Literal["continue", "end"]:
         print("###### should_continue ######")
-        print('state: ', state)
-
         messages = state["messages"]    
-        print('(should_continue) messages: ', messages)
+        # print('(should_continue) messages: ', messages)
         
         last_message = messages[-1]        
-        print('last_message: ', last_message)
-                    
-        if isinstance(last_message, AIMessage):
-            for task in last_message.content:
-                if task['type']=='text':
-                    print(f"type: {task['type']}, text: {task['text']}")
-                elif task['type']=='tool_use':
-                    print(f"tool name: {task['name']}, input: {task['input']}")
-                    print(f"--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
-                    return "continue"
-        else:
+        if not last_message.tool_calls:
             print("Final: ", last_message.content)
             print("--- END ---")
             return "end"
+        else:      
+            print(f"tool_calls: ", last_message.tool_calls)
+
+            for message in last_message.tool_calls:
+                print(f"tool name: {message['name']}, args: {message['args']}")
+                # update_state_message(f"calling... {message['name']}", config)
+
+            print(f"--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
+            return "continue"
 
     def buildAgentExecutor():
         workflow = StateGraph(State)
@@ -761,36 +757,6 @@ def run_agent_executor2(query, st, debugMode):
     msg = output['answer']
 
     return msg
-
-def get_basic_answer(query):
-    print('#### get_basic_answer ####')
-    chat = get_chat()
-
-    if isKorean(query)==True:
-        system = (
-            "당신의 이름은 서연이고, 질문에 대해 친절하게 답변하는 사려깊은 인공지능 도우미입니다."
-            "상황에 맞는 구체적인 세부 정보를 충분히 제공합니다." 
-            "모르는 질문을 받으면 솔직히 모른다고 말합니다."
-        )
-    else: 
-        system = (
-            "You will be acting as a thoughtful advisor."
-            "Using the following conversation, answer friendly for the newest question." 
-            "If you don't know the answer, just say that you don't know, don't try to make up an answer."     
-        )    
-    
-    human = "Question: {input}"    
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", system), 
-        ("human", human)
-    ])    
-    
-    chain = prompt | chat    
-    output = chain.invoke({"input": query})
-    print('output.content: ', output.content)
-
-    return output.content
-
 
 ####################### LangChain #######################
 # Translation
