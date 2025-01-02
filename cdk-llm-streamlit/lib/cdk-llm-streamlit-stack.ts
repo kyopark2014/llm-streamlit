@@ -227,7 +227,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     });    
 
     // EC2 Security Group
-    const ec2Sg = new ec2.SecurityGroup(this, `ec2-sg-for-${projectName}`,
+  /*  const ec2Sg = new ec2.SecurityGroup(this, `ec2-sg-for-${projectName}`,
       {
         vpc: vpc,
         allowAllOutbound: true,
@@ -353,6 +353,6 @@ EOF'`,
     })
     listener.addAction(`RedirectHttpListener-for-${projectName}`, {
       action: defaultAction
-    });  
+    });  */
   }
 }
