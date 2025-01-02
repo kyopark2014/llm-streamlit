@@ -132,7 +132,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       vpcName: `vpc-for-${projectName}`,
       maxAzs: 2,
       ipAddresses: ec2.IpAddresses.cidr("10.20.0.0/16"),
-      natGateways: 0,
+      natGateways: 1,
       createInternetGateway: true,
       subnetConfiguration: [
         {
@@ -161,32 +161,19 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       }),
     ); 
 
-    // Bedrock endpoint
-    // const bedrockEndpoint = new ec2.InterfaceVpcEndpoint(this, `VPC Endpoint-${projectName}`, {
-    //   privateDnsEnabled: true,
-    //   vpc: vpc,
-    //   service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${region}.bedrock`, 443),
-    //   subnets: {
-    //     subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
-    //   }
-    // });
-
     const bedrockEndpoint = vpc.addInterfaceEndpoint(`bedrock-endpoint-${projectName}`, {
       privateDnsEnabled: true,
-      service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${region}.bedrock-runtime`, 443),
-      // subnets: {
-      //   subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
-      // }
+      service: new ec2.InterfaceVpcEndpointService(`com.amazonaws.${region}.bedrock-runtime`, 443)
     });
     bedrockEndpoint.connections.allowDefaultPortFrom(ec2.Peer.ipv4(vpc.vpcCidrBlock), 'allowDefaultPortFrom')
 
-    // bedrockEndpoint.addToPolicy(
-    //   new iam.PolicyStatement({
-    //     principals: [new iam.AnyPrincipal()],
-    //     actions: ['bedrock:*'],
-    //     resources: ['*'],
-    //   }),
-    // ); 
+    bedrockEndpoint.addToPolicy(
+      new iam.PolicyStatement({
+        principals: [new iam.AnyPrincipal()],
+        actions: ['bedrock:*'],
+        resources: ['*'],
+      }),
+    ); 
     
     // ALB SG
     const albSg = new ec2.SecurityGroup(this, `alb-sg-for-${projectName}`, {
@@ -260,7 +247,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     // );    
     
     ec2Sg.connections.allowFrom(albSg, ec2.Port.tcp(targetPort), 'allow traffic from alb') // alb -> ec2
-    // ec2Sg.connections.allowTo(bedrockEndpoint, ec2.Port.tcp(443), 'allow traffic to bedrock endpoint')
+    ec2Sg.connections.allowTo(bedrockEndpoint, ec2.Port.tcp(443), 'allow traffic to bedrock endpoint') // ec2 -> bedrock
     
     const userData = ec2.UserData.forLinux();
     const environment = {
