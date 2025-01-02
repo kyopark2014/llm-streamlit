@@ -180,13 +180,13 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     });
     bedrockEndpoint.connections.allowDefaultPortFrom(ec2.Peer.ipv4(vpc.vpcCidrBlock), 'allowDefaultPortFrom')
 
-    bedrockEndpoint.addToPolicy(
-      new iam.PolicyStatement({
-        principals: [new iam.AnyPrincipal()],
-        actions: ['bedrock:*'],
-        resources: ['*'],
-      }),
-    ); 
+    // bedrockEndpoint.addToPolicy(
+    //   new iam.PolicyStatement({
+    //     principals: [new iam.AnyPrincipal()],
+    //     actions: ['bedrock:*'],
+    //     resources: ['*'],
+    //   }),
+    // ); 
     
     // ALB SG
     const albSg = new ec2.SecurityGroup(this, `alb-sg-for-${projectName}`, {
