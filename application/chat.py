@@ -683,7 +683,7 @@ def run_agent_executor2(query, st, debugMode):
         # print('(should_continue) messages: ', messages)
         
         last_message = messages[-1]        
-        if not last_message.tool_calls:
+        if not isinstance(last_message, ToolMessage):
             print("Final: ", last_message.content)
             print("--- END ---")
             return "end"
