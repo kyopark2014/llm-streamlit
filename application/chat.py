@@ -504,10 +504,10 @@ def run_agent_executor(query, st, debugMode):
                             st.info(status)
 
                     elif re['type'] == 'tool_use':                
-                        print(f"--> {re['type']}: name: {re['name']}, input: {re['input']}")
+                        print(f"--> {re['type']}: {re['name']}, {re['input']}")
 
                         if debugMode=="Debug":
-                            st.info(f"{re['type']}: name: {re['name']}, input: {re['input']}")
+                            st.info(f"{re['type']}: {re['name']}, {re['input']}")
                     else:
                         print(re)
                 else: # answer

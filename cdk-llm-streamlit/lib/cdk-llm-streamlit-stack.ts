@@ -133,7 +133,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       maxAzs: 2,
       ipAddresses: ec2.IpAddresses.cidr("10.20.0.0/16"),
       natGateways: 0,
-      createInternetGateway: false,
+      createInternetGateway: true,
       subnetConfiguration: [
         {
           cidrMask: 24,
