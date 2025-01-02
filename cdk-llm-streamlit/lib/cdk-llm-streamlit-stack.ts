@@ -227,7 +227,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     });    
 
     // EC2 Security Group
-    const ec2Sg = new ec2.SecurityGroup(this, `ec2-sg-for-${projectName}`,
+  /*  const ec2Sg = new ec2.SecurityGroup(this, `ec2-sg-for-${projectName}`,
       {
         vpc: vpc,
         allowAllOutbound: true,
@@ -263,8 +263,6 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     });
 
     const commands = [
-      //'yum install nginx -y',
-      //'service nginx start',
       'yum install git python-pip -y',
       'pip install pip --upgrade',            
       `sh -c "cat <<EOF > /etc/systemd/system/streamlit.service
@@ -282,14 +280,14 @@ ExecStart=/home/ec2-user/.local/bin/streamlit run /home/ec2-user/${projectName}/
 WantedBy=multi-user.target
 EOF"`,
         `runuser -l ec2-user -c "mkdir -p /home/ec2-user/.streamlit"`,
-        `runuser -l ec2-user -c "cat <<EOF > /home/ec2-user/.streamlit/config.toml
+        `runuser -l ec2-user -c 'cat <<EOF > /home/ec2-user/.streamlit/config.toml
 [server]
 port=${targetPort}
 
 [theme]
-base=\"dark\"
-primaryColor=\"#fff700\"
-EOF"`,
+base="dark"
+primaryColor="#fff700"
+EOF'`,
       `json='${JSON.stringify(environment)}' && echo "$json">/home/config.json`,      
       `runuser -l ec2-user -c 'cd && git clone https://github.com/kyopark2014/${projectName}'`,
       `runuser -l ec2-user -c 'pip install streamlit streamlit_chat'`,        
@@ -355,6 +353,6 @@ EOF"`,
     })
     listener.addAction(`RedirectHttpListener-for-${projectName}`, {
       action: defaultAction
-    });   
+    });   */
   }
 }
