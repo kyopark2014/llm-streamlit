@@ -503,8 +503,8 @@ def run_agent_executor(query, st, debugMode):
                             status = status[status.find('<thinking>')+11:status.find('</thinking>')]
                             print('status without tag: ', status)
 
-                        if debugMode=="Debug":
-                            st.info(status)
+                            if debugMode=="Debug":
+                                st.info(status)
 
                     elif re['type'] == 'tool_use':                
                         print(f"--> {re['type']}: {re['name']}, {re['input']}")
@@ -630,8 +630,8 @@ def run_agent_executor2(query, st, debugMode):
                         status = status[status.find('<thinking>')+11:status.find('</thinking>')]
                         print('status without tag: ', status)
 
-                    if debugMode=="Debug":
-                        st.info(status)
+                        if debugMode=="Debug":
+                            st.info(status)
 
                 elif re['type'] == 'tool_use':                
                     print(f"--> {re['type']}: name: {re['name']}, input: {re['input']}")
@@ -662,6 +662,8 @@ def run_agent_executor2(query, st, debugMode):
         else:
             answer = state["messages"][-1].content
 
+        status = status.replace('\'','')
+        status = status.replace('\"','')
         if answer.find('<thinking>') != -1:
             print('Remove <thinking> tag.')
             answer = answer[answer.find('</thinking>')+12:]
