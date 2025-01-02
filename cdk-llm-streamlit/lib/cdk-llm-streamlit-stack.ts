@@ -19,7 +19,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // s3 
+    // S3 
     const s3Bucket = new s3.Bucket(this, `storage-${projectName}`,{
       bucketName: bucketName,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
