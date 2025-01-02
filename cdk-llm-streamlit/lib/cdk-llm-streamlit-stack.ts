@@ -161,16 +161,6 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       }),
     ); 
 
-    // Bedrock endpoint
-    new ec2.InterfaceVpcEndpoint(this, `VPC Endpoint-${projectName}`, {
-      privateDnsEnabled: true,
-      vpc: vpc,
-      service: new ec2.InterfaceVpcEndpointService('com.amazonaws.us-west-2.bedrock', 443),
-      subnets: {
-        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
-      }
-    });
-
     // EC2 Security Group
     const ec2Sg = new ec2.SecurityGroup(this, `ec2-sg-for-${projectName}`,
       {
@@ -190,6 +180,17 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     //   ec2.Port.tcp(80),
     //   'HTTP',
     // );
+
+    // Bedrock endpoint
+    const bedrockEndpoint = new ec2.InterfaceVpcEndpoint(this, `VPC Endpoint-${projectName}`, {
+      privateDnsEnabled: true,
+      vpc: vpc,
+      service: new ec2.InterfaceVpcEndpointService('com.amazonaws.us-west-2.bedrock', 443),
+      subnets: {
+        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
+      }
+    });
+    ec2Sg.connections.allowTo(bedrockEndpoint, ec2.Port.tcp(443), 'allow traffic to bedrock endpoint')
 
     // ALB SG
     const albSg = new ec2.SecurityGroup(this, `alb-sg-for-${projectName}`, {
