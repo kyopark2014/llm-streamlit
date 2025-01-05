@@ -351,9 +351,9 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대
 ![image](https://github.com/user-attachments/assets/39fb2235-c6ef-42e0-8f43-f158cb088db4)
 
 
-### Endpoint 확인 방법
+### Amazon S3와 Bedrock Endpoint의 동작 확인
 
-[cdk-llm-streamlit-stack.ts](./cdk-llm-streamlit/lib/cdk-llm-streamlit-stack.ts)의 VPC 설정은 아래와 같습니다. 아래의 natGateways을 0으로 설정한 후에 메시지 전송 또는 이미지 업로드를 했는지 확인하면 endpoint로 정상적으로 처리되는것을 확인할 수 있습니다.
+[cdk-llm-streamlit-stack.ts](./cdk-llm-streamlit/lib/cdk-llm-streamlit-stack.ts)의 VPC 설정은 아래와 같습니다. 여기에서 natGateways을 0으로 설정하면 private subnet에 있는 streamlit은 외부로 요청을 보낼수 없습니다. 하지만, 여기에서는 Amazon S3에 대한 gateway endpoint와 Bedrock-runtime을 위한 interface endpoint를 설정하였으므로, NAT 없이 Amazon S3와 Bedrock에 대한 요청 및 처리가 가능합니다. 이와같이 메시지 전송 또는 이미지 업로드를 외부 연결없이 endpoint를 이용하여 처리할 수 있습니다.
 
 ```java
 const vpc = new ec2.Vpc(this, `vpc-for-${projectName}`, {
