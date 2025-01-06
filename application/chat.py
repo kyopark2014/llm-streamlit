@@ -438,14 +438,14 @@ def get_weather_info(city: str) -> str:
     return weather_str
 
 
-# tavily tool
-# tavily_tool = TavilySearchResults(max_results=3,
-#     include_answer=True,
-#     include_raw_content=True,
-#     api_wrapper=tavily_api_wrapper,
-#     search_depth="advanced", # "basic"
-#     include_domains=["google.com", "naver.com"]
-# )
+# Tavily Tool
+tavily_tool = TavilySearchResults(max_results=3,
+    include_answer=True,
+    include_raw_content=True,
+    api_wrapper=tavily_api_wrapper,
+    search_depth="advanced", # "basic"
+    include_domains=["google.com", "naver.com"]
+)
 
 # user defined tavily tool
 @tool
@@ -499,7 +499,7 @@ def search_by_tavily(keyword: str) -> str:
         
     return answer
 
-tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily]        
+tools = [get_current_time, get_book_list, get_weather_info, tavily_tool]        
 
 def run_agent_executor(query, st, debugMode):
     chatModel = get_chat() 
@@ -647,11 +647,12 @@ def run_agent_executor(query, st, debugMode):
 
     msg = message.content
 
-    reference = ""
-    if reference_docs:
-        reference = get_references(reference_docs)
+    # reference = ""
+    # if reference_docs:
+    #     reference = get_references(reference_docs)
+    # return msg+reference
 
-    return msg+reference
+    return msg
 
 def run_agent_executor2(query, st, debugMode):        
     class State(TypedDict):
