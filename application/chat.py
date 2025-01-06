@@ -632,6 +632,9 @@ def run_agent_executor(query, st, debugMode):
 
         return workflow.compile()
 
+    global reference_docs
+    reference_docs = []
+
     app = buildChatAgent()
             
     inputs = [HumanMessage(content=query)]
