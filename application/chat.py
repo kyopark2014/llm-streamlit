@@ -20,6 +20,7 @@ from langchain_core.tools import tool
 from langchain.docstore.document import Document
 from tavily import TavilyClient  
 from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain.utilities.tavily_search import TavilySearchAPIWrapper
 from bs4 import BeautifulSoup
 from botocore.exceptions import ClientError
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage, ToolMessage
@@ -29,7 +30,6 @@ from typing_extensions import Annotated, TypedDict
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from langchain_core.output_parsers import StrOutputParser
-from langchain.utilities.tavily_search import TavilySearchAPIWrapper
 
 try:
     with open("/home/config.json", "r", encoding="utf-8") as f:
@@ -174,35 +174,25 @@ try:
     tavily_api_wrapper = TavilySearchAPIWrapper(tavily_api_key=tavily_key)
     #     os.environ["TAVILY_API_KEY"] = tavily_key
 
+    # Tavily Tool Test
+    search = TavilySearchResults(
+        max_results=1,
+        include_answer=True,
+        include_raw_content=True,
+        api_wrapper=tavily_api_wrapper,
+        search_depth="advanced", # "basic"
+        include_domains=["google.com", "naver.com"]
+    )
+    output = search.invoke(keyword)
+    print('tavily output: ', output)
+        
+    for result in output:
+        print('result: ', result)
+        break
+
 except Exception as e: 
+    print('Tavily credential is required: ', e)
     raise e
-
-def tavily_search(query, k):
-    docs = []    
-    try:
-        tavily_client = TavilyClient(api_key=tavily_key)
-        response = tavily_client.search(query, max_results=k)
-        # print('tavily response: ', response)
-            
-        for r in response["results"]:
-            name = r.get("title")
-            if name is None:
-                name = 'WWW'
-            
-            docs.append(
-                Document(
-                    page_content=r.get("content"),
-                    metadata={
-                        'name': name,
-                        'url': r.get("url"),
-                        'from': 'tavily'
-                    },
-                )
-            )                   
-    except Exception as e:
-        print('Exception: ', e)
-
-    return docs
 
 def isKorean(text):
     # check korean
@@ -1118,3 +1108,30 @@ def extract_text(img_base64):
         msg = "텍스트를 추출하지 못하였습니다."    
     
     return msg
+
+def tavily_search(query, k):
+    docs = []    
+    try:
+        tavily_client = TavilyClient(api_key=tavily_key)
+        response = tavily_client.search(query, max_results=k)
+        # print('tavily response: ', response)
+            
+        for r in response["results"]:
+            name = r.get("title")
+            if name is None:
+                name = 'WWW'
+            
+            docs.append(
+                Document(
+                    page_content=r.get("content"),
+                    metadata={
+                        'name': name,
+                        'url': r.get("url"),
+                        'from': 'tavily'
+                    },
+                )
+            )                   
+    except Exception as e:
+        print('Exception: ', e)
+
+    return docs
