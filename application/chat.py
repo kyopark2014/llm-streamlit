@@ -175,6 +175,7 @@ try:
     #     os.environ["TAVILY_API_KEY"] = tavily_key
 
     # Tavily Tool Test
+    query = 'what is Amazon Nova Pro?'
     search = TavilySearchResults(
         max_results=1,
         include_answer=True,
@@ -183,7 +184,7 @@ try:
         search_depth="advanced", # "basic"
         include_domains=["google.com", "naver.com"]
     )
-    output = search.invoke(keyword)
+    output = search.invoke(query)
     print('tavily output: ', output)
         
     for result in output:
