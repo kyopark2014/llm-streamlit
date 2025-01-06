@@ -290,6 +290,57 @@ def save_chat_history(text, msg):
     else:
         memory_chain.chat_memory.add_ai_message(msg) 
 
+def get_references(docs):
+    reference = "\n\nFrom\n"
+    for i, doc in enumerate(docs):
+        page = ""
+        if "page" in doc.metadata:
+            page = doc.metadata['page']
+            #print('page: ', page)            
+        url = ""
+        if "url" in doc.metadata:
+            url = doc.metadata['url']
+            #print('url: ', url)                
+        name = ""
+        if "name" in doc.metadata:
+            name = doc.metadata['name']
+            #print('name: ', name)     
+           
+        sourceType = ""
+        if "from" in doc.metadata:
+            sourceType = doc.metadata['from']
+        else:
+            # if useEnhancedSearch:
+            #     sourceType = "OpenSearch"
+            # else:
+            #     sourceType = "WWW"
+            sourceType = "WWW"
+
+        #print('sourceType: ', sourceType)        
+        
+        #if len(doc.page_content)>=1000:
+        #    excerpt = ""+doc.page_content[:1000]
+        #else:
+        #    excerpt = ""+doc.page_content
+        excerpt = ""+doc.page_content
+        # print('excerpt: ', excerpt)
+        
+        # for some of unusual case 
+        #excerpt = excerpt.replace('"', '')        
+        #excerpt = ''.join(c for c in excerpt if c not in '"')
+        excerpt = re.sub('"', '', excerpt)
+        # print('excerpt(quotation removed): ', excerpt)
+        
+        if page:                
+            reference = reference + f"{i+1}. {page}page in [{name}]({url}), [관련문서]({excerpt})"
+        else:
+            reference = reference + f"{i+1}. [{name}]({url}), [관련문서]({excerpt})"
+    return reference
+
+####################### LangGraph #######################
+# Agentic Workflow: Tool Use
+#########################################################
+
 @tool 
 def get_book_list(keyword: str) -> str:
     """
@@ -389,6 +440,7 @@ def get_weather_info(city: str) -> str:
 # tavily_tool = TavilySearchResults(max_results=3,
 #     include_answer=True,
 #     include_raw_content=True,
+#     tavily_api_key=tavily_key,
 #     search_depth="advanced", # "basic"
 #     include_domains=["google.com", "naver.com"]
 # )
@@ -411,6 +463,7 @@ def search_by_tavily(keyword: str) -> str:
             max_results=3,
             include_answer=True,
             include_raw_content=True,
+            tavily_api_key=tavily_key,
             search_depth="advanced", # "basic"
             include_domains=["google.com", "naver.com"]
         )
@@ -592,8 +645,11 @@ def run_agent_executor(query, st, debugMode):
 
     msg = message.content
 
-    #return msg[msg.find('<result>')+8:len(msg)-9]
-    return msg
+    reference = ""
+    if reference_docs:
+        reference = get_references(reference_docs)
+
+    return msg+reference
 
 def run_agent_executor2(query, st, debugMode):        
     class State(TypedDict):
