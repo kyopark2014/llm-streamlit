@@ -29,6 +29,7 @@ from typing_extensions import Annotated, TypedDict
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from langchain_core.output_parsers import StrOutputParser
+from langchain.utilities.tavily_search import TavilySearchAPIWrapper
 
 try:
     with open("/home/config.json", "r", encoding="utf-8") as f:
@@ -172,8 +173,9 @@ try:
 except Exception as e: 
     raise e
 
-if tavily_key:
-    os.environ["TAVILY_API_KEY"] = tavily_key
+tavily_api_wrapper = TavilySearchAPIWrapper(tavily_api_key=tavily_key)
+# if tavily_key:
+#     os.environ["TAVILY_API_KEY"] = tavily_key
 
 def tavily_search(query, k):
     docs = []    
@@ -440,7 +442,7 @@ def get_weather_info(city: str) -> str:
 # tavily_tool = TavilySearchResults(max_results=3,
 #     include_answer=True,
 #     include_raw_content=True,
-#     tavily_api_key=tavily_key,
+#     api_wrapper=tavily_api_wrapper,
 #     search_depth="advanced", # "basic"
 #     include_domains=["google.com", "naver.com"]
 # )
@@ -463,7 +465,7 @@ def search_by_tavily(keyword: str) -> str:
             max_results=3,
             include_answer=True,
             include_raw_content=True,
-            tavily_api_key=tavily_key,
+            api_wrapper=tavily_api_wrapper,
             search_depth="advanced", # "basic"
             include_domains=["google.com", "naver.com"]
         )
