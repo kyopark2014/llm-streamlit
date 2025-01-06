@@ -159,7 +159,6 @@ if langsmith_api_key:
     os.environ["LANGCHAIN_PROJECT"] = langchain_project
 
 # api key to use Tavily Search
-tavily_api_key = []
 tavily_key = ""
 try:
     get_tavily_api_secret = secretsmanager.get_secret_value(
@@ -405,7 +404,7 @@ def search_by_tavily(keyword: str) -> str:
     global reference_docs    
     answer = ""
     
-    if tavily_api_key:
+    if tavily_key:
         keyword = keyword.replace('\'','')
         
         search = TavilySearchResults(

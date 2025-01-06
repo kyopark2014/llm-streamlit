@@ -211,7 +211,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       protocolPolicy: cloudFront.OriginProtocolPolicy.HTTP_ONLY      
     });
     const distribution = new cloudFront.Distribution(this, `cloudfront-for-${projectName}`, {
-      comment: "CloudFront distribution for Streamlit frontend application",
+      comment: `CloudFront-for-${projectName}`,
       defaultBehavior: {
         origin: origin,
         viewerProtocolPolicy: cloudFront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
