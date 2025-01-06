@@ -386,12 +386,12 @@ def get_weather_info(city: str) -> str:
 
 
 # tavily tool
-tavily_tool = TavilySearchResults(max_results=3,
-    include_answer=True,
-    include_raw_content=True,
-    search_depth="advanced", # "basic"
-    include_domains=["google.com", "naver.com"]
-)
+# tavily_tool = TavilySearchResults(max_results=3,
+#     include_answer=True,
+#     include_raw_content=True,
+#     search_depth="advanced", # "basic"
+#     include_domains=["google.com", "naver.com"]
+# )
 
 # user defined tavily tool
 @tool
@@ -444,7 +444,7 @@ def search_by_tavily(keyword: str) -> str:
         
     return answer
 
-tools = [get_current_time, get_book_list, get_weather_info, tavily_tool]        
+tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily]        
 
 def run_agent_executor(query, st, debugMode):
     chatModel = get_chat() 
