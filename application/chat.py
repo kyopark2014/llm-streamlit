@@ -170,12 +170,12 @@ try:
     #print('secret: ', secret)
     tavily_key = secret['tavily_api_key']
     #print('tavily_api_key: ', tavily_api_key)
+
+    tavily_api_wrapper = TavilySearchAPIWrapper(tavily_api_key=tavily_key)
+    #     os.environ["TAVILY_API_KEY"] = tavily_key
+
 except Exception as e: 
     raise e
-
-tavily_api_wrapper = TavilySearchAPIWrapper(tavily_api_key=tavily_key)
-# if tavily_key:
-#     os.environ["TAVILY_API_KEY"] = tavily_key
 
 def tavily_search(query, k):
     docs = []    
