@@ -292,8 +292,9 @@ def save_chat_history(text, msg):
     else:
         memory_chain.chat_memory.add_ai_message(msg) 
 
+
 def get_references(docs):
-    reference = "\n\nFrom\n"
+    reference = "\n\n### 관련 문서\n"
     for i, doc in enumerate(docs):
         page = ""
         if "page" in doc.metadata:
@@ -331,12 +332,12 @@ def get_references(docs):
         #excerpt = excerpt.replace('"', '')        
         #excerpt = ''.join(c for c in excerpt if c not in '"')
         excerpt = re.sub('"', '', excerpt)
-        # print('excerpt(quotation removed): ', excerpt)
+        print('excerpt(quotation removed): ', excerpt)
         
         if page:                
-            reference = reference + f"{i+1}. {page}page in [{name}]({url}), [관련문서]({excerpt})"
+            reference = reference + f"{i+1}. {page}page in [{name}]({url})), {excerpt[:40]}...\n"
         else:
-            reference = reference + f"{i+1}. [{name}]({url}), [관련문서]({excerpt})"
+            reference = reference + f"{i+1}. [{name}]({url}), {excerpt[:40]}...\n"
     return reference
 
 ####################### LangGraph #######################
@@ -647,12 +648,10 @@ def run_agent_executor(query, st, debugMode):
 
     msg = message.content
 
-    # reference = ""
-    # if reference_docs:
-    #     reference = get_references(reference_docs)
-    # return msg+reference
-
-    return msg
+    reference = ""
+    if reference_docs:
+        reference = get_references(reference_docs)
+    return msg+reference
 
 def run_agent_executor2(query, st, debugMode):        
     class State(TypedDict):
