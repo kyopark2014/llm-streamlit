@@ -252,6 +252,98 @@ def use_multimodal(img_base64, query):
     return summary
 ```
 
+### Basic Chat
+
+일반적인 대화는 아래와 같이 stream으로 결과를 얻을 수 있습니다. 여기에서는 LangChain의 ChatBedrock과 Nova Pro의 모델명인 "us.amazon.nova-pro-v1:0"을 활용하고 있습니다.
+
+```python
+modelId = "us.amazon.nova-pro-v1:0"
+bedrock_region = "us-west-2"
+boto3_bedrock = boto3.client(
+    service_name='bedrock-runtime',
+    region_name=bedrock_region,
+    config=Config(
+        retries = {
+            'max_attempts': 30
+        }
+    )
+)
+parameters = {
+    "max_tokens":maxOutputTokens,     
+    "temperature":0.1,
+    "top_k":250,
+    "top_p":0.9,
+    "stop_sequences": ["\n\n<thinking>", "\n<thinking>", " <thinking>"]
+}
+
+chat = ChatBedrock(  
+    model_id=modelId,
+    client=boto3_bedrock, 
+    model_kwargs=parameters,
+    region_name=bedrock_region
+)
+
+system = (
+    "당신의 이름은 서연이고, 질문에 대해 친절하게 답변하는 사려깊은 인공지능 도우미입니다."
+    "상황에 맞는 구체적인 세부 정보를 충분히 제공합니다." 
+    "모르는 질문을 받으면 솔직히 모른다고 말합니다."
+)
+
+human = "Question: {input}"
+
+prompt = ChatPromptTemplate.from_messages([
+    ("system", system), 
+    MessagesPlaceholder(variable_name="history"), 
+    ("human", human)
+])
+            
+history = memory_chain.load_memory_variables({})["chat_history"]
+
+chain = prompt | chat | StrOutputParser()
+stream = chain.stream(
+    {
+        "history": history,
+        "input": query,
+    }
+)  
+print('stream: ', stream)
+```
+
+### Agentic Workflow: Tool Use
+
+아래와 같이 activity diagram을 이용하여 node/edge/conditional edge로 구성되는 tool use 방식의 agent를 구현할 수 있습니다.
+
+<img width="261" alt="image" src="https://github.com/user-attachments/assets/31202a6a-950f-44d6-b50e-644d28012d8f" />
+
+Tool use 방식 agent의 workflow는 아래와 같습니다. Fuction을 선택하는 call model 노드과 실행하는 tool 노드로 구성됩니다. 선택된 tool의 결과에 따라 cycle형태로 추가 실행을 하거나 종료하면서 결과를 전달할 수 있습니다.
+
+```python
+workflow = StateGraph(State)
+
+workflow.add_node("agent", call_model)
+workflow.add_node("action", tool_node)
+workflow.add_edge(START, "agent")
+workflow.add_conditional_edges(
+    "agent",
+    should_continue,
+    {
+        "continue": "action",
+        "end": END,
+    },
+)
+workflow.add_edge("action", "agent")
+
+app = workflow.compile()
+
+inputs = [HumanMessage(content=query)]
+config = {
+    "recursion_limit": 50
+}
+message = app.invoke({"messages": inputs}, config)
+
+print(event["messages"][-1].content)
+```
+
 
 ### 활용 방법
 
