@@ -233,7 +233,7 @@ try:
         include_raw_content=True,
         api_wrapper=tavily_api_wrapper,
         search_depth="advanced", # "basic"
-        include_domains=["google.com", "naver.com"]
+        # include_domains=["google.com", "naver.com"]
     )
     output = search.invoke(query)
     print('tavily output: ', output)
