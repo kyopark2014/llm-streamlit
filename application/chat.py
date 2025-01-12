@@ -288,6 +288,17 @@ def traslation(chat, text, input_language, output_language):
 
     return msg[msg.find('<result>')+8:len(msg)-9] # remove <result> tag
 
+def extract_thinking_tag(msg, st, debugMode):
+    if msg.find('<thinking>') != -1:
+        print('Remove <thinking> tag.')
+        status = msg[msg.find('<thinking>')+11:msg.find('</thinking>')]
+        print('status without tag: ', status)
+        msg = msg[msg.find('</thinking>')+12:]
+
+        if debugMode=="Debug":
+            st.info(status)
+    return msg
+
 ####################### LangChain #######################
 # General Conversation
 #########################################################
@@ -706,6 +717,10 @@ def run_agent_executor(query, st, debugMode, langMode):
     reference = ""
     if reference_docs:
         reference = get_references(reference_docs)
+
+    if langMode == 'Nova Pro':
+        msg = extract_thinking_tag(msg, st, debugMode)
+
     return msg+reference
 
 def run_agent_executor2(query, st, debugMode, langMode):        
