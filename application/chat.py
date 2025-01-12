@@ -108,7 +108,7 @@ def get_modelInfo(langMode):
             }
         ]
 
-    llmType = model_info['model_type']
+    llmType = model_info[0]['model_type']
     
     return model_info
 
