@@ -49,8 +49,13 @@ with st.sidebar:
         '🖊️ 디버그 모드를 설정하세요',
         ('Debug', 'Normal')
     )
-
     # print('mode: ', mode)
+
+    # debug Mode
+    langMode = st.selectbox(
+        '🖊️ 사용 모델을 선택하세요',
+        ('Nova Pro', 'Nova Lite', 'Nova Micro', 'Claude Sonnet 3.5', 'Claude Sonnet 3.0', 'Claude Haiku 3.5')
+    )
 
     st.subheader("🌇 이미지 업로드")
     uploaded_file = st.file_uploader("이미지를 요약할 파일을 선택합니다.", type=["png", "jpg", "jpeg"])
@@ -126,7 +131,7 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             #     st.session_state.messages.append({"role": "assistant", "content": response})
             #     st.rerun()                
 
-            stream = chat.general_conversation(prompt)            
+            stream = chat.general_conversation(prompt, langMode)            
             response = st.write_stream(stream)
             print('response: ', response)
             st.session_state.messages.append({"role": "assistant", "content": response})
@@ -134,8 +139,8 @@ if prompt := st.chat_input("메시지를 입력하세요."):
 
         elif mode == 'Agentic Workflow (Tool Use)':
             with st.status("thinking...", expanded=True, state="running") as status:
-                response = chat.run_agent_executor(prompt, st, debugMode)
-                # response = chat.run_agent_executor2(prompt st, debugMode)
+                response = chat.run_agent_executor(prompt, st, debugMode, langMode)
+                # response = chat.run_agent_executor2(prompt st, debugMode, langMode)
                 st.write(response)
                 print('response: ', response)
 
@@ -149,14 +154,14 @@ if prompt := st.chat_input("메시지를 입력하세요."):
                     st.rerun()
 
         elif mode == '번역하기':
-            response = chat.translate_text(prompt)
+            response = chat.translate_text(prompt, langMode)
             st.write(response)
 
             st.session_state.messages.append({"role": "assistant", "content": response})
             chat.save_chat_history(prompt, response)
 
         elif mode == '문법 검토하기':
-            response = chat.check_grammer(prompt)
+            response = chat.check_grammer(prompt, langMode)
             st.write(response)
 
             st.session_state.messages.append({"role": "assistant", "content": response})
@@ -168,7 +173,7 @@ if prompt := st.chat_input("메시지를 입력하세요."):
 
             else:                
                 with st.status("thinking...", expanded=True, state="running") as status:
-                    summary, img_base64 = chat.summary_image(file_name, prompt)
+                    summary, img_base64 = chat.summary_image(file_name, prompt, langMode)
                     st.write(summary)
                     print('summary: ', summary)
                     st.session_state.messages.append({"role": "assistant", "content": summary})
@@ -179,7 +184,7 @@ if prompt := st.chat_input("메시지를 입력하세요."):
 
                     st.rerun()
         else:
-            stream = chat.general_conversation(prompt)
+            stream = chat.general_conversation(prompt, langMode)
 
             response = st.write_stream(stream)
             print('response: ', response)

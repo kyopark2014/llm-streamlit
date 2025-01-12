@@ -56,16 +56,60 @@ print('bucketName: ', bucketName)
 
 s3_prefix = 'docs'
 
-multi_region_models = [   # Nova Pro
-    {   
-        "bedrock_region": "us-west-2", # Oregon
-        "model_type": "nova",
-        "model_id": "us.amazon.nova-pro-v1:0"
-    }
-]
+def get_modelInfo(langMode):
+    if langMode=='Nova Pro':
+        model_info = [   # Nova Pro
+            {   
+                "bedrock_region": "us-west-2", # Oregon
+                "model_type": "nova",
+                "model_id": "us.amazon.nova-pro-v1:0"
+            }
+        ]
+    elif langMode=='Nova Lite':
+        model_info = [   # Claude3.5
+            {   
+                "bedrock_region": "us-west-2", # Oregon
+                "model_type": "nova",
+                "model_id": "us.amazon.nova-lite-v1:0"
+            }
+        ]    
+    elif langMode=='Nova Micro':
+        model_info = [   # Claude3.5
+            {   
+                "bedrock_region": "us-west-2", # Oregon
+                "model_type": "nova",
+                "model_id": "us.amazon.nova-micro-v1:0"
+            }
+        ]
+
+    elif langMode=='Claude Sonnet 3.5':
+        model_info = [   # Claude3.5
+            {
+                "bedrock_region": "us-west-2", # Oregon
+                "model_type": "claude",
+                "model_id": "us.anthropic.claude-3-5-sonnet-20241022-v2:0" 
+            }
+        ]
+    elif langMode=='Claude Sonnet 3.0':
+        model_info = [   # Claude3.0
+            {
+                "bedrock_region": "us-west-2", # Oregon
+                "model_type": "claude",
+                "model_id": "anthropic.claude-3-sonnet-20240229-v1:0"
+            }
+        ]
+    elif langMode=='Claude Haiku 3.5':
+        model_info = [   # Claude3.0
+            {
+                "bedrock_region": "us-west-2", # Oregon
+                "model_type": "claude",
+                "model_id": "us.anthropic.claude-3-5-haiku-20241022-v1:0"
+            }
+        ]
+    
+    return model_info
+
 selected_chat = 0
-HUMAN_PROMPT = "\n\nHuman:"
-AI_PROMPT = "\n\nAssistant:"
 MSG_LENGTH = 100
 
 userId = "demo"
@@ -79,16 +123,23 @@ else:
     memory_chain = ConversationBufferWindowMemory(memory_key="chat_history", output_key='answer', return_messages=True, k=5)
     map_chain[userId] = memory_chain
 
+llmMode = 'Nova Pro'
 def get_chat():
     global selected_chat
     
-    profile = multi_region_models[selected_chat]
-    length_of_models = len(multi_region_models)
+    model_info = get_modelInfo(llmMode)
+    profile = model_info[selected_chat]
+    length_of_models = len(model_info)
         
     bedrock_region =  profile['bedrock_region']
     modelId = profile['model_id']
     maxOutputTokens = 4096
     # print(f'LLM: {selected_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}')
+
+    if profile['model_type'] == 'nova':
+        STOP_SEQUENCE = '"\n\n<thinking>", "\n<thinking>", " <thinking>"'
+    elif profile['model_type'] == 'claude':
+        STOP_SEQUENCE = "\n\nHuman:" 
                           
     # bedrock   
     boto3_bedrock = boto3.client(
@@ -105,7 +156,7 @@ def get_chat():
         "temperature":0.1,
         "top_k":250,
         "top_p":0.9,
-        "stop_sequences": [HUMAN_PROMPT]
+        "stop_sequences": [STOP_SEQUENCE]
     }
     # print('parameters: ', parameters)
 
@@ -241,7 +292,10 @@ def traslation(chat, text, input_language, output_language):
 # General Conversation
 #########################################################
 
-def general_conversation(query):
+def general_conversation(query, langMode):
+    global llmMode
+    llmMode = langMode
+
     chat = get_chat()
 
     system = (
@@ -493,7 +547,10 @@ def search_by_tavily(keyword: str) -> str:
 
 tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily]        
 
-def run_agent_executor(query, st, debugMode):
+def run_agent_executor(query, st, debugMode, langMode):
+    global llmMode
+    llmMode = langMode
+
     chatModel = get_chat() 
     
     model = chatModel.bind_tools(tools)
@@ -651,7 +708,7 @@ def run_agent_executor(query, st, debugMode):
         reference = get_references(reference_docs)
     return msg+reference
 
-def run_agent_executor2(query, st, debugMode):        
+def run_agent_executor2(query, st, debugMode, langMode):        
     class State(TypedDict):
         messages: Annotated[list, add_messages]
         answer: str
@@ -859,7 +916,10 @@ def get_basic_answer(query):
 # Translation
 #########################################################
 
-def translate_text(text):
+def translate_text(text, langMode):
+    global llmMode
+    llmMode = langMode
+
     chat = get_chat()
 
     system = (
@@ -903,7 +963,10 @@ def clear_chat_history():
 # Grammer Check
 #########################################################
     
-def check_grammer(text):
+def check_grammer(text, langMode):
+    global llmMode
+    llmMode = langMode
+
     chat = get_chat()
 
     if isKorean(text)==True:
@@ -1000,7 +1063,10 @@ def extract_and_display_s3_images(text, s3_client):
             continue
     return images
 
-def summary_image(object_name, prompt):
+def summary_image(object_name, prompt, langMode):
+    global llmMode
+    llmMode = langMode
+
     # load image
     s3_client = boto3.client(
         service_name='s3',
