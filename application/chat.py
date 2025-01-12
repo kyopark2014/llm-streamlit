@@ -57,6 +57,7 @@ print('bucketName: ', bucketName)
 s3_prefix = 'docs'
 
 def get_modelInfo(langMode):
+    global llmType
     if langMode=='Nova Pro':
         model_info = [   # Nova Pro
             {   
@@ -64,7 +65,7 @@ def get_modelInfo(langMode):
                 "model_type": "nova",
                 "model_id": "us.amazon.nova-pro-v1:0"
             }
-        ]
+        ]        
     elif langMode=='Nova Lite':
         model_info = [   # Claude3.5
             {   
@@ -106,6 +107,8 @@ def get_modelInfo(langMode):
                 "model_id": "us.anthropic.claude-3-5-haiku-20241022-v1:0"
             }
         ]
+
+    llmType = model_info['model_type']
     
     return model_info
 
@@ -124,6 +127,7 @@ else:
     map_chain[userId] = memory_chain
 
 llmMode = 'Nova Pro'
+llmType = 'nova'
 def get_chat():
     global selected_chat
     
@@ -718,7 +722,7 @@ def run_agent_executor(query, st, debugMode, langMode):
     if reference_docs:
         reference = get_references(reference_docs)
 
-    if langMode == 'Nova Pro':
+    if llmType == 'nova':
         msg = extract_thinking_tag(msg, st, debugMode)
 
     return msg+reference
