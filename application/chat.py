@@ -983,7 +983,7 @@ def translate_text(text, langMode):
 
     if msg.find('<result>') != -1:
         msg = msg[msg.find('<result>')+8:msg.find('</result>')] # remove <result> tag
-    elif msg.find('<article>') != -1:
+    if msg.find('<article>') != -1:
         msg = msg[msg.find('<article>')+9:msg.find('</article>')] # remove <article> tag
 
     return msg
