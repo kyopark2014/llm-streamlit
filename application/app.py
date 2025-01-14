@@ -60,7 +60,7 @@ with st.sidebar:
     st.subheader("🌇 이미지 업로드")
     uploaded_file = st.file_uploader("이미지를 요약할 파일을 선택합니다.", type=["png", "jpg", "jpeg"])
 
-    st.success("Connected to Nova Pro", icon="💚")
+    st.success(f"Connected to {langMode}", icon="💚")
     clear_button = st.button("대화 초기화", key="clear")
     # print('clear_button: ', clear_button)
 
