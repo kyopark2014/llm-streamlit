@@ -66,6 +66,9 @@ with st.sidebar:
 
 st.title('🔮 '+ mode)
 
+if clear_button==True:
+    chat.initiate()
+
 # Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []

@@ -115,20 +115,25 @@ def get_modelInfo(langMode):
 selected_chat = 0
 MSG_LENGTH = 100
 
-# random id
-# userId = "demo"
-userId = uuid.uuid4().hex
-print('userId: ', userId)
-
+userId = "demo"
 map_chain = dict() 
 
-if userId in map_chain:  
-        # print('memory exist. reuse it!')
-        memory_chain = map_chain[userId]
-else: 
-    # print('memory does not exist. create new one!')        
-    memory_chain = ConversationBufferWindowMemory(memory_key="chat_history", output_key='answer', return_messages=True, k=5)
-    map_chain[userId] = memory_chain
+def initiate():
+    global userId
+    global memory_chain
+
+    userId = uuid.uuid4().hex
+    print('userId: ', userId)
+
+    if userId in map_chain:  
+            # print('memory exist. reuse it!')
+            memory_chain = map_chain[userId]
+    else: 
+        # print('memory does not exist. create new one!')        
+        memory_chain = ConversationBufferWindowMemory(memory_key="chat_history", output_key='answer', return_messages=True, k=5)
+        map_chain[userId] = memory_chain
+
+initiate()
 
 llmMode = 'Nova Pro'
 llmType = 'nova'
