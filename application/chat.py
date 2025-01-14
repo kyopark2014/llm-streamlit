@@ -981,7 +981,12 @@ def translate_text(text, langMode):
         print('error message: ', err_msg)                    
         raise Exception ("Not able to request to LLM")
 
-    return msg[msg.find('<result>')+8:msg.find('</result>')] # remove <result> tag
+    if msg.find('<result>') != -1:
+        msg = msg[msg.find('<result>')+8:msg.find('</result>')] # remove <result> tag
+    elif msg.find('<article>') != -1:
+        msg = msg[msg.find('<article>')+9:msg.find('</article>')] # remove <article> tag
+
+    return msg
 
 def clear_chat_history():
     memory_chain = []

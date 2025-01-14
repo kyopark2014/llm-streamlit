@@ -66,9 +66,6 @@ with st.sidebar:
 
 st.title('🔮 '+ mode)
 
-if clear_button==True:
-    chat.initiate()
-
 # Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -102,6 +99,8 @@ if clear_button or "messages" not in st.session_state:
     st.rerun()
 
     chat.clear_chat_history()
+
+    chat.initiate()
 
 # Preview the uploaded image in the sidebar
 file_name = ""
