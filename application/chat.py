@@ -115,7 +115,11 @@ def get_modelInfo(langMode):
 selected_chat = 0
 MSG_LENGTH = 100
 
-userId = "demo"
+# random id
+# userId = "demo"
+userId = uuid.uuid4().hex
+print('userId: ', userId)
+
 map_chain = dict() 
 
 if userId in map_chain:  
