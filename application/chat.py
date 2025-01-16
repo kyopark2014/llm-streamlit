@@ -941,7 +941,7 @@ def get_basic_answer(query):
     return output.content
 
 ####################### LangChain #######################
-# Translation
+# Translation (English)
 #########################################################
 
 def translate_text(text, langMode):
@@ -991,6 +991,51 @@ def translate_text(text, langMode):
 def clear_chat_history():
     memory_chain = []
     map_chain[userId] = memory_chain
+
+
+####################### LangChain #######################
+# Translation (English)
+#########################################################
+
+def translate_text_for_japanese(text, langMode):
+    global llmMode
+    llmMode = langMode
+
+    chat = get_chat()
+
+    system = (
+        "You are a helpful assistant that translates {input_language} to {output_language} in <article> tags. Put it in <result> tags."
+    )
+    human = "<article>{text}</article>"
+    
+    prompt = ChatPromptTemplate.from_messages([("system", system), ("human", human)])
+    # print('prompt: ', prompt)
+    
+    input_language = "Japanese"
+    output_language = "Korean"
+                        
+    chain = prompt | chat    
+    try: 
+        result = chain.invoke(
+            {
+                "input_language": input_language,
+                "output_language": output_language,
+                "text": text,
+            }
+        )
+        msg = result.content
+        print('translated text: ', msg)
+    except Exception:
+        err_msg = traceback.format_exc()
+        print('error message: ', err_msg)                    
+        raise Exception ("Not able to request to LLM")
+
+    if msg.find('<result>') != -1:
+        msg = msg[msg.find('<result>')+8:msg.find('</result>')] # remove <result> tag
+    if msg.find('<article>') != -1:
+        msg = msg[msg.find('<article>')+9:msg.find('</article>')] # remove <article> tag
+
+    return msg
 
 ####################### LangChain #######################
 # Grammer Check
