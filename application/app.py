@@ -8,10 +8,10 @@ mode_descriptions = {
     "Agentic Workflow (Tool Use)": [
         "Agent를 이용해 다양한 툴을 사용할 수 있습니다. 여기에서는 날씨, 시간, 도서추천, 인터넷 검색을 제공합니다."
     ],
-    "번역하기 (영어<->한국어)": [
+    "번역하기 (한국어 / 영어)": [
         "한국어와 영어에 대한 번역을 제공합니다. 한국어로 입력하면 영어로, 영어로 입력하면 한국어로 번역합니다."        
     ],
-    "번역하기 (일본어<->한국어)": [
+    "번역하기 (일본어 / 한국어)": [
         "일본어를 한국어로 번역합니다."        
     ],
     "문법 검토하기": [
@@ -37,7 +37,7 @@ with st.sidebar:
     
     # radio selection
     mode = st.radio(
-        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화", "Agentic Workflow (Tool Use)", "번역하기 (영어<->한국어)", "번역하기 (일본어<->한국어)", "문법 검토하기", "이미지 분석"], index=0
+        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화", "Agentic Workflow (Tool Use)", "번역하기 (한국어 / 영어)", "번역하기 (일본어 / 한국어)", "문법 검토하기", "이미지 분석"], index=0
     )   
     st.info(mode_descriptions[mode][0])
     # limit = st.slider(
@@ -159,14 +159,14 @@ if prompt := st.chat_input("메시지를 입력하세요."):
                 if debugMode != "Debug":
                     st.rerun()
 
-        elif mode == '번역하기 (영어<->한국어)':
+        elif mode == '번역하기 (한국어 / 영어)':
             response = chat.translate_text(prompt, langMode)
             st.write(response)
 
             st.session_state.messages.append({"role": "assistant", "content": response})
             # chat.save_chat_history(prompt, response)
         
-        elif mode == '번역하기 (일본어->한국어)':
+        elif mode == '번역하기 (일본어 / 한국어)':
             response = chat.translate_text_for_japanese(prompt, langMode)
             st.write(response)
 
