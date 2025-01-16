@@ -994,7 +994,7 @@ def clear_chat_history():
 
 
 ####################### LangChain #######################
-# Translation (English)
+# Translation (Japanese)
 #########################################################
 
 def translate_text_for_japanese(text, langMode):
@@ -1024,7 +1024,7 @@ def translate_text_for_japanese(text, langMode):
             }
         )
         msg = result.content
-        print('translated text: ', msg)
+        print('translated text from Japanese: ', msg)
     except Exception:
         err_msg = traceback.format_exc()
         print('error message: ', err_msg)                    
