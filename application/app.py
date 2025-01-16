@@ -164,21 +164,21 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             st.write(response)
 
             st.session_state.messages.append({"role": "assistant", "content": response})
-            chat.save_chat_history(prompt, response)
+            # chat.save_chat_history(prompt, response)
         
         elif mode == '번역하기 (일본어->한국어)':
             response = chat.translate_text_for_japanese(prompt, langMode)
             st.write(response)
 
             st.session_state.messages.append({"role": "assistant", "content": response})
-            chat.save_chat_history(prompt, response)
+            # chat.save_chat_history(prompt, response)
 
         elif mode == '문법 검토하기':
             response = chat.check_grammer(prompt, langMode)
             st.write(response)
 
             st.session_state.messages.append({"role": "assistant", "content": response})
-            chat.save_chat_history(prompt, response)
+            # chat.save_chat_history(prompt, response)
         elif mode == '이미지 분석':
             if uploaded_file is None or uploaded_file == "":
                 st.error("파일을 먼저 업로드하세요.")
