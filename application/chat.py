@@ -8,6 +8,7 @@ import datetime
 import functools
 import base64
 import uuid
+import info
 
 from io import BytesIO
 from PIL import Image
@@ -20,7 +21,7 @@ from langchain_core.tools import tool
 from langchain.docstore.document import Document
 from tavily import TavilyClient  
 from langchain_community.tools.tavily_search import TavilySearchResults
-from langchain.utilities.tavily_search import TavilySearchAPIWrapper
+from langchain_community.utilities.tavily_search import TavilySearchAPIWrapper
 from bs4 import BeautifulSoup
 from botocore.exceptions import ClientError
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage, ToolMessage
@@ -56,67 +57,42 @@ print('bucketName: ', bucketName)
 
 s3_prefix = 'docs'
 
-def get_modelInfo(langMode):
-    global llmType
-    if langMode=='Nova Pro':
-        model_info = [   # Nova Pro
-            {   
-                "bedrock_region": "us-west-2", # Oregon
-                "model_type": "nova",
-                "model_id": "us.amazon.nova-pro-v1:0"
-            }
-        ]        
-    elif langMode=='Nova Lite':
-        model_info = [   # Claude3.5
-            {   
-                "bedrock_region": "us-west-2", # Oregon
-                "model_type": "nova",
-                "model_id": "us.amazon.nova-lite-v1:0"
-            }
-        ]    
-    elif langMode=='Nova Micro':
-        model_info = [   # Claude3.5
-            {   
-                "bedrock_region": "us-west-2", # Oregon
-                "model_type": "nova",
-                "model_id": "us.amazon.nova-micro-v1:0"
-            }
-        ]
-
-    elif langMode=='Claude Sonnet 3.5':
-        model_info = [   # Claude3.5
-            {
-                "bedrock_region": "us-west-2", # Oregon
-                "model_type": "claude",
-                "model_id": "us.anthropic.claude-3-5-sonnet-20241022-v2:0" 
-            }
-        ]
-    elif langMode=='Claude Sonnet 3.0':
-        model_info = [   # Claude3.0
-            {
-                "bedrock_region": "us-west-2", # Oregon
-                "model_type": "claude",
-                "model_id": "anthropic.claude-3-sonnet-20240229-v1:0"
-            }
-        ]
-    elif langMode=='Claude Haiku 3.5':
-        model_info = [   # Claude3.0
-            {
-                "bedrock_region": "us-west-2", # Oregon
-                "model_type": "claude",
-                "model_id": "us.anthropic.claude-3-5-haiku-20241022-v1:0"
-            }
-        ]
-
-    llmType = model_info[0]['model_type']
-    
-    return model_info
-
-selected_chat = 0
 MSG_LENGTH = 100
 
 userId = "demo"
 map_chain = dict() 
+
+model_name = "Nova Pro"
+model_type = "nova"
+multi_region = 'Enable'
+contextual_embedding = "Disable"
+debug_mode = "Enable"
+
+models = info.get_model_info(model_name)
+number_of_models = len(models)
+selected_chat = 0
+
+def update(modelName, debugMode, multiRegion):    
+    global model_name, debug_mode, multi_region
+    global selected_chat, models, number_of_models
+    
+    if model_name != modelName:
+        model_name = modelName
+        print('model_name: ', model_name)
+
+        selected_chat = 0
+        models = info.get_model_info(model_name)
+        number_of_models = len(models)
+                
+    if debug_mode != debugMode:
+        debug_mode = debugMode
+        print('debug_mode: ', debug_mode)
+
+    if multi_region != multiRegion:
+        multi_region = multiRegion
+        print('multi_region: ', multi_region)
+
+        selected_chat = 0
 
 def initiate():
     global userId
@@ -135,19 +111,28 @@ def initiate():
 
 initiate()
 
-llmMode = 'Nova Pro'
-llmType = 'nova'
+def clear_chat_history():
+    memory_chain = []
+    map_chain[userId] = memory_chain
+
+def save_chat_history(text, msg):
+    memory_chain.chat_memory.add_user_message(text)
+    if len(msg) > MSG_LENGTH:
+        memory_chain.chat_memory.add_ai_message(msg[:MSG_LENGTH])                          
+    else:
+        memory_chain.chat_memory.add_ai_message(msg) 
+
 def get_chat():
-    global selected_chat
-    
-    model_info = get_modelInfo(llmMode)
-    profile = model_info[selected_chat]
-    length_of_models = len(model_info)
+    global selected_chat, model_type
+
+    profile = models[selected_chat]
+    # print('profile: ', profile)
         
     bedrock_region =  profile['bedrock_region']
     modelId = profile['model_id']
     maxOutputTokens = 4096
-    # print(f'LLM: {selected_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}')
+    model_type = profile['model_type']
+    print(f'LLM: {selected_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}, model_type: {model_type}')
 
     if profile['model_type'] == 'nova':
         STOP_SEQUENCE = '"\n\n<thinking>", "\n<thinking>", " <thinking>"'
@@ -180,10 +165,13 @@ def get_chat():
         region_name=bedrock_region
     )    
     
-    selected_chat = selected_chat + 1
-    if selected_chat == length_of_models:
+    if multi_region=='Enable':
+        selected_chat = selected_chat + 1
+        if selected_chat == number_of_models:
+            selected_chat = 0
+    else:
         selected_chat = 0
-    
+
     return chat
 
 reference_docs = []
@@ -301,25 +289,29 @@ def traslation(chat, text, input_language, output_language):
 
     return msg[msg.find('<result>')+8:len(msg)-9] # remove <result> tag
 
-def extract_thinking_tag(msg, st, debugMode):
-    if msg.find('<thinking>') != -1:
-        print('Remove <thinking> tag.')
-        status = msg[msg.find('<thinking>')+11:msg.find('</thinking>')]
-        print('status without tag: ', status)
-        msg = msg[msg.find('</thinking>')+12:]
-
-        if debugMode=="Debug":
+def extract_thinking_tag(response, st):
+    if response.find('<thinking>') != -1:
+        status = response[response.find('<thinking>')+11:response.find('</thinking>')]
+        print('agent_thinking: ', status)
+        
+        if debug_mode=="Enable":
             st.info(status)
+
+        if response.find('<thinking>') == 0:
+            msg = response[response.find('</thinking>')+13:]
+        else:
+            msg = response[:response.find('<thinking>')]
+        print('msg: ', msg)
+    else:
+        msg = response
+
     return msg
 
 ####################### LangChain #######################
 # General Conversation
 #########################################################
 
-def general_conversation(query, langMode):
-    global llmMode
-    llmMode = langMode
-
+def general_conversation(query):
     chat = get_chat()
 
     system = (
@@ -353,14 +345,6 @@ def general_conversation(query, langMode):
         raise Exception ("Not able to request to LLM: "+err_msg)
         
     return stream
-
-def save_chat_history(text, msg):
-    memory_chain.chat_memory.add_user_message(text)
-    if len(msg) > MSG_LENGTH:
-        memory_chain.chat_memory.add_ai_message(msg[:MSG_LENGTH])                          
-    else:
-        memory_chain.chat_memory.add_ai_message(msg) 
-
 
 def get_references(docs):
     reference = "\n\n### 관련 문서\n"
@@ -566,17 +550,17 @@ def search_by_tavily(keyword: str) -> str:
             err_msg = traceback.format_exc()
             print('error message: ', err_msg)                    
             # raise Exception ("Not able to request to tavily")   
-        
+    
+    if answer == "":
+        # answer = "No relevant documents found." 
+        answer = "관련된 정보를 찾지 못하였습니다."
+
     return answer
 
 tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily]        
 
-def run_agent_executor(query, st, debugMode, langMode):
-    global llmMode
-    llmMode = langMode
-
-    chatModel = get_chat() 
-    
+def run_agent_executor(query, st):
+    chatModel = get_chat()     
     model = chatModel.bind_tools(tools)
 
     class State(TypedDict):
@@ -625,13 +609,11 @@ def run_agent_executor(query, st, debugMode, langMode):
                 "당신의 이름은 서연이고, 질문에 친근한 방식으로 대답하도록 설계된 대화형 AI입니다."
                 "상황에 맞는 구체적인 세부 정보를 충분히 제공합니다."
                 "모르는 질문을 받으면 솔직히 모른다고 말합니다."
-                "최종 답변에는 조사한 내용을 반드시 포함합니다."
             )
         else: 
             system = (            
                 "You are a conversational AI designed to answer in a friendly way to a question."
                 "If you don't know the answer, just say that you don't know, don't try to make up an answer."
-                "You will be acting as a thoughtful advisor."    
             )
                 
         for attempt in range(20):   
@@ -665,21 +647,20 @@ def run_agent_executor(query, st, debugMode, langMode):
                                 if status.find('<thinking>') != -1:
                                     print('Remove <thinking> tag.')
                                     status = status[status.find('<thinking>')+11:status.find('</thinking>')]
-                                    print('status without tag: ', status)
+                                    print('status without <thinking> tag: ', status)
 
-                                if debugMode=="Debug":
+                                if debug_mode=="Enable":
                                     st.info(status)
                                 
                             elif re['type'] == 'tool_use':                
                                 print(f"--> {re['type']}: {re['name']}, {re['input']}")
 
-                                if debugMode=="Debug":
+                                if debug_mode=="Enable":
                                     st.info(f"{re['type']}: {re['name']}, {re['input']}")
                             else:
                                 print(re)
                         else: # answer
                             print(response.content)
-                            break
                 break
             except Exception:
                 response = AIMessage(content="답변을 찾지 못하였습니다.")
@@ -708,8 +689,10 @@ def run_agent_executor(query, st, debugMode, langMode):
 
         return workflow.compile()
 
-    global reference_docs
+    # initiate
+    global reference_docs, contentList
     reference_docs = []
+    contentList = []
 
     app = buildChatAgent()
             
@@ -718,25 +701,29 @@ def run_agent_executor(query, st, debugMode, langMode):
         "recursion_limit": 50
     }
     
-    message = ""
-    for event in app.stream({"messages": inputs}, config, stream_mode="values"):   
-        # print('event: ', event)
-        
-        message = event["messages"][-1]
-        # print('message: ', message)
+    # msg = message.content
+    result = app.invoke({"messages": inputs}, config)
+    #print("result: ", result)
 
-    msg = message.content
+    msg = result["messages"][-1].content
+    print("msg: ", msg)
 
     reference = ""
     if reference_docs:
         reference = get_references(reference_docs)
 
-    if llmType == 'nova':
-        msg = extract_thinking_tag(msg, st, debugMode)
+    for i, doc in enumerate(reference_docs):
+        print(f"--> reference {i}: {doc}")
+        
+    reference = ""
+    if reference_docs:
+        reference = get_references(reference_docs)
 
-    return msg+reference
+    msg = extract_thinking_tag(msg, st)
+    
+    return msg+reference, reference_docs
 
-def run_agent_executor2(query, st, debugMode, langMode):        
+def run_agent_executor2(query, st, debug_mode, model_name):        
     class State(TypedDict):
         messages: Annotated[list, add_messages]
         answer: str
@@ -799,15 +786,15 @@ def run_agent_executor2(query, st, debugMode, langMode):
                     if status.find('<thinking>') != -1:
                         print('Remove <thinking> tag.')
                         status = status[status.find('<thinking>')+11:status.find('</thinking>')]
-                        print('status without tag: ', status)
+                        print('agent_thinking: ', status)
 
-                    if debugMode=="Debug":
+                    if debug_mode=="Enable":
                         st.info(status)
 
                 elif re['type'] == 'tool_use':                
                     print(f"--> {re['type']}: name: {re['name']}, input: {re['input']}")
 
-                    if debugMode=="Debug":
+                    if debug_mode=="Enable":
                         st.info(f"{re['type']}: name: {re['name']}, input: {re['input']}")
                 else:
                     print(re)
@@ -944,9 +931,9 @@ def get_basic_answer(query):
 # Translation (English)
 #########################################################
 
-def translate_text(text, langMode):
+def translate_text(text, model_name):
     global llmMode
-    llmMode = langMode
+    llmMode = model_name
 
     chat = get_chat()
 
@@ -988,18 +975,15 @@ def translate_text(text, langMode):
 
     return msg
 
-def clear_chat_history():
-    memory_chain = []
-    map_chain[userId] = memory_chain
 
 
 ####################### LangChain #######################
-# Translation (Japanese)
+# Translation (Japanese)
 #########################################################
 
-def translate_text_for_japanese(text, langMode):
+def translate_text_for_japanese(text, model_name):
     global llmMode
-    llmMode = langMode
+    llmMode = model_name
 
     chat = get_chat()
 
@@ -1041,9 +1025,9 @@ def translate_text_for_japanese(text, langMode):
 # Grammer Check
 #########################################################
     
-def check_grammer(text, langMode):
+def check_grammer(text, model_name):
     global llmMode
-    llmMode = langMode
+    llmMode = model_name
 
     chat = get_chat()
 
@@ -1141,16 +1125,18 @@ def extract_and_display_s3_images(text, s3_client):
             continue
     return images
 
-def summary_image(object_name, prompt, langMode):
-    global llmMode
-    llmMode = langMode
-
+def get_summary(object_name, prompt, st):
     # load image
     s3_client = boto3.client(
         service_name='s3',
         region_name=bedrock_region
     )
-                    
+
+    if debug_mode=="Enable":
+        status = "이미지를 가져옵니다."
+        print('status: ', status)
+        st.info(status)
+                
     image_obj = s3_client.get_object(Bucket=bucketName, Key=s3_prefix+'/'+object_name)
     # print('image_obj: ', image_obj)
     
@@ -1173,25 +1159,52 @@ def summary_image(object_name, prompt, langMode):
     buffer = BytesIO()
     img.save(buffer, format="PNG")
     img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-    
-    if prompt == "":
-        command = "이미지에 포함된 내용을 요약해 주세요."
+
+    # extract text from the image
+    if debug_mode=="Enable":
+        status = "이미지에서 텍스트를 추출합니다."
+        print('status: ', status)
+        st.info(status)
+
+    text = extract_text(img_base64)
+    print('extracted text: ', text)
+
+    if text.find('<result>') != -1:
+        extracted_text = text[text.find('<result>')+8:text.find('</result>')] # remove <result> tag
+        # print('extracted_text: ', extracted_text)
     else:
-        command = prompt
+        extracted_text = text
     
-    # verify the image
-    msg = use_multimodal(img_base64, command)
-
-    return msg, img_base64
-
-def use_multimodal(img_base64, query):    
-    multimodal = get_chat()
+    if debug_mode=="Enable":
+        status = f"### 추출된 텍스트\n\n{extracted_text}"
+        print('status: ', status)
+        st.info(status)
     
-    if query == "":
-        query = "그림에 대해 상세히 설명해줘."
+    if debug_mode=="Enable":
+        status = "이미지의 내용을 분석합니다."
+        print('status: ', status)
+        st.info(status)
+
+    image_summary = summary_image(img_base64, prompt)
+    print('image summary: ', image_summary)
+        
+    if len(extracted_text) > 10:
+        contents = f"## 이미지 분석\n\n{image_summary}\n\n## 추출된 텍스트\n\n{extracted_text}"
+    else:
+        contents = f"## 이미지 분석\n\n{image_summary}"
+    print('image contents: ', contents)
+
+    return contents
+
+def summary_image(img_base64, prompt):
+    chat = get_chat()
+
+    if prompt:        
+        query = f"{prompt}. markdown 포맷으로 답변을 작성합니다."
+    else:
+        query = "이미지가 의미하는 내용을 풀어서 자세히 알려주세요. markdown 포맷으로 답변을 작성합니다."
     
     messages = [
-        SystemMessage(content="답변은 500자 이내의 한국어로 설명해주세요."),
         HumanMessage(
             content=[
                 {
@@ -1207,21 +1220,28 @@ def use_multimodal(img_base64, query):
         )
     ]
     
-    try: 
-        result = multimodal.invoke(messages)
-        
-        summary = result.content
-        print('result of code summarization: ', summary)
-    except Exception:
-        err_msg = traceback.format_exc()
-        print('error message: ', err_msg)                    
-        raise Exception ("Not able to request to LLM")
+    for attempt in range(5):
+        print('attempt: ', attempt)
+        try: 
+            result = chat.invoke(messages)
+            
+            summary = result.content
+            # print('summary from an image: ', summary)
+            break
+        except Exception:
+            err_msg = traceback.format_exc()
+            print('error message: ', err_msg)                    
+            raise Exception ("Not able to request to LLM")
     
+    print('summary: ', summary)
+    if len(summary)<10:
+        summary = "이미지의 내용을 분석하지 못하였습니다."
+
     return summary
 
-def extract_text(img_base64):    
+def extract_text(img_base64):
     multimodal = get_chat()
-    query = "그림의 텍스트와 표를 Markdown Format으로 추출합니다."
+    query = "텍스트를 추출해서 markdown 포맷으로 변환하세요. <result> tag를 붙여주세요."
     
     messages = [
         HumanMessage(
@@ -1239,24 +1259,24 @@ def extract_text(img_base64):
         )
     ]
     
-    try: 
-        result = multimodal.invoke(messages)
+    for attempt in range(5):
+        print('attempt: ', attempt)
+        try: 
+            result = multimodal.invoke(messages)
+            
+            extracted_text = result.content
+            # print('result of text extraction from an image: ', extracted_text)
+            break
+        except Exception:
+            err_msg = traceback.format_exc()
+            print('error message: ', err_msg)                    
+            raise Exception ("Not able to request to LLM")
         
-        extracted_text = result.content
-        print('result of text extraction from an image: ', extracted_text)
-    except Exception:
-        err_msg = traceback.format_exc()
-        print('error message: ', err_msg)                    
-        raise Exception ("Not able to request to LLM")
-    
-    #extracted_text = text[text.find('<result>')+8:text.find('</result>')] # remove <result> tag
     print('extracted_text: ', extracted_text)
-    if len(extracted_text)>10:
-        msg = f"{extracted_text}\n"    
-    else:
-        msg = "텍스트를 추출하지 못하였습니다."    
+    if len(extracted_text)<10:
+        extracted_text = "텍스트를 추출하지 못하였습니다."
     
-    return msg
+    return extracted_text
 
 def tavily_search(query, k):
     docs = []    

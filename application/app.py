@@ -47,23 +47,28 @@ with st.sidebar:
     #     value=6,
     # )
 
-    # debug Mode
-    debugMode = st.selectbox(
-        '🖊️ 디버그 모드를 설정하세요',
-        ('Debug', 'Normal')
-    )
-    # print('mode: ', mode)
-
-    # debug Mode
-    langMode = st.selectbox(
+    # model selection box
+    modelName = st.selectbox(
         '🖊️ 사용 모델을 선택하세요',
         ('Nova Pro', 'Nova Lite', 'Nova Micro', 'Claude Sonnet 3.5', 'Claude Sonnet 3.0', 'Claude Haiku 3.5')
     )
+    
+    # debug checkbox
+    select_debugMode = st.checkbox('Debug Mode', value=True)
+    debugMode = 'Enable' if select_debugMode else 'Disable'
+    # print('debugMode: ', debugMode)
+
+    # multi region check box
+    select_multiRegion = st.checkbox('Multi Region', value=False)
+    multiRegion = 'Enable' if select_multiRegion else 'Disable'
+    #print('multiRegion: ', multiRegion)
+   
+    chat.update(modelName, debugMode, multiRegion)
 
     st.subheader("🌇 이미지 업로드")
     uploaded_file = st.file_uploader("이미지를 요약할 파일을 선택합니다.", type=["png", "jpg", "jpeg"])
 
-    st.success(f"Connected to {langMode}", icon="💚")
+    st.success(f"Connected to {modelName}", icon="💚")
     clear_button = st.button("대화 초기화", key="clear")
     # print('clear_button: ', clear_button)
 
@@ -87,6 +92,13 @@ def display_chat_messages() -> None:
             st.markdown(message["content"])
 
 display_chat_messages()
+
+def show_references(reference_docs):
+    if debugMode == "Enable" and reference_docs:
+        with st.expander(f"답변에서 참조한 {len(reference_docs)}개의 문서입니다."):
+            for i, doc in enumerate(reference_docs):
+                st.markdown(f"**{doc.metadata['name']}**: {doc.page_content}")
+                st.markdown("---")
 
 # Greet user
 if not st.session_state.greetings:
@@ -137,44 +149,41 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             #     st.session_state.messages.append({"role": "assistant", "content": response})
             #     st.rerun()                
 
-            stream = chat.general_conversation(prompt, langMode)            
+            stream = chat.general_conversation(prompt)            
             response = st.write_stream(stream)
             print('response: ', response)
             st.session_state.messages.append({"role": "assistant", "content": response})
-            st.rerun()
+            # st.rerun()
 
         elif mode == 'Agentic Workflow (Tool Use)':
             with st.status("thinking...", expanded=True, state="running") as status:
-                response = chat.run_agent_executor(prompt, st, debugMode, langMode)
-                # response = chat.run_agent_executor2(prompt st, debugMode, langMode)
+                response, reference_docs = chat.run_agent_executor(prompt, st)
+                # response = chat.run_agent_executor2(prompt st, debugMode, modelName)
                 st.write(response)
                 print('response: ', response)
 
-                if response.find('<thinking>') != -1:
-                    print('Remove <thinking> tag.')
-                    response = response[response.find('</thinking>')+12:]
-                    print('response without tag: ', response)
-
                 st.session_state.messages.append({"role": "assistant", "content": response})
-                if debugMode != "Debug":
+                if debugMode != "Enable":
                     st.rerun()
+            
+            show_references(reference_docs) 
 
         elif mode == '번역하기 (한국어 / 영어)':
-            response = chat.translate_text(prompt, langMode)
+            response = chat.translate_text(prompt, modelName)
             st.write(response)
 
             st.session_state.messages.append({"role": "assistant", "content": response})
             # chat.save_chat_history(prompt, response)
         
         elif mode == '번역하기 (일본어 / 한국어)':
-            response = chat.translate_text_for_japanese(prompt, langMode)
+            response = chat.translate_text_for_japanese(prompt, modelName)
             st.write(response)
 
             st.session_state.messages.append({"role": "assistant", "content": response})
             # chat.save_chat_history(prompt, response)
 
         elif mode == '문법 검토하기':
-            response = chat.check_grammer(prompt, langMode)
+            response = chat.check_grammer(prompt, modelName)
             st.write(response)
 
             st.session_state.messages.append({"role": "assistant", "content": response})
@@ -186,18 +195,13 @@ if prompt := st.chat_input("메시지를 입력하세요."):
 
             else:                
                 with st.status("thinking...", expanded=True, state="running") as status:
-                    summary, img_base64 = chat.summary_image(file_name, prompt, langMode)
+                    summary = chat.get_summary(file_name, prompt, st)
                     st.write(summary)
-                    print('summary: ', summary)
+
                     st.session_state.messages.append({"role": "assistant", "content": summary})
-
-                    text = chat.extract_text(img_base64)
-                    st.write(text)
-                    st.session_state.messages.append({"role": "assistant", "content": text})
-
                     st.rerun()
         else:
-            stream = chat.general_conversation(prompt, langMode)
+            stream = chat.general_conversation(prompt)
 
             response = st.write_stream(stream)
             print('response: ', response)
