@@ -229,22 +229,22 @@ try:
     tavily_api_wrapper = TavilySearchAPIWrapper(tavily_api_key=tavily_key)
     #     os.environ["TAVILY_API_KEY"] = tavily_key
 
-    # Tavily Tool Test
-    query = 'what is Amazon Nova Pro?'
-    search = TavilySearchResults(
-        max_results=1,
-        include_answer=True,
-        include_raw_content=True,
-        api_wrapper=tavily_api_wrapper,
-        search_depth="advanced", # "basic"
-        # include_domains=["google.com", "naver.com"]
-    )
-    output = search.invoke(query)
-    print('tavily output: ', output)
+    # # Tavily Tool Test
+    # query = 'what is Amazon Nova Pro?'
+    # search = TavilySearchResults(
+    #     max_results=1,
+    #     include_answer=True,
+    #     include_raw_content=True,
+    #     api_wrapper=tavily_api_wrapper,
+    #     search_depth="advanced", # "basic"
+    #     # include_domains=["google.com", "naver.com"]
+    # )
+    # output = search.invoke(query)
+    # print('tavily output: ', output)
         
-    for result in output:
-        print('result: ', result)
-        break
+    # for result in output:
+    #     print('result: ', result)
+    #     break
 
 except Exception as e: 
     print('Tavily credential is required: ', e)
