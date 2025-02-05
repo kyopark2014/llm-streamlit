@@ -50,11 +50,20 @@ with st.sidebar:
     # )
 
     # model selection box
+    if mode == '이미지 분석':
+        index = 3
+    else:
+        index = 0   
     modelName = st.selectbox(
         '🖊️ 사용 모델을 선택하세요',
-        ('Nova Pro', 'Nova Lite', 'Nova Micro', 'Claude 3.5 Sonnet', 'Claude 3.0 Sonnet', 'Claude 3.5 Haiku')
+        ('Nova Pro', 'Nova Lite', 'Nova Micro', 'Claude 3.5 Sonnet', 'Claude 3.0 Sonnet', 'Claude 3.5 Haiku'), index=index
     )
     
+    uploaded_file = None
+    if mode == '이미지 분석':
+        st.subheader("🌇 이미지 업로드")
+        uploaded_file = st.file_uploader("이미지 요약을 위한 파일을 선택합니다.", type=["png", "jpg", "jpeg"])
+
     # debug checkbox
     select_debugMode = st.checkbox('Debug Mode', value=True)
     debugMode = 'Enable' if select_debugMode else 'Disable'
@@ -66,9 +75,6 @@ with st.sidebar:
     #print('multiRegion: ', multiRegion)
    
     chat.update(modelName, debugMode, multiRegion)
-
-    st.subheader("🌇 이미지 업로드")
-    uploaded_file = st.file_uploader("이미지를 요약할 파일을 선택합니다.", type=["png", "jpg", "jpeg"])
 
     st.success(f"Connected to {modelName}", icon="💚")
     clear_button = st.button("대화 초기화", key="clear")
@@ -128,9 +134,6 @@ if uploaded_file and clear_button==False and mode == '이미지 분석':
     file_name = uploaded_file.name
     image_url = chat.upload_to_s3(uploaded_file.getvalue(), file_name)
     print('image_url: ', image_url)    
-
-if "messages" not in st.session_state:
-    st.session_state['messages'] = []
             
 # Always show the chat input
 if prompt := st.chat_input("메시지를 입력하세요."):
@@ -197,7 +200,7 @@ if prompt := st.chat_input("메시지를 입력하세요."):
 
             else:                
                 with st.status("thinking...", expanded=True, state="running") as status:
-                    summary = chat.get_summary(file_name, prompt, st)
+                    summary = chat.get_image_summarization(file_name, prompt, st)
                     st.write(summary)
 
                     st.session_state.messages.append({"role": "assistant", "content": summary})

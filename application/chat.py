@@ -617,6 +617,7 @@ def run_agent_executor(query, st):
                 "당신의 이름은 서연이고, 질문에 친근한 방식으로 대답하도록 설계된 대화형 AI입니다."
                 "상황에 맞는 구체적인 세부 정보를 충분히 제공합니다."
                 "모르는 질문을 받으면 솔직히 모른다고 말합니다."
+                "한국어로 답변하세요."
             )
         else: 
             system = (            
@@ -983,8 +984,6 @@ def translate_text(text, model_name):
 
     return msg
 
-
-
 ####################### LangChain #######################
 # Translation (Japanese)
 #########################################################
@@ -1133,7 +1132,39 @@ def extract_and_display_s3_images(text, s3_client):
             continue
     return images
 
-def get_summary(object_name, prompt, st):
+def tavily_search(query, k):
+    docs = []    
+    try:
+        tavily_client = TavilyClient(api_key=tavily_key)
+        response = tavily_client.search(query, max_results=k)
+        # print('tavily response: ', response)
+            
+        for r in response["results"]:
+            name = r.get("title")
+            if name is None:
+                name = 'WWW'
+            
+            docs.append(
+                Document(
+                    page_content=r.get("content"),
+                    metadata={
+                        'name': name,
+                        'url': r.get("url"),
+                        'from': 'tavily'
+                    },
+                )
+            )                   
+    except Exception as e:
+        print('Exception: ', e)
+
+    return docs
+
+
+####################### LangChain #######################
+# Image Summarization
+#########################################################
+
+def get_image_summarization(object_name, prompt, st):
     # load image
     s3_client = boto3.client(
         service_name='s3',
@@ -1204,6 +1235,45 @@ def get_summary(object_name, prompt, st):
 
     return contents
 
+def extract_text(img_base64):
+    multimodal = get_chat()
+    query = "텍스트를 추출해서 markdown 포맷으로 변환하세요. <result> tag를 붙여주세요."
+    
+    messages = [
+        HumanMessage(
+            content=[
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/png;base64,{img_base64}", 
+                    },
+                },
+                {
+                    "type": "text", "text": query
+                },
+            ]
+        )
+    ]
+    
+    for attempt in range(5):
+        print('attempt: ', attempt)
+        try: 
+            result = multimodal.invoke(messages)
+            
+            extracted_text = result.content
+            # print('result of text extraction from an image: ', extracted_text)
+            break
+        except Exception:
+            err_msg = traceback.format_exc()
+            print('error message: ', err_msg)                    
+            raise Exception ("Not able to request to LLM")
+        
+    print('extracted_text: ', extracted_text)
+    if len(extracted_text)<10:
+        extracted_text = "텍스트를 추출하지 못하였습니다."
+    
+    return extracted_text
+
 def summary_image(img_base64, prompt):
     chat = get_chat()
 
@@ -1246,69 +1316,3 @@ def summary_image(img_base64, prompt):
         summary = "이미지의 내용을 분석하지 못하였습니다."
 
     return summary
-
-def extract_text(img_base64):
-    multimodal = get_chat()
-    query = "텍스트를 추출해서 markdown 포맷으로 변환하세요. <result> tag를 붙여주세요."
-    
-    messages = [
-        HumanMessage(
-            content=[
-                {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": f"data:image/png;base64,{img_base64}", 
-                    },
-                },
-                {
-                    "type": "text", "text": query
-                },
-            ]
-        )
-    ]
-    
-    for attempt in range(5):
-        print('attempt: ', attempt)
-        try: 
-            result = multimodal.invoke(messages)
-            
-            extracted_text = result.content
-            # print('result of text extraction from an image: ', extracted_text)
-            break
-        except Exception:
-            err_msg = traceback.format_exc()
-            print('error message: ', err_msg)                    
-            raise Exception ("Not able to request to LLM")
-        
-    print('extracted_text: ', extracted_text)
-    if len(extracted_text)<10:
-        extracted_text = "텍스트를 추출하지 못하였습니다."
-    
-    return extracted_text
-
-def tavily_search(query, k):
-    docs = []    
-    try:
-        tavily_client = TavilyClient(api_key=tavily_key)
-        response = tavily_client.search(query, max_results=k)
-        # print('tavily response: ', response)
-            
-        for r in response["results"]:
-            name = r.get("title")
-            if name is None:
-                name = 'WWW'
-            
-            docs.append(
-                Document(
-                    page_content=r.get("content"),
-                    metadata={
-                        'name': name,
-                        'url': r.get("url"),
-                        'from': 'tavily'
-                    },
-                )
-            )                   
-    except Exception as e:
-        print('Exception: ', e)
-
-    return docs
