@@ -60,3 +60,5 @@ CloudWatchAgentServerPolicy의 세부 내용은 아래와 같습니다.
 [Amazon CloudWatch Agent와 collectd 시작하기](https://aws.amazon.com/ko/blogs/tech/getting-started-with-cloudwatch-agent-and-collectd/)
 
 [How to install Cloudwatch agent and make configuration file](https://medium.com/@farzanajuthi08/how-to-install-cloudwatch-agent-and-make-configuration-file-f314dc1332db)
+
+[[AWS] 리눅스 서버 CloudWatchAgent 설치하기](https://every-up.tistory.com/61)
