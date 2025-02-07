@@ -9,6 +9,7 @@ import functools
 import base64
 import uuid
 import info
+import yfinance as yf
 
 from io import BytesIO
 from PIL import Image
