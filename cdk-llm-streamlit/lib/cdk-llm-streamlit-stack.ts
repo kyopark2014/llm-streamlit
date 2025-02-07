@@ -49,7 +49,8 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       assumedBy: new iam.CompositePrincipal(
         new iam.ServicePrincipal("ec2.amazonaws.com"),
         new iam.ServicePrincipal("bedrock.amazonaws.com"),
-      )
+      ),
+      managedPolicies: [cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchAgentServerPolicy')] 
     });
 
     const secreatManagerPolicy = new iam.PolicyStatement({  
@@ -283,6 +284,7 @@ EOF"`,
         `runuser -l ec2-user -c 'cat <<EOF > /home/ec2-user/.streamlit/config.toml
 [server]
 port=${targetPort}
+maxUploadSize = 100
 
 [theme]
 base="dark"
@@ -292,7 +294,7 @@ EOF'`,
       `runuser -l ec2-user -c 'cd && git clone https://github.com/kyopark2014/${projectName}'`,
       `runuser -l ec2-user -c 'pip install streamlit streamlit_chat'`,        
       `runuser -l ec2-user -c 'pip install boto3 langchain_aws langchain langchain_community langgraph'`,
-      `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python'`,
+      `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python yfinance'`,
       'systemctl enable streamlit.service',
       'systemctl start streamlit'
     ];
