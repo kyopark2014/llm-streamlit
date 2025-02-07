@@ -58,3 +58,5 @@ CloudWatchAgentServerPolicy의 세부 내용은 아래와 같습니다.
 [서버에 CloudWatch 에이전트 설치 및 실행](https://docs.aws.amazon.com/ko_kr/AmazonCloudWatch/latest/monitoring/install-CloudWatch-Agent-commandline-fleet.html)
 
 [Amazon CloudWatch Agent와 collectd 시작하기](https://aws.amazon.com/ko/blogs/tech/getting-started-with-cloudwatch-agent-and-collectd/)
+
+[How to install Cloudwatch agent and make configuration file](https://medium.com/@farzanajuthi08/how-to-install-cloudwatch-agent-and-make-configuration-file-f314dc1332db)
