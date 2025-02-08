@@ -5,6 +5,7 @@ import logging
 import sys
 import time
 
+# loggging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 # formatter = logging.Formatter('%(asctime)s | %(filename)s:%(lineno)d | %(message)s')
@@ -30,6 +31,7 @@ if not enableLoggerApp:
     except Exception:
         logger.debug(f"Not available to write application log (app)")
 
+# title
 st.set_page_config(page_title='AWS', page_icon=None, layout="centered", initial_sidebar_state="auto", menu_items=None)
 
 mode_descriptions = {

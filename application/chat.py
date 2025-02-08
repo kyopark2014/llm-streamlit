@@ -35,6 +35,7 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from langchain_core.output_parsers import StrOutputParser
 
+#logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 #formatter = logging.Formatter('%(asctime)s | %(filename)s:%(lineno)d | %(levelname)s | %(message)s')
@@ -45,9 +46,6 @@ stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.INFO)
 stdout_handler.setFormatter(formatter)
 
-userId = "demo"
-map_chain = dict() 
-
 enableLoggerChat = False
 print('enableLoggerChat: ', enableLoggerChat)
 
@@ -57,6 +55,9 @@ def get_logger_state():
     if not enableLoggerApp:
         enableLoggerApp = True
     return enableLoggerApp
+
+userId = "demo"
+map_chain = dict() 
 
 def initiate():
     global userId

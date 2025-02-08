@@ -297,76 +297,76 @@ maxUploadSize = 100
 base="dark"
 primaryColor="#fff700"
 EOF'`,
-      `sudo yum install -y amazon-cloudwatch-agent`,
+      `yum install -y amazon-cloudwatch-agent`,
       `mkdir /var/log/application/ && chown ec2-user /var/log/application && chgrp ec2-user /var/log/application`,
-      `sh -c 'cat <<EOF > /tmp/config.json
-{
-  "agent":{
-      "metrics_collection_interval":60,
-      "debug":false
-  },
-  "metrics": {
-      "namespace": "CloudWatch/StreamlitServerMetrics",
-      "metrics_collected":{
-        "cpu":{
-           "resources":[
-              "*"
-           ],
-           "measurement":[
-              {
-                 "name":"cpu_usage_idle",
-                 "rename":"CPU_USAGE_IDLE",
-                 "unit":"Percent"
-              },
-              {
-                 "name":"cpu_usage_nice",
-                 "unit":"Percent"
-              },
-              "cpu_usage_guest"
-           ],
-           "totalcpu":false,
-           "metrics_collection_interval":10
-        },
-        "mem":{
-           "measurement":[
-              "mem_used",
-              "mem_cached",
-              "mem_total"
-           ],
-           "metrics_collection_interval":1
-        },          
-        "processes":{
-           "measurement":[
-              "running",
-              "sleeping",
-              "dead"
-           ]
-        }
-     },
-      "append_dimensions":{
-          "InstanceId":"\${aws:InstanceId}",
-          "ImageId":"\${aws:ImageId}",
-          "InstanceType":"\${aws:InstanceType}",
-          "AutoScalingGroupName":"\${aws:AutoScalingGroupName}"
-      }
-  },
-  "logs":{
-     "logs_collected":{
-        "files":{
-           "collect_list":[
-              {
-                 "file_path":"/var/log/application/logs.log",
-                 "log_group_name":"${projectName}",
-                 "log_stream_name":"${projectName}",
-                 "timezone":"UTC"
-              }
-           ]
-        }
-     }
-  }
-}
-EOF'`,
-      `/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/tmp/config.json`
+//       `sh -c 'cat <<EOF > /tmp/config.json
+// {
+//   "agent":{
+//       "metrics_collection_interval":60,
+//       "debug":false
+//   },
+//   "metrics": {
+//       "namespace": "CloudWatch/StreamlitServerMetrics",
+//       "metrics_collected":{
+//         "cpu":{
+//            "resources":[
+//               "*"
+//            ],
+//            "measurement":[
+//               {
+//                  "name":"cpu_usage_idle",
+//                  "rename":"CPU_USAGE_IDLE",
+//                  "unit":"Percent"
+//               },
+//               {
+//                  "name":"cpu_usage_nice",
+//                  "unit":"Percent"
+//               },
+//               "cpu_usage_guest"
+//            ],
+//            "totalcpu":false,
+//            "metrics_collection_interval":10
+//         },
+//         "mem":{
+//            "measurement":[
+//               "mem_used",
+//               "mem_cached",
+//               "mem_total"
+//            ],
+//            "metrics_collection_interval":1
+//         },          
+//         "processes":{
+//            "measurement":[
+//               "running",
+//               "sleeping",
+//               "dead"
+//            ]
+//         }
+//      },
+//       "append_dimensions":{
+//           "InstanceId":"\${aws:InstanceId}",
+//           "ImageId":"\${aws:ImageId}",
+//           "InstanceType":"\${aws:InstanceType}",
+//           "AutoScalingGroupName":"\${aws:AutoScalingGroupName}"
+//       }
+//   },
+//   "logs":{
+//      "logs_collected":{
+//         "files":{
+//            "collect_list":[
+//               {
+//                  "file_path":"/var/log/application/logs.log",
+//                  "log_group_name":"${projectName}",
+//                  "log_stream_name":"${projectName}",
+//                  "timezone":"UTC"
+//               }
+//            ]
+//         }
+//      }
+//   }
+// }
+// EOF'`,
+//       `/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/tmp/config.json`
     ];
     userData.addCommands(...commands);
     
