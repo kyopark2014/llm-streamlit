@@ -4,20 +4,19 @@ import json
 import logging
 import sys
 import time
-import pytz
-import datetime
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-#formatter = logging.Formatter('%(asctime)s | %(filename)s:%(lineno)d | %(levelname)s | %(message)s')
-#formatter = logging.Formatter('%(asctime)s | %(filename)s:%(lineno)d | %(message)s')
-formatter = chat.Formatter(f"%(asctime)s | %(filename)s:%(lineno)d | %(message)s")
+# formatter = logging.Formatter('%(asctime)s | %(filename)s:%(lineno)d | %(message)s')
+formatter = logging.Formatter('%(filename)s:%(lineno)d | %(message)s')
+
 stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.INFO)
 stdout_handler.setFormatter(formatter)
 
 enableLoggerApp = chat.get_logger_state()
 print('enableLoggerApp: ', enableLoggerApp)
+
 if not enableLoggerApp:
     logger.addHandler(stdout_handler)
     try:
