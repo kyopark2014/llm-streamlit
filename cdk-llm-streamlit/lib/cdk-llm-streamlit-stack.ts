@@ -280,8 +280,16 @@ ExecStart=/home/ec2-user/.local/bin/streamlit run /home/ec2-user/${projectName}/
 [Install]
 WantedBy=multi-user.target
 EOF"`,
-        `runuser -l ec2-user -c "mkdir -p /home/ec2-user/.streamlit"`,
-        `runuser -l ec2-user -c 'cat <<EOF > /home/ec2-user/.streamlit/config.toml
+      `runuser -l ec2-user -c "mkdir -p /home/ec2-user/.streamlit"`,        
+      `json='${JSON.stringify(environment)}' && echo "$json">/home/config.json`,      
+      `runuser -l ec2-user -c 'cd && git clone https://github.com/kyopark2014/${projectName}'`,
+      `runuser -l ec2-user -c 'pip install streamlit streamlit_chat'`,        
+      `runuser -l ec2-user -c 'pip install boto3 langchain_aws langchain langchain_community langgraph'`,
+      `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python yfinance'`,
+      'systemctl enable streamlit.service',
+      'systemctl start streamlit',
+      `mkdir /var/log/application/ && chown ec2-user /var/log/application && chgrp ec2-user /var/log/application`,
+      `runuser -l ec2-user -c 'cat <<EOF > /home/ec2-user/.streamlit/config.toml
 [server]
 port=${targetPort}
 maxUploadSize = 100
@@ -290,13 +298,73 @@ maxUploadSize = 100
 base="dark"
 primaryColor="#fff700"
 EOF'`,
-      `json='${JSON.stringify(environment)}' && echo "$json">/home/config.json`,      
-      `runuser -l ec2-user -c 'cd && git clone https://github.com/kyopark2014/${projectName}'`,
-      `runuser -l ec2-user -c 'pip install streamlit streamlit_chat'`,        
-      `runuser -l ec2-user -c 'pip install boto3 langchain_aws langchain langchain_community langgraph'`,
-      `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python yfinance pytz'`,
-      'systemctl enable streamlit.service',
-      'systemctl start streamlit'
+      `sh -c "cat <<EOF > /tmp/config.json
+{
+  "agent":{
+      "metrics_collection_interval":60,
+      "debug":false
+  },
+  "metrics": {
+      "namespace": "CloudWatch/StreamlitServerMetrics",
+      "metrics_collected":{
+        "cpu":{
+           "resources":[
+              "*"
+           ],
+           "measurement":[
+              {
+                 "name":"cpu_usage_idle",
+                 "rename":"CPU_USAGE_IDLE",
+                 "unit":"Percent"
+              },
+              {
+                 "name":"cpu_usage_nice",
+                 "unit":"Percent"
+              },
+              "cpu_usage_guest"
+           ],
+           "totalcpu":false,
+           "metrics_collection_interval":10
+        },
+        "mem":{
+           "measurement":[
+              "mem_used",
+              "mem_cached",
+              "mem_total"
+           ],
+           "metrics_collection_interval":1
+        },          
+        "processes":{
+           "measurement":[
+              "running",
+              "sleeping",
+              "dead"
+           ]
+        }
+     },
+      "append_dimensions":{
+          "InstanceId":"\${aws:InstanceId}",
+          "ImageId":"\${aws:ImageId}",
+          "InstanceType":"\${aws:InstanceType}",
+          "AutoScalingGroupName":"\${aws:AutoScalingGroupName}"
+      }
+  },
+  "logs":{
+     "logs_collected":{
+        "files":{
+           "collect_list":[
+              {
+                 "file_path":"/var/log/application/logs.log",
+                 "log_group_name":"${projectName}",
+                 "log_stream_name":"${projectName}",
+                 "timezone":"UTC"
+              }
+           ]
+        }
+     }
+  }
+}`,
+      `/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/tmp/config.json`
     ];
     userData.addCommands(...commands);
     
