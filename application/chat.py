@@ -77,6 +77,8 @@ def initiate():
                 file_handler.setLevel(logging.INFO)
                 file_handler.setFormatter(formatter)
                 logger.addHandler(file_handler)
+
+                logger.info("Ready to write log (chat)!")
         except Exception:
             print("No available to write application log (chat)")
 

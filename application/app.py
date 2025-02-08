@@ -25,6 +25,8 @@ if not chat.enableLogger:
             file_handler.setLevel(logging.INFO)
             file_handler.setFormatter(formatter)         
             logger.addHandler(file_handler)
+
+            logger.info("Ready to write log (app)!")
     except Exception:
         logger.debug(f"No available to write application log (app)")
 
