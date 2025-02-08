@@ -54,6 +54,12 @@ CloudWatchAgentServerPolicy의 세부 내용은 아래와 같습니다.
 
 ### CloudWatch Configuration
 
+ClouadWatch Agent를 설치합니다.
+
+```text
+sudo yum install -y amazon-cloudwatch-agent
+```
+
 아래 명령어로 config를 생성합니다.
 
 ```text
