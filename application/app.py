@@ -14,13 +14,14 @@ stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.INFO)
 stdout_handler.setFormatter(formatter)
 
-print('enableLogger (app): ', chat.enableLogger)
-if not chat.enableLogger:
-    logger.addHandler(stdout_handler)
 
-    # print('logger is initiated...')    
+enableLoggerApp = chat.get_logger_state()
+print('enableLoggerApp: ', enableLoggerApp)
+
+if not enableLoggerApp:
+    logger.addHandler(stdout_handler)
     try:
-        with open("/home/config.json", "r", encoding="utf-8") as f:       
+        with open("/home/config.json", "r", encoding="utf-8") as f:
             file_handler = logging.FileHandler('/var/log/application/logs.log')
             file_handler.setLevel(logging.INFO)
             file_handler.setFormatter(formatter)

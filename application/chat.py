@@ -44,11 +44,18 @@ stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.INFO)
 stdout_handler.setFormatter(formatter)
 
-enableLogger = False
-print('enableLogger (chat): ', enableLogger)
-
 userId = "demo"
 map_chain = dict() 
+
+enableLoggerChat = False
+print('enableLoggerChat: ', enableLoggerChat)
+
+enableLoggerApp = False
+def get_logger_state():
+    global enableLoggerApp
+    if not enableLoggerApp:
+        enableLoggerApp = True
+    return enableLoggerApp
 
 def initiate():
     global userId
@@ -66,11 +73,8 @@ def initiate():
         memory_chain = ConversationBufferWindowMemory(memory_key="chat_history", output_key='answer', return_messages=True, k=5)
         map_chain[userId] = memory_chain
 
-    if not enableLogger:
-        logger.addHandler(stdout_handler)
-        enableLogger = True
-        print('enableLogger (chat): ', enableLogger)
-
+    if not enableLoggerChat:
+        logger.addHandler(stdout_handler)        
         try:
             with open("/home/config.json", "r", encoding="utf-8") as f:        
                 file_handler = logging.FileHandler('/var/log/application/logs.log')
@@ -79,6 +83,9 @@ def initiate():
                 logger.addHandler(file_handler)
 
                 logger.info("Ready to write log (chat)!")
+
+                enableLoggerChat = True
+                print('enableLoggerChat: ', enableLoggerChat)
         except Exception:
             print("Not available to write application log (chat)")
 
