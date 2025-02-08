@@ -26,7 +26,7 @@ if not chat.enableLogger:
             file_handler.setFormatter(formatter)         
             logger.addHandler(file_handler)
     except Exception:
-        logger.debug(f"No saved application log")
+        logger.debug(f"No available to write application log (app)")
 
 st.set_page_config(page_title='AWS', page_icon=None, layout="centered", initial_sidebar_state="auto", menu_items=None)
 

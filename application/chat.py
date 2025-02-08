@@ -78,7 +78,7 @@ def initiate():
                 file_handler.setFormatter(formatter)
                 logger.addHandler(file_handler)
         except Exception:
-            print("No saved application log")
+            print("No available to write application log (chat)")
 
 initiate()
  
