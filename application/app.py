@@ -8,7 +8,7 @@ import time
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 # formatter = logging.Formatter('%(asctime)s | %(filename)s:%(lineno)d | %(message)s')
-formatter = logging.Formatter('%(filename)s:%(lineno)d | %(message)s')
+formatter = logging.Formatter('%(message)s')
 
 stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.INFO)
