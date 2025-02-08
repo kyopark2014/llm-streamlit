@@ -12,6 +12,7 @@ import info
 import yfinance as yf
 import logging
 import sys
+import pytz
 
 from io import BytesIO
 from PIL import Image
@@ -35,11 +36,29 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from langchain_core.output_parsers import StrOutputParser
 
+class Formatter(logging.Formatter):
+    """override logging.Formatter to use an aware datetime object"""
+    def converter(self, timestamp):
+        dt = datetime.datetime.fromtimestamp(timestamp)
+        tzinfo = pytz.timezone('Asia/Seoul')
+        return tzinfo.localize(dt)
+        
+    def formatTime(self, record, datefmt=None):
+        dt = self.converter(record.created)
+        if datefmt:
+            s = dt.strftime(datefmt)
+        else:
+            try:
+                s = dt.isoformat(timespec='milliseconds')
+            except TypeError:
+                s = dt.isoformat()
+        return s
+    
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 #formatter = logging.Formatter('%(asctime)s | %(filename)s:%(lineno)d | %(levelname)s | %(message)s')
-formatter = logging.Formatter('%(asctime)s | %(filename)s:%(lineno)d | %(message)s')
-
+#formatter = logging.Formatter('%(asctime)s | %(filename)s:%(lineno)d | %(message)s')
+formatter = Formatter(f"%(asctime)s | %(filename)s:%(lineno)d | %(message)s")
 stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.INFO)
 stdout_handler.setFormatter(formatter)
@@ -75,19 +94,6 @@ def initiate():
 
     if not enableLoggerChat:
         logger.addHandler(stdout_handler)        
-        # try:
-        #     with open("/home/config.json", "r", encoding="utf-8") as f:        
-        #         file_handler = logging.FileHandler('/var/log/application/logs.log')
-        #         file_handler.setLevel(logging.INFO)
-        #         file_handler.setFormatter(formatter)
-        #         logger.addHandler(file_handler)
-
-        #         logger.info("Ready to write log (chat)!")
-
-        #         enableLoggerChat = True
-        #         print('enableLoggerChat: ', enableLoggerChat)
-        # except Exception:
-        #     print("Not available to write application log (chat)")
 
 initiate()
  

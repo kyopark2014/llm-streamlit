@@ -294,7 +294,7 @@ EOF'`,
       `runuser -l ec2-user -c 'cd && git clone https://github.com/kyopark2014/${projectName}'`,
       `runuser -l ec2-user -c 'pip install streamlit streamlit_chat'`,        
       `runuser -l ec2-user -c 'pip install boto3 langchain_aws langchain langchain_community langgraph'`,
-      `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python yfinance'`,
+      `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python yfinance pytz'`,
       'systemctl enable streamlit.service',
       'systemctl start streamlit'
     ];
