@@ -21,7 +21,7 @@ if not chat.enableLogger:
     # print('logger is initiated...')    
     try:
         with open("/home/config.json", "r", encoding="utf-8") as f:       
-            file_handler = logging.FileHandler('/opt/application/logs.log')
+            file_handler = logging.FileHandler('/var/log/application/logs.log')
             file_handler.setLevel(logging.INFO)
             file_handler.setFormatter(formatter)         
             logger.addHandler(file_handler)
