@@ -28,7 +28,7 @@ if not chat.enableLogger:
 
             logger.info("Ready to write log (app)!")
     except Exception:
-        logger.debug(f"No available to write application log (app)")
+        logger.debug(f"Not available to write application log (app)")
 
 st.set_page_config(page_title='AWS', page_icon=None, layout="centered", initial_sidebar_state="auto", menu_items=None)
 

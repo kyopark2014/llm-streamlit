@@ -45,7 +45,7 @@ stdout_handler.setLevel(logging.INFO)
 stdout_handler.setFormatter(formatter)
 
 enableLogger = False
-print('enableLogger: ', enableLogger)
+print('enableLogger (chat): ', enableLogger)
 
 userId = "demo"
 map_chain = dict() 
@@ -69,7 +69,7 @@ def initiate():
     if not enableLogger:
         logger.addHandler(stdout_handler)
         enableLogger = True
-        print('enableLogger: ', enableLogger)
+        print('enableLogger (chat): ', enableLogger)
 
         try:
             with open("/home/config.json", "r", encoding="utf-8") as f:        
@@ -80,7 +80,7 @@ def initiate():
 
                 logger.info("Ready to write log (chat)!")
         except Exception:
-            print("No available to write application log (chat)")
+            print("Not available to write application log (chat)")
 
 initiate()
  
