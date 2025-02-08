@@ -75,19 +75,19 @@ def initiate():
 
     if not enableLoggerChat:
         logger.addHandler(stdout_handler)        
-        try:
-            with open("/home/config.json", "r", encoding="utf-8") as f:        
-                file_handler = logging.FileHandler('/var/log/application/logs.log')
-                file_handler.setLevel(logging.INFO)
-                file_handler.setFormatter(formatter)
-                logger.addHandler(file_handler)
+        # try:
+        #     with open("/home/config.json", "r", encoding="utf-8") as f:        
+        #         file_handler = logging.FileHandler('/var/log/application/logs.log')
+        #         file_handler.setLevel(logging.INFO)
+        #         file_handler.setFormatter(formatter)
+        #         logger.addHandler(file_handler)
 
-                logger.info("Ready to write log (chat)!")
+        #         logger.info("Ready to write log (chat)!")
 
-                enableLoggerChat = True
-                print('enableLoggerChat: ', enableLoggerChat)
-        except Exception:
-            print("Not available to write application log (chat)")
+        #         enableLoggerChat = True
+        #         print('enableLoggerChat: ', enableLoggerChat)
+        # except Exception:
+        #     print("Not available to write application log (chat)")
 
 initiate()
  
@@ -96,6 +96,20 @@ try:
         config = json.load(f)
         # print(f"config: {config}")
         logger.info(f"config: {config}")
+
+        if not enableLoggerChat:
+            logger.addHandler(stdout_handler)        
+            
+            file_handler = logging.FileHandler('/var/log/application/logs.log')
+            file_handler.setLevel(logging.INFO)
+            file_handler.setFormatter(formatter)
+            logger.addHandler(file_handler)
+
+            logger.info("Ready to write log (chat)!")
+
+            enableLoggerChat = True
+            print('enableLoggerChat: ', enableLoggerChat)
+        
 except Exception:
     print("use local configuration")
     with open("application/config.json", "r", encoding="utf-8") as f:
@@ -121,8 +135,6 @@ logger.info(f"bucketName: {bucketName}")
 s3_prefix = 'docs'
 
 MSG_LENGTH = 100
-
-
 
 model_name = "Nova Pro"
 model_type = "nova"
