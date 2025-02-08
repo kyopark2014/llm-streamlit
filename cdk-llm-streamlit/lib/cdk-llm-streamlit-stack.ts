@@ -298,7 +298,7 @@ maxUploadSize = 100
 base="dark"
 primaryColor="#fff700"
 EOF'`,
-      `sh -c "cat <<EOF > /tmp/config.json
+      `sh -c 'cat <<EOF > /tmp/config.json
 {
   "agent":{
       "metrics_collection_interval":60,
@@ -363,7 +363,8 @@ EOF'`,
         }
      }
   }
-}`,
+}
+EOF'`,
       `/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/tmp/config.json`
     ];
     userData.addCommands(...commands);
