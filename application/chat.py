@@ -730,11 +730,11 @@ def run_agent_executor(query, st):
     def should_continue(state: State) -> Literal["continue", "end"]:
         logger.info(f"###### should_continue ######")
 
-        logger.info(f"state: ', state")
+        logger.info(f"state: {state}")
         messages = state["messages"]    
 
         last_message = messages[-1]
-        logger.info(f"last_message: ', last_message")
+        logger.info(f"last_message: {last_message}")
         
         # print('last_message: ', last_message)
         
