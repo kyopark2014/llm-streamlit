@@ -297,6 +297,7 @@ maxUploadSize = 100
 base="dark"
 primaryColor="#fff700"
 EOF'`,
+      `sudo yum install -y amazon-cloudwatch-agent`,
       `mkdir /var/log/application/ && chown ec2-user /var/log/application && chgrp ec2-user /var/log/application`,
       `sh -c 'cat <<EOF > /tmp/config.json
 {
@@ -370,7 +371,7 @@ EOF'`,
     userData.addCommands(...commands);
     
     // EC2 instance
-    const appInstance = new ec2.Instance(this, `app-for-${projectName}`, {
+  /*  const appInstance = new ec2.Instance(this, `app-for-${projectName}`, {
       instanceName: `app-for-${projectName}`,
       instanceType: new ec2.InstanceType('t2.small'), // m5.large
       // instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.SMALL),
@@ -424,6 +425,6 @@ EOF'`,
     })
     listener.addAction(`RedirectHttpListener-for-${projectName}`, {
       action: defaultAction
-    });  
+    });  */
   }
 }
