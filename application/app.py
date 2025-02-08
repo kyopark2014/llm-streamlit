@@ -14,7 +14,7 @@ stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.INFO)
 stdout_handler.setFormatter(formatter)
 
-# print('enableLogger: ', chat.enableLogger)
+print('enableLogger (app): ', chat.enableLogger)
 if not chat.enableLogger:
     logger.addHandler(stdout_handler)
 
@@ -23,7 +23,7 @@ if not chat.enableLogger:
         with open("/home/config.json", "r", encoding="utf-8") as f:       
             file_handler = logging.FileHandler('/var/log/application/logs.log')
             file_handler.setLevel(logging.INFO)
-            file_handler.setFormatter(formatter)         
+            file_handler.setFormatter(formatter)
             logger.addHandler(file_handler)
 
             logger.info("Ready to write log (app)!")
