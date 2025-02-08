@@ -60,7 +60,7 @@ def get_logger_state():
 def initiate():
     global userId
     global memory_chain
-    global enableLogger
+    global enableLoggerChat
 
     userId = uuid.uuid4().hex
     logger.info(f"userId: {userId}")
