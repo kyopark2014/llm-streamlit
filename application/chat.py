@@ -10,6 +10,8 @@ import base64
 import uuid
 import info
 import yfinance as yf
+import logging
+import sys
 
 from io import BytesIO
 from PIL import Image
@@ -33,15 +35,64 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from langchain_core.output_parsers import StrOutputParser
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+#formatter = logging.Formatter('%(asctime)s | %(filename)s:%(lineno)d | %(levelname)s | %(message)s')
+formatter = logging.Formatter('%(asctime)s | %(filename)s:%(lineno)d | %(message)s')
+
+stdout_handler = logging.StreamHandler(sys.stdout)
+stdout_handler.setLevel(logging.INFO)
+stdout_handler.setFormatter(formatter)
+
+enableLogger = False
+print('enableLogger: ', enableLogger)
+
+userId = "demo"
+map_chain = dict() 
+
+def initiate():
+    global userId
+    global memory_chain
+    global enableLogger
+
+    userId = uuid.uuid4().hex
+    logger.info(f"userId: {userId}")
+
+    if userId in map_chain:  
+            # print('memory exist. reuse it!')
+            memory_chain = map_chain[userId]
+    else: 
+        # print('memory does not exist. create new one!')        
+        memory_chain = ConversationBufferWindowMemory(memory_key="chat_history", output_key='answer', return_messages=True, k=5)
+        map_chain[userId] = memory_chain
+
+    if not enableLogger:
+        logger.addHandler(stdout_handler)
+        enableLogger = True
+        print('enableLogger: ', enableLogger)
+
+        try:
+            with open("/home/config.json", "r", encoding="utf-8") as f:        
+                file_handler = logging.FileHandler('/opt/application/logs.log')
+                file_handler.setLevel(logging.INFO)
+                file_handler.setFormatter(formatter)
+                logger.addHandler(file_handler)
+        except Exception:
+            print("No saved application log")
+
+initiate()
+ 
 try:
     with open("/home/config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
-        print('config: ', config)
+        # print(f"config: {config}")
+        logger.info(f"config: {config}")
 except Exception:
     print("use local configuration")
     with open("application/config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
-        print('config: ', config)
+        # print('config: ', config)
+        logger.info(f"config: {config}")
         
 bedrock_region = "us-west-2"
 projectName = config["projectName"] if "projectName" in config else "bedrock-agent"
@@ -52,16 +103,17 @@ if accountId is None:
 
 region = config["region"] if "region" in config else "us-west-2"
 print('region: ', region)
+logger.info(f"region: {region}")
 
 bucketName = config["bucketName"] if "bucketName" in config else f"storage-for-{projectName}-{accountId}-{region}" 
 print('bucketName: ', bucketName)
+logger.info(f"bucketName: {bucketName}")
 
 s3_prefix = 'docs'
 
 MSG_LENGTH = 100
 
-userId = "demo"
-map_chain = dict() 
+
 
 model_name = "Nova Pro"
 model_type = "nova"
@@ -79,7 +131,7 @@ def update(modelName, debugMode, multiRegion):
     
     if model_name != modelName:
         model_name = modelName
-        print('model_name: ', model_name)
+        logger.info(f"model_name: {model_name}")
 
         selected_chat = 0
         models = info.get_model_info(model_name)
@@ -87,30 +139,13 @@ def update(modelName, debugMode, multiRegion):
                 
     if debug_mode != debugMode:
         debug_mode = debugMode
-        print('debug_mode: ', debug_mode)
+        logger.info(f"debug_mode: {debug_mode}")
 
     if multi_region != multiRegion:
         multi_region = multiRegion
-        print('multi_region: ', multi_region)
+        logger.info(f"multi_region: {multi_region}")
 
         selected_chat = 0
-
-def initiate():
-    global userId
-    global memory_chain
-
-    userId = uuid.uuid4().hex
-    print('userId: ', userId)
-
-    if userId in map_chain:  
-            # print('memory exist. reuse it!')
-            memory_chain = map_chain[userId]
-    else: 
-        # print('memory does not exist. create new one!')        
-        memory_chain = ConversationBufferWindowMemory(memory_key="chat_history", output_key='answer', return_messages=True, k=5)
-        map_chain[userId] = memory_chain
-
-initiate()
 
 def clear_chat_history():
     memory_chain = []
@@ -136,7 +171,7 @@ def get_chat():
         maxOutputTokens = 4096 # 4k
     else:
         maxOutputTokens = 5120 # 5k
-    print(f'LLM: {selected_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}, model_type: {model_type}')
+    logger.info(f'LLM: {selected_chat}, bedrock_region: {bedrock_region}, modelId: {modelId}, model_type: {model_type}')
 
     if profile['model_type'] == 'nova':
         STOP_SEQUENCE = '"\n\n<thinking>", "\n<thinking>", " <thinking>"'
@@ -247,10 +282,10 @@ try:
             # print('tavily output: ', output)
                 
             # for result in output:
-            #     print('result: ', result)
+            #     logger.info(f"result: {result}")
             #     break
         else:
-            print('tavily_key is required.')
+            logger.info(f"tavily_key is required.")
 
 except Exception as e: 
     print('Tavily credential is required: ', e)
@@ -263,10 +298,10 @@ def isKorean(text):
     # print('word_kor: ', word_kor)
 
     if word_kor and word_kor != 'None':
-        print('Korean: ', word_kor)
+        # print('Korean: ', word_kor)
         return True
     else:
-        print('Not Korean: ', word_kor)
+        # print('Not Korean: ', word_kor)
         return False
     
 def traslation(chat, text, input_language, output_language):
@@ -293,7 +328,7 @@ def traslation(chat, text, input_language, output_language):
         # print('translated text: ', msg)
     except Exception:
         err_msg = traceback.format_exc()
-        print('error message: ', err_msg)                    
+        logger.info(f"err_msg: {err_msg}")                
         raise Exception ("Not able to request to LLM")
 
     return msg[msg.find('<result>')+8:len(msg)-9] # remove <result> tag
@@ -301,7 +336,7 @@ def traslation(chat, text, input_language, output_language):
 def extract_thinking_tag(response, st):
     if response.find('<thinking>') != -1:
         status = response[response.find('<thinking>')+11:response.find('</thinking>')]
-        print('agent_thinking: ', status)
+        logger.info(f"agent_thinking: {status}")                
         
         if debug_mode=="Enable":
             st.info(status)
@@ -310,14 +345,14 @@ def extract_thinking_tag(response, st):
             msg = response[response.find('</thinking>')+13:]
         else:
             msg = response[:response.find('<thinking>')]
-        print('msg: ', msg)
+        logger.info(f"msg: {msg}")    
     else:
         msg = response
 
     return msg
 
 def revise_question(query, st):    
-    print("###### revise_question ######")
+    logger.info(f"###### revise_question ######")    
 
     chat = get_chat()
     st.info("히스토리를 이용해 질문을 변경합니다.")
@@ -350,10 +385,11 @@ def revise_question(query, st):
     # print('prompt: ', prompt)
     
     history = memory_chain.load_memory_variables({})["chat_history"]
-    print('history: ', history)
+    # print('history: ', history)    
 
     if not len(history):        
-        print('no history')
+        logger.info(f"no history")
+        
         st.info("이전 히스트로가 없어서 질문을 그대로 전달합니다.")
         return query
                 
@@ -374,7 +410,7 @@ def revise_question(query, st):
         
     except Exception:
         err_msg = traceback.format_exc()
-        print('error message: ', err_msg)        
+        logger.info(f"error message: {err_msg}")   
         raise Exception ("Not able to request to LLM")
             
     return revised_question    
@@ -413,7 +449,7 @@ def general_conversation(query):
             
     except Exception:
         err_msg = traceback.format_exc()
-        print('error message: ', err_msg)        
+        logger.info(f"error message: {err_msg}")  
         raise Exception ("Not able to request to LLM: "+err_msg)
         
     return stream
@@ -457,7 +493,7 @@ def get_references(docs):
         #excerpt = excerpt.replace('"', '')        
         #excerpt = ''.join(c for c in excerpt if c not in '"')
         excerpt = re.sub('"', '', excerpt)
-        print('excerpt(quotation removed): ', excerpt)
+        logger.info(f"excerpt(quotation removed): {excerpt}")
         
         if page:                
             reference = reference + f"{i+1}. {page}page in [{name}]({url})), {excerpt[:40]}...\n"
@@ -503,7 +539,7 @@ def get_current_time(format: str=f"%Y-%m-%d %H:%M:%S")->str:
     
     format = format.replace('\'','')
     timestr = datetime.datetime.now(timezone('Asia/Seoul')).strftime(format)
-    print('timestr:', timestr)
+    logger.info(f"timestr: {timestr}") 
     
     return timestr
 
@@ -522,13 +558,13 @@ def get_weather_info(city: str) -> str:
     chat = get_chat()
     if isKorean(city):
         place = traslation(chat, city, "Korean", "English")
-        print('city (translated): ', place)
+        logger.info(f"city (translated): {place}") 
     else:
         place = city
         city = traslation(chat, city, "English", "Korean")
-        print('city (translated): ', city)
+        logger.info(f"city (translated): {city}") 
         
-    print('place: ', place)
+    logger.info(f"place: {place}") 
     
     weather_str: str = f"{city}에 대한 날씨 정보가 없습니다."
     if weather_api_key: 
@@ -541,7 +577,7 @@ def get_weather_info(city: str) -> str:
         try:
             result = requests.get(api)
             result = json.loads(result.text)
-            print('result: ', result)
+            logger.info(f"result: {result}") 
         
             if 'weather' in result:
                 overall = result['weather'][0]['main']
@@ -557,10 +593,10 @@ def get_weather_info(city: str) -> str:
                 #weather_str = f"Today, the overall of {city} is {overall}, current temperature is {current_temp} degree, min temperature is {min_temp} degree, highest temperature is {max_temp} degree. huminity is {humidity}%, wind status is {wind_speed} meter per second. the amount of cloud is {cloud}%."            
         except Exception:
             err_msg = traceback.format_exc()
-            print('error message: ', err_msg)                    
+            logger.info(f"error message: {err_msg}")                                 
             # raise Exception ("Not able to request to LLM")    
         
-    print('weather_str: ', weather_str)                            
+    logger.info(f"weather_str: {weather_str}")
     return weather_str
 
 
@@ -598,10 +634,10 @@ def search_by_tavily(keyword: str) -> str:
                     
         try: 
             output = search.invoke(keyword)
-            print('tavily output: ', output)
+            logger.info(f"tavily output: {output}")
             
             for result in output:
-                print('result: ', result)
+                logger.info(f"result: {result}")
                 if result:
                     content = result.get("content")
                     url = result.get("url")
@@ -620,7 +656,7 @@ def search_by_tavily(keyword: str) -> str:
         
         except Exception:
             err_msg = traceback.format_exc()
-            print('error message: ', err_msg)                    
+            logger.info(f"error message: {err_msg}")                    
             # raise Exception ("Not able to request to tavily")   
     
     if answer == "":
@@ -639,33 +675,33 @@ def stock_data_lookup(ticker, country):
     """ 
     com = re.compile('[a-zA-Z]') 
     alphabet = com.findall(ticker)
-    print('alphabet: ', alphabet)
+    logger.info(f"alphabet: {alphabet}")
 
-    print("country:", country)
+    logger.info(f"country: {country}")
 
     if len(alphabet)==0:
         if country == "South Korea":
             ticker += ".KS"
         elif country == "Japan":
             ticker += ".T"
-    print("ticker:", ticker)
+    logger.info(f"ticker: {ticker}")
     
     stock = yf.Ticker(ticker)
     
     # get the price history for past 1 month
     history = stock.history(period="1mo")
-    print('history: ', history)
+    logger.info(f"history: {history}")
     
     result = f"## Trading History\n{history}"
     #history.reset_index().to_json(orient="split", index=False, date_format="iso")    
     
     result += f"\n\n## Financials\n{stock.financials}"    
-    print('financials: ', stock.financials)
+    logger.info(f"financials: {stock.financials}")
 
     result += f"\n\n## Major Holders\n{stock.major_holders}"
-    print('major_holders: ', stock.major_holders)
+    logger.info(f"major_holders: {stock.major_holders}")
 
-    print('result: ', result)
+    logger.info(f"result: {result}")
 
     return result
 
@@ -682,13 +718,13 @@ def run_agent_executor(query, st):
     tool_node = ToolNode(tools)
 
     def should_continue(state: State) -> Literal["continue", "end"]:
-        print("###### should_continue ######")
+        logger.info(f"###### should_continue ######")
 
-        print('state: ', state)
+        logger.info(f"state: ', state")
         messages = state["messages"]    
 
         last_message = messages[-1]
-        print('last_message: ', last_message)
+        logger.info(f"last_message: ', last_message")
         
         # print('last_message: ', last_message)
         
@@ -697,24 +733,25 @@ def run_agent_executor(query, st):
         # else:                
         #     return "continue"
         if isinstance(last_message, ToolMessage) or last_message.tool_calls:
-            print(f"tool_calls: ", last_message.tool_calls)
+            logger.info(f"tool_calls: {last_message.tool_calls}")
 
             for message in last_message.tool_calls:
-                print(f"tool name: {message['name']}, args: {message['args']}")
+                logger.info(f"tool name: {message['name']}, args: {message['args']}")
                 # update_state_message(f"calling... {message['name']}", config)
 
-            print(f"--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
+            logger.info("--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
             return "continue"
         
         #if not last_message.tool_calls:
         else:
-            print("Final: ", last_message.content)
-            print("--- END ---")
+            print()
+            logger.info(f"Final: {last_message.content}")
+            logger.info(f"--- END ---")
             return "end"
            
     def call_model(state: State, config):
-        print("###### call_model ######")
-        print('state: ', state["messages"])
+        logger.info(f"###### call_model ######")
+        logger.info(f"state: {state['messages']}")
                 
         if isKorean(state["messages"][0].content)==True:
             system = (
@@ -730,7 +767,7 @@ def run_agent_executor(query, st):
             )
                 
         for attempt in range(20):   
-            print('attempt: ', attempt)
+            logger.info(f"attempt: {attempt}")
             try:
                 prompt = ChatPromptTemplate.from_messages(
                     [
@@ -741,45 +778,46 @@ def run_agent_executor(query, st):
                 chain = prompt | model
                     
                 response = chain.invoke(state["messages"])
-                print('call_model response: ', response)
+                logger.info(f"call_model response: {response}")
             
                 if isinstance(response.content, list):      
                     for re in response.content:
                         if "type" in re:
                             if re['type'] == 'text':
-                                print(f"--> {re['type']}: {re['text']}")
+                                logger.info(f"--> {re['type']}: {re['text']}")
 
                                 status = re['text']
-                                print('status: ',status)
+                                logger.info(f"status: {status}")
                                 
                                 status = status.replace('`','')
                                 status = status.replace('\"','')
                                 status = status.replace("\'",'')
                                 
-                                print('status: ',status)
+                                logger.info(f"status: {status}")
                                 if status.find('<thinking>') != -1:
-                                    print('Remove <thinking> tag.')
+                                    logger.info(f"rRemove <thinking> tag.")
                                     status = status[status.find('<thinking>')+11:status.find('</thinking>')]
-                                    print('status without <thinking> tag: ', status)
+                                    logger.info(f"status without <thinking> tag: {status}")
 
                                 if debug_mode=="Enable":
                                     st.info(status)
                                 
                             elif re['type'] == 'tool_use':                
-                                print(f"--> {re['type']}: {re['name']}, {re['input']}")
+                                logger.info(f"--> {re['type']}: {re['name']}, {re['input']}")
 
                                 if debug_mode=="Enable":
                                     st.info(f"{re['type']}: {re['name']}, {re['input']}")
                             else:
-                                print(re)
+                                logger.info(f"{re}")
                         else: # answer
                             print(response.content)
+                            logger.info(f"{response.content}")
                 break
             except Exception:
                 response = AIMessage(content="답변을 찾지 못하였습니다.")
 
                 err_msg = traceback.format_exc()
-                print('error message: ', err_msg)
+                logger.info(f"error message: {err_msg}")
                 # raise Exception ("Not able to request to LLM")
 
         return {"messages": [response]}
@@ -819,14 +857,14 @@ def run_agent_executor(query, st):
     #print("result: ", result)
 
     msg = result["messages"][-1].content
-    print("msg: ", msg)
+    logger.info(f"msg: {msg}")
 
     reference = ""
     if reference_docs:
         reference = get_references(reference_docs)
 
     for i, doc in enumerate(reference_docs):
-        print(f"--> reference {i}: {doc}")
+        logger.info(f"--> reference {i}: {doc}")
         
     reference = ""
     if reference_docs:
@@ -845,7 +883,7 @@ def run_agent_executor2(query, st, debug_mode, model_name):
             
     def create_agent(chat, tools):        
         tool_names = ", ".join([tool.name for tool in tools])
-        print("tool_names: ", tool_names)
+        logger.info(f"tool_names: {tool_names}")
 
         system = (
             "당신의 이름은 서연이고, 질문에 친근한 방식으로 대답하도록 설계된 대화형 AI입니다."
@@ -870,12 +908,12 @@ def run_agent_executor2(query, st, debug_mode, model_name):
         return prompt | chat.bind_tools(tools)
     
     def agent_node(state, agent, name):
-        print(f"###### agent_node:{name} ######")
+        logger.info(f"###### agent_node:{name} ######")
 
         last_message = state["messages"][-1]
-        print('last_message: ', last_message)
+        logger.info(f"last_message: {last_message}")
         if isinstance(last_message, ToolMessage) and last_message.content=="":    
-            print('last_message is empty') 
+            logger.info(f"last_message is empty")
             answer = get_basic_answer(state["messages"][0].content)  
             return {
                 "messages": [AIMessage(content=answer)],
@@ -883,7 +921,7 @@ def run_agent_executor2(query, st, debug_mode, model_name):
             }
         
         response = agent.invoke(state["messages"])
-        print('response: ', response)
+        logger.info(f"response: {response}")
 
         if "answer" in state:
             answer = state['answer']
@@ -893,31 +931,33 @@ def run_agent_executor2(query, st, debug_mode, model_name):
         for re in response.content:
             if "type" in re:
                 if re['type'] == 'text':
-                    print(f"--> {re['type']}: {re['text']}")
+                    logger.info(f"--> {re['type']}: {re['text']}")
 
                     status = re['text']
                     if status.find('<thinking>') != -1:
-                        print('Remove <thinking> tag.')
+                        logger.info(f"Remove <thinking> tag.")
                         status = status[status.find('<thinking>')+11:status.find('</thinking>')]
-                        print('agent_thinking: ', status)
+                        logger.info(f"agent_thinking: {status}")
 
                     if debug_mode=="Enable":
                         st.info(status)
 
                 elif re['type'] == 'tool_use':                
-                    print(f"--> {re['type']}: name: {re['name']}, input: {re['input']}")
+                    logger.info(f"--> {re['type']}: name: {re['name']}, input: {re['input']}")
 
                     if debug_mode=="Enable":
                         st.info(f"{re['type']}: name: {re['name']}, input: {re['input']}")
                 else:
                     print(re)
+                    logger.info(f"{re}")
             else: # answer
                 answer += '\n'+response.content
                 print(response.content)
+                logger.info(f"{response.content}")
                 break
 
         response = AIMessage(**response.dict(exclude={"type", "name"}), name=name)     
-        print('message: ', response)
+        logger.info(f"message: {response}")
         
         return {
             "messages": [response],
@@ -925,7 +965,7 @@ def run_agent_executor2(query, st, debug_mode, model_name):
         }
     
     def final_answer(state):
-        print(f"###### final_answer ######")        
+        logger.info(f"###### final_answer ######")   
 
         answer = ""        
         if "answer" in state:
@@ -934,9 +974,9 @@ def run_agent_executor2(query, st, debug_mode, model_name):
             answer = state["messages"][-1].content
 
         if answer.find('<thinking>') != -1:
-            print('Remove <thinking> tag.')
+            logger.info(f"Remove <thinking> tag.")
             answer = answer[answer.find('</thinking>')+12:]
-        print('answer: ', answer)
+        logger.info(f"answer: {answer}")
         
         return {
             "answer": answer
@@ -949,23 +989,23 @@ def run_agent_executor2(query, st, debug_mode, model_name):
     execution_agent_node = functools.partial(agent_node, agent=execution_agent, name="execution_agent")
     
     def should_continue(state: State, config) -> Literal["continue", "end"]:
-        print("###### should_continue ######")
+        logger.info(f"###### should_continue ######")
         messages = state["messages"]    
         # print('(should_continue) messages: ', messages)
         
         last_message = messages[-1]        
         if not last_message.tool_calls:
-            print("Final: ", last_message.content)
-            print("--- END ---")
+            logger.info(f"Final: {last_message.content}")
+            logger.info(f"--- END ---")
             return "end"
         else:      
-            print(f"tool_calls: ", last_message.tool_calls)
+            logger.info(f"tool_calls: {last_message.tool_calls}")
 
             for message in last_message.tool_calls:
-                print(f"tool name: {message['name']}, args: {message['args']}")
+                logger.info(f"tool name: {message['name']}, args: {message['args']}")
                 # update_state_message(f"calling... {message['name']}", config)
 
-            print(f"--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
+            logger.info(f"--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
             return "continue"
 
     def buildAgentExecutor():
@@ -1005,14 +1045,14 @@ def run_agent_executor2(query, st, debug_mode, model_name):
     #     # print('message: ', message)
 
     output = app.invoke({"messages": inputs}, config)
-    print('output: ', output)
+    logger.info(f"output: {output}")
 
     msg = output['answer']
 
     return msg
 
 def get_basic_answer(query):
-    print('#### get_basic_answer ####')
+    logger.info(f"#### get_basic_answer ####")
     chat = get_chat()
 
     if isKorean(query)==True:
@@ -1036,7 +1076,7 @@ def get_basic_answer(query):
     
     chain = prompt | chat    
     output = chain.invoke({"input": query})
-    print('output.content: ', output.content)
+    logger.info(f"output.content: {output.content}")
 
     return output.content
 
@@ -1075,10 +1115,10 @@ def translate_text(text, model_name):
             }
         )
         msg = result.content
-        print('translated text: ', msg)
+        logger.info(f"translated text: {msg}")
     except Exception:
         err_msg = traceback.format_exc()
-        print('error message: ', err_msg)                    
+        logger.info(f"error message: {err_msg}")                    
         raise Exception ("Not able to request to LLM")
 
     if msg.find('<result>') != -1:
@@ -1119,10 +1159,10 @@ def translate_text_for_japanese(text, model_name):
             }
         )
         msg = result.content
-        print('translated text from Japanese: ', msg)
+        logger.info(f"translated text from Japanese: {msg}")
     except Exception:
         err_msg = traceback.format_exc()
-        print('error message: ', err_msg)                    
+        logger.info(f"error message: {err_msg}")                    
         raise Exception ("Not able to request to LLM")
 
     if msg.find('<result>') != -1:
@@ -1165,10 +1205,10 @@ def check_grammer(text, model_name):
         )
         
         msg = result.content
-        print('result of grammer correction: ', msg)
+        logger.info(f"result of grammer correction: {msg}")
     except Exception:
         err_msg = traceback.format_exc()
-        print('error message: ', err_msg)                    
+        logger.info(f"error message: {err_msg}")                    
         raise Exception ("Not able to request to LLM")
     
     return msg
@@ -1208,7 +1248,7 @@ def upload_to_s3(file_bytes, file_name):
     
     except Exception as e:
         err_msg = f"Error uploading to S3: {str(e)}"
-        print(err_msg)
+        logger.info(f"{err_msg}")
         return None
 
 def extract_and_display_s3_images(text, s3_client):
@@ -1233,6 +1273,7 @@ def extract_and_display_s3_images(text, s3_client):
         except Exception as e:
             err_msg = f"Error downloading image from S3: {str(e)}"
             print(err_msg)
+            logger.info(f"{err_msg}")
             continue
     return images
 
@@ -1259,7 +1300,7 @@ def tavily_search(query, k):
                 )
             )                   
     except Exception as e:
-        print('Exception: ', e)
+        logger.debug(f"Exception: {e}")
 
     return docs
 
@@ -1277,7 +1318,7 @@ def get_image_summarization(object_name, prompt, st):
 
     if debug_mode=="Enable":
         status = "이미지를 가져옵니다."
-        print('status: ', status)
+        logger.info(f"status: {status}")
         st.info(status)
                 
     image_obj = s3_client.get_object(Bucket=bucketName, Key=s3_prefix+'/'+object_name)
@@ -1287,14 +1328,14 @@ def get_image_summarization(object_name, prompt, st):
     img = Image.open(BytesIO(image_content))
     
     width, height = img.size 
-    print(f"width: {width}, height: {height}, size: {width*height}")
+    logger.info(f"width: {width}, height: {height}, size: {width*height}")
     
     isResized = False
     while(width*height > 5242880):                    
         width = int(width/2)
         height = int(height/2)
         isResized = True
-        print(f"width: {width}, height: {height}, size: {width*height}")
+        logger.info(f"width: {width}, height: {height}, size: {width*height}")
     
     if isResized:
         img = img.resize((width, height))
@@ -1306,11 +1347,11 @@ def get_image_summarization(object_name, prompt, st):
     # extract text from the image
     if debug_mode=="Enable":
         status = "이미지에서 텍스트를 추출합니다."
-        print('status: ', status)
+        logger.info(f"status: {status}")
         st.info(status)
 
     text = extract_text(img_base64)
-    print('extracted text: ', text)
+    logger.info(f"extracted text: {text}")
 
     if text.find('<result>') != -1:
         extracted_text = text[text.find('<result>')+8:text.find('</result>')] # remove <result> tag
@@ -1320,22 +1361,22 @@ def get_image_summarization(object_name, prompt, st):
     
     if debug_mode=="Enable":
         status = f"### 추출된 텍스트\n\n{extracted_text}"
-        print('status: ', status)
+        logger.info(f"status: {status}")
         st.info(status)
     
     if debug_mode=="Enable":
         status = "이미지의 내용을 분석합니다."
-        print('status: ', status)
+        logger.info(f"status: {status}")
         st.info(status)
 
     image_summary = summary_image(img_base64, prompt)
-    print('image summary: ', image_summary)
+    logger.info(f"image summary:: {image_summary}")
         
     if len(extracted_text) > 10:
         contents = f"## 이미지 분석\n\n{image_summary}\n\n## 추출된 텍스트\n\n{extracted_text}"
     else:
         contents = f"## 이미지 분석\n\n{image_summary}"
-    print('image contents: ', contents)
+    logger.info(f"image contents: {contents}")
 
     return contents
 
@@ -1360,7 +1401,7 @@ def extract_text(img_base64):
     ]
     
     for attempt in range(5):
-        print('attempt: ', attempt)
+        logger.info(f"attempt: {attempt}")
         try: 
             result = multimodal.invoke(messages)
             
@@ -1369,10 +1410,10 @@ def extract_text(img_base64):
             break
         except Exception:
             err_msg = traceback.format_exc()
-            print('error message: ', err_msg)                    
+            logger.debug(f"error message: {err_msg}")                    
             raise Exception ("Not able to request to LLM")
         
-    print('extracted_text: ', extracted_text)
+    logger.info(f"extracted_text: {extracted_text}")
     if len(extracted_text)<10:
         extracted_text = "텍스트를 추출하지 못하였습니다."
     
@@ -1403,7 +1444,7 @@ def summary_image(img_base64, prompt):
     ]
     
     for attempt in range(5):
-        print('attempt: ', attempt)
+        logger.info(f"attempt: {attempt}")
         try: 
             result = chat.invoke(messages)
             
@@ -1412,10 +1453,10 @@ def summary_image(img_base64, prompt):
             break
         except Exception:
             err_msg = traceback.format_exc()
-            print('error message: ', err_msg)                    
+            logger.debug(f"error message: {err_msg}")                    
             raise Exception ("Not able to request to LLM")
     
-    print('summary: ', summary)
+    logger.info(f"summary: {summary}")
     if len(summary)<10:
         summary = "이미지의 내용을 분석하지 못하였습니다."
 

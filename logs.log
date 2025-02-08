@@ -1,0 +1,9 @@
+2025-02-08 10:52:57,931 | app.py | 161 | INFO | prompt: 너 이름이 뭐야?
+2025-02-08 10:52:57,947 | credentials.py | 1278 | INFO | Found credentials in shared credentials file: ~/.aws/credentials
+2025-02-08 10:53:00,168 | app.py | 182 | INFO | response: 안녕하세요! 제 이름은 서연입니다. 질문에 대해 친절하고 상세하게 답변해 드리도록 노력하겠습니다. 궁금한 점이 있으시면 언제든지 질문해 주세요!
+2025-02-08 10:55:34,254 | app.py | 162 | INFO | prompt: 안녕
+2025-02-08 10:55:34,254 | app.py:162 | prompt: 안녕
+2025-02-08 10:55:34,305 | credentials.py | 1278 | INFO | Found credentials in shared credentials file: ~/.aws/credentials
+2025-02-08 10:55:34,305 | credentials.py:1278 | Found credentials in shared credentials file: ~/.aws/credentials
+2025-02-08 10:55:36,871 | app.py | 183 | INFO | response: 안녕하세요! 저는 서연이라고 합니다. 오늘 어떻게 도와드릴까요? 질문이 있으시면 언제든지 물어봐 주세요. 최대한 친절하고 상세하게 답변해 드리겠습니다.
+2025-02-08 10:55:36,871 | app.py:183 | response: 안녕하세요! 저는 서연이라고 합니다. 오늘 어떻게 도와드릴까요? 질문이 있으시면 언제든지 물어봐 주세요. 최대한 친절하고 상세하게 답변해 드리겠습니다.

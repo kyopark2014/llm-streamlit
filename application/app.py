@@ -1,5 +1,32 @@
 import streamlit as st 
 import chat
+import json
+import logging
+import sys
+import time
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+#formatter = logging.Formatter('%(asctime)s | %(filename)s:%(lineno)d | %(levelname)s | %(message)s')
+formatter = logging.Formatter('%(asctime)s | %(filename)s:%(lineno)d | %(message)s')
+
+stdout_handler = logging.StreamHandler(sys.stdout)
+stdout_handler.setLevel(logging.INFO)
+stdout_handler.setFormatter(formatter)
+
+# print('enableLogger: ', chat.enableLogger)
+if not chat.enableLogger:
+    logger.addHandler(stdout_handler)
+
+    # print('logger is initiated...')    
+    try:
+        with open("/home/config.json", "r", encoding="utf-8") as f:       
+            file_handler = logging.FileHandler('/opt/application/logs.log')
+            file_handler.setLevel(logging.INFO)
+            file_handler.setFormatter(formatter)         
+            logger.addHandler(file_handler)
+    except Exception:
+        logger.debug(f"No saved application log")
 
 st.set_page_config(page_title='AWS', page_icon=None, layout="centered", initial_sidebar_state="auto", menu_items=None)
 
@@ -125,7 +152,7 @@ if clear_button or "messages" not in st.session_state:
     uploaded_file = None
     
     st.session_state.greetings = False
-    st.rerun()
+    #st.rerun()
 
     chat.clear_chat_history()
 
@@ -140,7 +167,7 @@ if uploaded_file and clear_button==False and mode == '이미지 분석':
             
 # Always show the chat input
 if prompt := st.chat_input("메시지를 입력하세요."):
-    print('prompt: ', prompt)
+    logger.info(f"prompt: {prompt}")
     with st.chat_message("user"):  # display user message in chat message container
         st.markdown(prompt)
 
@@ -158,8 +185,9 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             #     st.rerun()                
 
             stream = chat.general_conversation(prompt)            
-            response = st.write_stream(stream)
-            print('response: ', response)
+            response = st.write_stream(stream)            
+            logger.info(f"response: {response}")
+            
             st.session_state.messages.append({"role": "assistant", "content": response})
             # st.rerun()
 
@@ -221,7 +249,8 @@ if prompt := st.chat_input("메시지를 입력하세요."):
                     st.write(summary)
 
                     st.session_state.messages.append({"role": "assistant", "content": summary})
-                    st.rerun()
+                    if debugMode != "Enable":
+                        st.rerun()
         else:
             stream = chat.general_conversation(prompt)
 
