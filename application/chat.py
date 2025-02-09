@@ -10,8 +10,7 @@ import base64
 import uuid
 import info
 import yfinance as yf
-import logging
-import sys
+import utils
 
 from io import BytesIO
 from PIL import Image
@@ -35,26 +34,7 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from langchain_core.output_parsers import StrOutputParser
 
-#logging
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-#formatter = logging.Formatter('%(asctime)s | %(filename)s:%(lineno)d | %(levelname)s | %(message)s')
-#formatter = logging.Formatter('%(asctime)s | %(filename)s:%(lineno)d | %(message)s')
-formatter = logging.Formatter('%(message)s')
-
-stdout_handler = logging.StreamHandler(sys.stdout)
-stdout_handler.setLevel(logging.INFO)
-stdout_handler.setFormatter(formatter)
-
-enableLoggerChat = False
-print('enableLoggerChat: ', enableLoggerChat)
-
-enableLoggerApp = False
-def get_logger_state():
-    global enableLoggerApp
-    if not enableLoggerApp:
-        enableLoggerApp = True
-    return enableLoggerApp
+logger = utils.CreateLogger("chat")
 
 userId = "demo"
 map_chain = dict() 
@@ -74,9 +54,6 @@ def initiate():
         # print('memory does not exist. create new one!')        
         memory_chain = ConversationBufferWindowMemory(memory_key="chat_history", output_key='answer', return_messages=True, k=5)
         map_chain[userId] = memory_chain
-
-    if not enableLoggerChat:
-        logger.addHandler(stdout_handler)        
         
 initiate()
  
@@ -85,19 +62,6 @@ try:
         config = json.load(f)
         # print(f"config: {config}")
         logger.info(f"config: {config}")
-
-        if not enableLoggerChat:
-            logger.addHandler(stdout_handler)        
-            
-            file_handler = logging.FileHandler('/var/log/application/logs.log')
-            file_handler.setLevel(logging.INFO)
-            file_handler.setFormatter(formatter)
-            logger.addHandler(file_handler)
-
-            logger.info("Ready to write log (chat)!")
-
-            enableLoggerChat = True
-            print('enableLoggerChat: ', enableLoggerChat)
         
 except Exception:
     print("use local configuration")
