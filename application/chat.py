@@ -25,10 +25,9 @@ from tavily import TavilyClient
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_community.utilities.tavily_search import TavilySearchAPIWrapper
 from bs4 import BeautifulSoup
-from botocore.exceptions import ClientError
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage, ToolMessage
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from langgraph.graph import START, END, StateGraph
-from typing import Any, List, Tuple, Dict, Optional, cast, Literal, Sequence, Union
+from typing import Literal
 from typing_extensions import Annotated, TypedDict
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
@@ -572,16 +571,6 @@ def get_weather_info(city: str) -> str:
         
     logger.info(f"weather_str: {weather_str}")
     return weather_str
-
-
-# Tavily Tool
-# tavily_tool = TavilySearchResults(max_results=3,
-#     include_answer=True,
-#     include_raw_content=True,
-#     api_wrapper=tavily_api_wrapper,
-#     search_depth="advanced", # "basic"
-#     include_domains=["google.com", "naver.com"]
-# )
 
 # user defined tavily tool
 @tool
