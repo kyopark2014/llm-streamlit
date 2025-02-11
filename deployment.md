@@ -106,6 +106,7 @@ AWS Credential을 입력합니다.
 
 ![image](https://github.com/user-attachments/assets/06a5cbe8-1eaa-447f-88d8-34269cf4c231)
 
+
 ## 실행환경 (선택)
 
 ### CloudWatch Log 활용하기
@@ -207,6 +208,12 @@ cat /opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log
 ### Local에서 실행하기 
 
 Output의 environmentforbedrockagent의 내용을 복사하여 [config.json](./application/config.json)을 업데이트 합니다. "aws configure"로 credential이 설정되어 있어야합니다.
+
+만약 visual studio code 사용자라면 config.json 파일은 아래 명령어를 사용합니다.
+
+```text
+code application/config.json
+```
 
 아래와 같이 필요한 패키지를 설치합니다.
 
