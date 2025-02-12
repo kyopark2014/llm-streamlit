@@ -448,7 +448,7 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대
 
 메뉴에서 [이미지 분석]과 모델로 [Claude 3.5 Sonnet]을 선택한 후에 [기다리는 사람들 사진](./contents/waiting_people.jpg)을 다운받아서 업로드합니다. 이후 "사진속에 있는 사람들은 모두 몇명인가요?"라고 입력후 결과를 확인하면 아래와 같습니다.
 
-![image](https://github.com/user-attachments/assets/3e1ea017-4e46-4340-87c6-4ebf019dae4f)
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/3e1ea017-4e46-4340-87c6-4ebf019dae4f" />
 
 
 ### Amazon S3와 Bedrock Endpoint의 동작 확인
