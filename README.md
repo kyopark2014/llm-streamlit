@@ -432,7 +432,7 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대
 
 문법 검토하기를 선택후 문장을 입력하면 아래와 같이 수정이 필요한 부분을 알려주고 수정된 문장도 함께 제시합니다. 
 
-![image](https://github.com/user-attachments/assets/0afc2778-772c-4505-b901-67eae5beeb90)
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/0afc2778-772c-4505-b901-67eae5beeb90" />
 
 ### 이미지 분석
 
@@ -440,11 +440,12 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대
 
 이때 [사용한 이미지](./contents/example-table.png)는 아래와 같습니다. 이 이미지는 ReAct와 CoT를 비교하고 있습니다.
 
-![image](https://github.com/user-attachments/assets/ec22508a-1569-49a1-a6fb-6442bc972d2a)
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/ec22508a-1569-49a1-a6fb-6442bc972d2a" />
 
 이때의 결과는 아래와 같습니다. 입력한 메시지에 맞는 의미를 그림파일에서 찾고 아래와 같이 먼저 결과를 제시합니다. 실제 LLM이 인식한 표를 아래와 같이 확인할 수 있습니다.
 
-![image](https://github.com/user-attachments/assets/39fb2235-c6ef-42e0-8f43-f158cb088db4)
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/39fb2235-c6ef-42e0-8f43-f158cb088db4" />
+
 
 메뉴에서 [이미지 분석]과 모델로 [Claude 3.5 Sonnet]을 선택한 후에 [기다리는 사람들 사진](./contents/waiting_people.jpg)을 다운받아서 업로드합니다. 이후 "사진속에 있는 사람들은 모두 몇명인가요?"라고 입력후 결과를 확인하면 아래와 같습니다.
 
