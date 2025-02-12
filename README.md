@@ -427,7 +427,7 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대
 
 메뉴에서 "번역하기"를 선택하고 아래와 같이 한국어를 입력하면 영어로 번역을 수행합니다. 만약 입력이 영어였다면 한국어로 번역하도록 프롬프트를 구성하였습니다.
 
-![image](https://github.com/user-attachments/assets/8649b4c9-3f9d-45ab-8bb2-5693501972cd)
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/8649b4c9-3f9d-45ab-8bb2-5693501972cd" />
 
 ### 문법 검토하기
 
