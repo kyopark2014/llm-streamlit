@@ -1374,7 +1374,7 @@ def extract_text(img_base64):
         except Exception:
             err_msg = traceback.format_exc()
             logger.debug(f"error message: {err_msg}")                    
-            raise Exception ("Not able to request to LLM")
+            # raise Exception ("Not able to request to LLM")
         
     logger.info(f"extracted_text: {extracted_text}")
     if len(extracted_text)<10:

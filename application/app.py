@@ -179,8 +179,6 @@ if prompt := st.chat_input("메시지를 입력하세요."):
                 print('response: ', response)
 
                 st.session_state.messages.append({"role": "assistant", "content": response})
-                if debugMode != "Enable":
-                    st.rerun()
             
             show_references(reference_docs) 
 
@@ -192,8 +190,6 @@ if prompt := st.chat_input("메시지를 입력하세요."):
                 print('response: ', response)
                 
                 st.session_state.messages.append({"role": "assistant", "content": response})
-                if debugMode != "Enable":
-                    st.rerun()
 
                 chat.save_chat_history(prompt, response)
             
@@ -223,14 +219,15 @@ if prompt := st.chat_input("메시지를 입력하세요."):
                 st.error("파일을 먼저 업로드하세요.")
                 st.stop()
 
-            else:                
-                with st.status("thinking...", expanded=True, state="running") as status:
-                    summary = chat.get_image_summarization(file_name, prompt, st)
-                    st.write(summary)
+            else:         
+                if modelName == "Claude 3.5 Haiku":
+                    st.error("Claude 3.5 Haiku은 이미지를 지원하지 않습니다. 다른 모델을 선택해주세요.")
+                else:       
+                    with st.status("thinking...", expanded=True, state="running") as status:
+                        summary = chat.get_image_summarization(file_name, prompt, st)
+                        st.write(summary)
 
-                    st.session_state.messages.append({"role": "assistant", "content": summary})
-                    if debugMode != "Enable":
-                        st.rerun()
+                        st.session_state.messages.append({"role": "assistant", "content": summary})
         else:
             stream = chat.general_conversation(prompt)
 
