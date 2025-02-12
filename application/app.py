@@ -14,10 +14,10 @@ mode_descriptions = {
     "일상적인 대화": [
         "대화이력을 바탕으로 챗봇과 일상의 대화를 편안히 즐길수 있습니다."
     ],
-    "Agentic Workflow (Tool Use)": [
+   'Agent': [
         "Agent를 이용해 다양한 툴을 사용할 수 있습니다. 여기에서는 날씨, 시간, 도서추천, 인터넷 검색을 제공합니다."
     ],
-    "Agentic Workflow Chat": [
+    'Agent (Chat)': [
         "Agent를 이용해 다양한 툴을 사용할 수 있습니다. 또한, 이전 채팅 히스토리를 반영한 대화가 가능합니다."
     ],
     "번역하기 (한국어 / 영어)": [
@@ -49,7 +49,7 @@ with st.sidebar:
     
     # radio selection
     mode = st.radio(
-        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화", "Agentic Workflow (Tool Use)", "Agentic Workflow Chat", "번역하기 (한국어 / 영어)", "번역하기 (일본어 / 한국어)", "문법 검토하기", "이미지 분석"], index=0
+        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화",'Agent', 'Agent (Chat)', "번역하기 (한국어 / 영어)", "번역하기 (일본어 / 한국어)", "문법 검토하기", "이미지 분석"], index=0
     )   
     st.info(mode_descriptions[mode][0])
     # limit = st.slider(
@@ -169,23 +169,27 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             logger.info(f"response: {response}")
             
             st.session_state.messages.append({"role": "assistant", "content": response})
+
+            chat.save_chat_history(prompt, response)
             # st.rerun()
 
-        elif mode == 'Agentic Workflow (Tool Use)':
+        elif mode == 'Agent':
             with st.status("thinking...", expanded=True, state="running") as status:
-                response, reference_docs = chat.run_agent_executor(prompt, st)
+                response, reference_docs = chat.run_agent_executor(prompt, "Disable", st)
                 # response = chat.run_agent_executor2(prompt st, debugMode, modelName)
                 st.write(response)
                 print('response: ', response)
 
                 st.session_state.messages.append({"role": "assistant", "content": response})
+
+                chat.save_chat_history(prompt, response)
             
             show_references(reference_docs) 
 
-        elif mode == 'Agentic Workflow Chat':
+        elif mode == 'Agent (Chat)':
             with st.status("thinking...", expanded=True, state="running") as status:
-                revise_prompt = chat.revise_question(prompt, st)
-                response, reference_docs = chat.run_agent_executor(revise_prompt, st)
+                # revise_prompt = chat.revise_question(prompt, st)
+                response, reference_docs = chat.run_agent_executor(prompt, "Enable", st)
                 st.write(response)
                 print('response: ', response)
                 

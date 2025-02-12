@@ -670,7 +670,7 @@ def stock_data_lookup(ticker, country):
 
 tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily, stock_data_lookup]        
 
-def run_agent_executor(query, st):
+def run_agent_executor(query, useHistory, st):
     chatModel = get_chat()     
     model = chatModel.bind_tools(tools)
 
@@ -729,20 +729,41 @@ def run_agent_executor(query, st):
                 "If you don't know the answer, just say that you don't know, don't try to make up an answer."
             )
                 
-        for attempt in range(20):   
+        for attempt in range(5):   
             logger.info(f"attempt: {attempt}")
             try:
-                prompt = ChatPromptTemplate.from_messages(
-                    [
-                        ("system", system),
-                        MessagesPlaceholder(variable_name="messages"),
-                    ]
-                )
-                chain = prompt | model
+                if useHistory=="Enable":
+                    prompt = ChatPromptTemplate.from_messages(
+                        [
+                            MessagesPlaceholder(variable_name="history"), 
+                            ("system", system),
+                            MessagesPlaceholder(variable_name="messages"),
+                        ]
+                    )
+                    chain = prompt | model
                     
-                response = chain.invoke(state["messages"])
-                logger.info(f"call_model response: {response}")
-            
+                    history = memory_chain.load_memory_variables({})["chat_history"]
+                    logger.info(f"history: {history}")
+                
+                    response = chain.invoke({
+                        "history": history,
+                        "messages": state["messages"]
+                    })
+                    logger.info(f"call_model response: {response}")
+                else:
+                    prompt = ChatPromptTemplate.from_messages(
+                        [
+                            ("system", system),
+                            MessagesPlaceholder(variable_name="messages"),
+                        ]
+                    )
+                    chain = prompt | model
+                    
+                    response = chain.invoke({
+                        "messages": state["messages"]
+                    })
+                    logger.info(f"call_model response: {response}")
+                
                 if isinstance(response.content, list):      
                     for re in response.content:
                         if "type" in re:
