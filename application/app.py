@@ -14,7 +14,7 @@ mode_descriptions = {
     "일상적인 대화": [
         "대화이력을 바탕으로 챗봇과 일상의 대화를 편안히 즐길수 있습니다."
     ],
-   'Agent': [
+    "Agentic Workflow (Tool Use)": [
         "Agent를 이용해 다양한 툴을 사용할 수 있습니다. 여기에서는 날씨, 시간, 도서추천, 인터넷 검색을 제공합니다."
     ],
     'Agent (Chat)': [
@@ -49,7 +49,7 @@ with st.sidebar:
     
     # radio selection
     mode = st.radio(
-        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화",'Agent', 'Agent (Chat)', "번역하기 (한국어 / 영어)", "번역하기 (일본어 / 한국어)", "문법 검토하기", "이미지 분석"], index=0
+        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화", "Agent", 'Agent (Chat)', "번역하기 (한국어 / 영어)", "번역하기 (일본어 / 한국어)", "문법 검토하기", "이미지 분석"], index=0
     )   
     st.info(mode_descriptions[mode][0])
     # limit = st.slider(
@@ -173,9 +173,9 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             chat.save_chat_history(prompt, response)
             # st.rerun()
 
-        elif mode == 'Agent':
+        elif mode == 'Agent (Tool Use)':
             with st.status("thinking...", expanded=True, state="running") as status:
-                response, reference_docs = chat.run_agent_executor(prompt, "Disable", st)
+                response, reference_docs = chat.run_agent_executor(prompt, st)
                 # response = chat.run_agent_executor2(prompt st, debugMode, modelName)
                 st.write(response)
                 print('response: ', response)
@@ -188,8 +188,8 @@ if prompt := st.chat_input("메시지를 입력하세요."):
 
         elif mode == 'Agent (Chat)':
             with st.status("thinking...", expanded=True, state="running") as status:
-                # revise_prompt = chat.revise_question(prompt, st)
-                response, reference_docs = chat.run_agent_executor(prompt, "Enable", st)
+                revise_prompt = chat.revise_question(prompt, st)
+                response, reference_docs = chat.run_agent_executor(revise_prompt, st)
                 st.write(response)
                 print('response: ', response)
                 
