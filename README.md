@@ -469,8 +469,7 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대
 
 LangSmith 로그를 보면 아래와 같습니다. Agent는 아래와 같은 code를 생성하여 code_interpreter를 실행시켰고, 결과적으로 정답인 3을 얻을 수 있었습니다.
 
-![noname](https://github.com/user-attachments/assets/f8f79e0a-710d-4db2-b201-03ee393f10d6)
-
+<img width="700" alt="image" src="https://github.com/user-attachments/assets/f8f79e0a-710d-4db2-b201-03ee393f10d6" />
 
 
 
