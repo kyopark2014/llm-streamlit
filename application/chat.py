@@ -77,12 +77,13 @@ if accountId is None:
     raise Exception ("No accountId")
 
 region = config["region"] if "region" in config else "us-west-2"
-print('region: ', region)
 logger.info(f"region: {region}")
 
 bucketName = config["bucketName"] if "bucketName" in config else f"storage-for-{projectName}-{accountId}-{region}" 
-print('bucketName: ', bucketName)
 logger.info(f"bucketName: {bucketName}")
+
+codeInterpreterId = config["code_interpreter_id"] if "code_interpreter_id" in config else None
+logger.info(f"codeInterpreterId: {codeInterpreterId}")
 
 s3_prefix = 'docs'
 
@@ -730,7 +731,7 @@ print(image_base64)
         client = Riza()
 
         resp = client.command.exec(
-            runtime_revision_id="01JM3JQFH1HW3SKDNEJTJJH740",
+            runtime_revision_id=codeInterpreterId,
             language="python",
             code=code,
             env={
