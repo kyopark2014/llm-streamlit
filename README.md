@@ -452,6 +452,13 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대
 
 <img width="600" alt="image" src="https://github.com/user-attachments/assets/3e1ea017-4e46-4340-87c6-4ebf019dae4f" />
 
+### Code Interpreter를 이용한 그래프 그리기
+
+메뉴에서 "Agent"를 선택하고 "네이버와 카카오의 주가 동향을 비교하여 그래프를 그려주세요. 그래프는 영어로 작성하고 향후 투자 방법에 대해서도 조언해주세요"라고 입력후 결과를 확인하면 아래와 같습니다.
+
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/26ea6bc9-3dcb-48e7-81ec-0c535d98c3a8" />
+
+
 
 ### Amazon S3와 Bedrock Endpoint의 동작 확인
 
