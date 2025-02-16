@@ -282,7 +282,8 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       "projectName": projectName,
       "accountId": accountId,
       "region": region,
-      "s3_arn": s3Bucket.bucketArn
+      "s3_arn": s3Bucket.bucketArn,
+      "code_interpreter_id": "XXXXXX"
     }    
     new cdk.CfnOutput(this, `environment-for-${projectName}`, {
       value: JSON.stringify(environment),
