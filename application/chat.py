@@ -693,9 +693,6 @@ def stock_data_lookup(ticker, country):
 
     return result
 
-#from langchain_community.tools.riza.command import ExecPython
-#code_drawer = ExecPython()
-
 def generate_short_uuid(length=8):
     full_uuid = uuid.uuid4().hex
     return full_uuid[:length]

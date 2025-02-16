@@ -148,8 +148,8 @@ if uploaded_file and clear_button==False and mode == '이미지 분석':
     st.image(uploaded_file, caption="이미지 미리보기", use_container_width=True)
 
     file_name = uploaded_file.name
-    image_url = chat.upload_to_s3(uploaded_file.getvalue(), file_name)
-    print('image_url: ', image_url)    
+    url = chat.upload_to_s3(uploaded_file.getvalue(), file_name)
+    print('url: ', url)    
             
 # Always show the chat input
 if prompt := st.chat_input("메시지를 입력하세요."):
@@ -184,7 +184,7 @@ if prompt := st.chat_input("메시지를 입력하세요."):
                 response, image_url, reference_docs = chat.run_agent_executor(prompt, st)
                 # response = chat.run_agent_executor2(prompt st, debugMode, modelName)
                 st.write(response)
-                print('response: ', response)
+                logger.info(f"response: {response}")
 
                 if len(image_url):
                     for url in image_url:
@@ -208,7 +208,14 @@ if prompt := st.chat_input("메시지를 입력하세요."):
                 revise_prompt = chat.revise_question(prompt, st)
                 response, image_url, reference_docs = chat.run_agent_executor(revise_prompt, st)
                 st.write(response)
-                print('response: ', response)
+                logger.info(f"response: {response}")
+
+                if len(image_url):
+                    for url in image_url:
+                        logger.info(f"url: {url}")
+
+                        file_name = url[url.rfind('/')+1:]
+                        st.image(url, caption=file_name, use_container_width=True)
                 
                 st.session_state.messages.append({
                     "role": "assistant", 
