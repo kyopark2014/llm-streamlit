@@ -14,7 +14,7 @@ mode_descriptions = {
     "일상적인 대화": [
         "대화이력을 바탕으로 챗봇과 일상의 대화를 편안히 즐길수 있습니다."
     ],
-    "Agentic Workflow (Tool Use)": [
+    "Agent": [
         "Agent를 이용해 다양한 툴을 사용할 수 있습니다. 여기에서는 날씨, 시간, 도서추천, 인터넷 검색을 제공합니다."
     ],
     'Agent (Chat)': [
@@ -173,7 +173,7 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             chat.save_chat_history(prompt, response)
             # st.rerun()
 
-        elif mode == 'Agent (Tool Use)':
+        elif mode == 'Agent':
             with st.status("thinking...", expanded=True, state="running") as status:
                 response, reference_docs = chat.run_agent_executor(prompt, st)
                 # response = chat.run_agent_executor2(prompt st, debugMode, modelName)

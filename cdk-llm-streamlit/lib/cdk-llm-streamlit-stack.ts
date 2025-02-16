@@ -6,14 +6,14 @@ import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as elbv2_tg from 'aws-cdk-lib/aws-elasticloadbalancingv2-targets'
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as cloudFront from 'aws-cdk-lib/aws-cloudfront';
+import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 
 const projectName = `llm-streamlit`; 
 const region = process.env.CDK_DEFAULT_REGION;    
 const accountId = process.env.CDK_DEFAULT_ACCOUNT;
 const targetPort = 8080;
 const bucketName = `storage-for-${projectName}-${accountId}-${region}`; 
-import * as cloudFront from 'aws-cdk-lib/aws-cloudfront';
-import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 
 export class CdkLlmStreamlitStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -41,6 +41,22 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'bucketName', {
       value: s3Bucket.bucketName,
       description: 'The nmae of bucket',
+    });
+
+    // cloudfront for sharing s3
+    const distribution_sharing = new cloudFront.Distribution(this, `sharing-for-${projectName}`, {
+      defaultBehavior: {
+        // origin: origins.S3BucketOrigin.withOriginAccessControl(s3Bucket),
+        origin: new origins.S3Origin(s3Bucket),
+        allowedMethods: cloudFront.AllowedMethods.ALLOW_ALL,
+        cachePolicy: cloudFront.CachePolicy.CACHING_DISABLED,
+        viewerProtocolPolicy: cloudFront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      },
+      priceClass: cloudFront.PriceClass.PRICE_CLASS_200,  
+    });
+    new cdk.CfnOutput(this, `distribution-sharing-DomainName-for-${projectName}`, {
+      value: 'https://'+distribution_sharing.domainName,
+      description: 'The domain name of the Distribution Sharing',
     });
     
     // EC2 Role

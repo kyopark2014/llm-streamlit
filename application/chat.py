@@ -668,7 +668,95 @@ def stock_data_lookup(ticker, country):
 
     return result
 
-tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily, stock_data_lookup]        
+#from langchain_community.tools.riza.command import ExecPython
+#code_drawer = ExecPython()
+
+def generate_short_uuid(length=8):
+    full_uuid = uuid.uuid4().hex
+    return full_uuid[:length]
+
+from rizaio import Riza
+@tool
+def code_drawer(code):
+    """
+    Execute a Python script for draw a graph.
+    code: The Python code to execute
+    return: the url of graph
+    """ 
+
+    # The Python runtime does not have filesystem access, but does include the entire standard library.
+    # Make HTTP requests with the httpx or requests libraries.
+    # Read input from stdin and write output to stdout."
+    
+    # print(f"code: {code}")
+
+    pre = f"os.environ[ 'MPLCONFIGDIR' ] = '/tmp/'\n"  # matplatlib
+    post = """\n
+import io
+import base64
+buffer = io.BytesIO()
+plt.savefig(buffer, format='png')
+buffer.seek(0)
+image_base64 = base64.b64encode(buffer.getvalue()).decode()
+
+print(image_base64)
+"""
+    code = pre + code + post    
+
+    code.replace("plt.style.use('seaborn')", "#plt.style.use('seaborn')")
+    code.replace("plt.savefig(", "#plt.savefig(")
+
+    logger.info(f"code: {code}")    
+
+    result = ""
+    try:     
+        client = Riza()
+
+        resp = client.command.exec(
+            runtime_revision_id="01JM3JQFH1HW3SKDNEJTJJH740",
+            language="python",
+            code=code,
+            env={
+                "DEBUG": "true",
+            }
+        )
+        output = dict(resp)
+
+        print(f"output: {output}") # includling exit_code, stdout, stderr
+
+        if int(resp.exit_code) > 0:
+            raise ValueError(f"non-zero exit code {resp.exit_code}")
+
+        base64Img = resp.stdout
+
+        byteImage = BytesIO(base64.b64decode(base64Img))
+
+        image_name = generate_short_uuid()+'.png'
+        url = upload_to_s3(byteImage, image_name)
+
+        file_name = url[url.rfind('/')+1:]
+        print(f"file_name: {file_name}")
+
+        s3_key = f"{s3_prefix}/{file_name}"
+        print(f"s3_key: {s3_key}")
+
+        graph_url = f"https://{bucketName}.s3.amazonaws.com/{s3_key}"
+        print(f"graph_url: {graph_url}")
+
+        result = f"생성된 그래프의 URL: {graph_url}"
+
+        im = Image.open(BytesIO(base64.b64decode(base64Img)))  # for debuuing
+        im.save(image_name, 'PNG')
+
+    except Exception:
+        result = "그래프 생성에 실패했어요. 다시 시도해주세요."
+
+        err_msg = traceback.format_exc()
+        logger.info(f"error message: {err_msg}")
+
+    return result
+
+tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily, stock_data_lookup, code_drawer]        
 
 def run_agent_executor(query, st):
     chatModel = get_chat()     
@@ -729,7 +817,7 @@ def run_agent_executor(query, st):
                 "If you don't know the answer, just say that you don't know, don't try to make up an answer."
             )
                 
-        for attempt in range(20):   
+        for attempt in range(5):   
             logger.info(f"attempt: {attempt}")
             try:
                 prompt = ChatPromptTemplate.from_messages(
