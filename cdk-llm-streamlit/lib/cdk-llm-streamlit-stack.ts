@@ -114,7 +114,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     tavilyApiSecret.grantRead(ec2Role) 
 
     const codeInterpreterSecret = new secretsmanager.Secret(this, `code-interpreter-secret-for-${projectName}`, {
-      description: 'secret for code interpreter api key', // openweathermap
+      description: 'secret for code interpreter api key', // code interpreter
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       secretName: `code-interpreter-${projectName}`,
       secretObjectValue: {
@@ -283,7 +283,8 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       "projectName": projectName,
       "accountId": accountId,
       "region": region,
-      "s3_arn": s3Bucket.bucketArn
+      "s3_arn": s3Bucket.bucketArn,
+      "sharing_url": 'https://'+distribution_sharing.domainName
     }    
     new cdk.CfnOutput(this, `environment-for-${projectName}`, {
       value: JSON.stringify(environment),

@@ -32,6 +32,7 @@ from typing_extensions import Annotated, TypedDict
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from langchain_core.output_parsers import StrOutputParser
+from urllib import parse
 
 logger = utils.CreateLogger("chat")
 
@@ -83,6 +84,11 @@ bucketName = config["bucketName"] if "bucketName" in config else f"storage-for-{
 logger.info(f"bucketName: {bucketName}")
 
 s3_prefix = 'docs'
+s3_image_prefix = 'images'
+
+path = config["sharing_url"] if "sharing_url" in config else None
+if path is None:
+    raise Exception ("No Sharing URL")
 
 MSG_LENGTH = 100
 
@@ -275,7 +281,7 @@ try:
     code_interpreter_project = secret['project_name']
     code_interpreter_id = secret['code_interpreter_id']
 
-    logger.info('code_interpreter_id: ', code_interpreter_id)
+    # logger.info(f"code_interpreter_id: {code_interpreter_id}")
 except Exception as e:
     raise e
 
@@ -758,10 +764,12 @@ print(image_base64)
         s3_key = f"{s3_prefix}/{file_name}"
         print(f"s3_key: {s3_key}")
 
-        graph_url = f"https://{bucketName}.s3.amazonaws.com/{s3_key}"
-        print(f"graph_url: {graph_url}")
+        doc_prefix = s3_prefix+'/'
 
-        result = f"생성된 그래프의 URL: {graph_url}"
+        graph_image_url = path+'/'+doc_prefix+parse.quote(file_name)
+        print(f"graph_image_url: {graph_image_url}")
+
+        result = f"생성된 그래프의 URL: {graph_image_url}"
 
         im = Image.open(BytesIO(base64.b64decode(base64Img)))  # for debuuing
         im.save(image_name, 'PNG')
