@@ -80,15 +80,16 @@ if accountId is None:
 region = config["region"] if "region" in config else "us-west-2"
 logger.info(f"region: {region}")
 
-bucketName = config["bucketName"] if "bucketName" in config else f"storage-for-{projectName}-{accountId}-{region}" 
-logger.info(f"bucketName: {bucketName}")
-
 s3_prefix = 'docs'
 s3_image_prefix = 'images'
 
 path = config["sharing_url"] if "sharing_url" in config else None
 if path is None:
     raise Exception ("No Sharing URL")
+
+s3_bucket = config["s3_bucket"] if "s3_bucket" in config else None
+if s3_bucket is None:
+    raise Exception ("No storage!")
 
 MSG_LENGTH = 100
 
@@ -501,7 +502,7 @@ def get_references(docs):
 ####################### LangGraph #######################
 # Agentic Workflow: Tool Use
 #########################################################
-
+image_url = []
 @tool 
 def get_book_list(keyword: str) -> str:
     """
@@ -707,13 +708,13 @@ def code_drawer(code):
     code: The Python code to execute
     return: the url of graph
     """ 
-
     # The Python runtime does not have filesystem access, but does include the entire standard library.
     # Make HTTP requests with the httpx or requests libraries.
-    # Read input from stdin and write output to stdout."
+    # Read input from stdin and write output to stdout."    
+        
+    code = re.sub(r"seaborn", "classic", code)
+    code = re.sub(r"plt.savefig", "#plt.savefig", code)
     
-    # print(f"code: {code}")
-
     pre = f"os.environ[ 'MPLCONFIGDIR' ] = '/tmp/'\n"  # matplatlib
     post = """\n
 import io
@@ -726,12 +727,8 @@ image_base64 = base64.b64encode(buffer.getvalue()).decode()
 print(image_base64)
 """
     code = pre + code + post    
-
-    code.replace("plt.style.use('seaborn')", "#plt.style.use('seaborn')")
-    code.replace("plt.savefig(", "#plt.savefig(")
-
-    logger.info(f"code: {code}")    
-
+    logger.info(f"code: {code}")
+    
     result = ""
     try:     
         client = Riza()
@@ -748,8 +745,8 @@ print(image_base64)
 
         print(f"output: {output}") # includling exit_code, stdout, stderr
 
-        if int(resp.exit_code) > 0:
-            raise ValueError(f"non-zero exit code {resp.exit_code}")
+        if resp.exit_code > 0:
+            logger.debug(f"non-zero exit code {resp.exit_code}")
 
         base64Img = resp.stdout
 
@@ -757,22 +754,19 @@ print(image_base64)
 
         image_name = generate_short_uuid()+'.png'
         url = upload_to_s3(byteImage, image_name)
+        logger.info(f"url: {url}")
 
         file_name = url[url.rfind('/')+1:]
         print(f"file_name: {file_name}")
 
-        s3_key = f"{s3_prefix}/{file_name}"
-        print(f"s3_key: {s3_key}")
+        global image_url
+        image_url.append(path+'/'+s3_image_prefix+'/'+parse.quote(file_name))
+        print(f"image_url: {image_url}")
 
-        doc_prefix = s3_prefix+'/'
+        result = f"생성된 그래프의 URL: {image_url}"
 
-        graph_image_url = path+'/'+doc_prefix+parse.quote(file_name)
-        print(f"graph_image_url: {graph_image_url}")
-
-        result = f"생성된 그래프의 URL: {graph_image_url}"
-
-        im = Image.open(BytesIO(base64.b64decode(base64Img)))  # for debuuing
-        im.save(image_name, 'PNG')
+        # im = Image.open(BytesIO(base64.b64decode(base64Img)))  # for debuuing
+        # im.save(image_name, 'PNG')
 
     except Exception:
         result = "그래프 생성에 실패했어요. 다시 시도해주세요."
@@ -918,9 +912,10 @@ def run_agent_executor(query, st):
         return workflow.compile()
 
     # initiate
-    global reference_docs, contentList
+    global reference_docs, contentList, image_url
     reference_docs = []
     contentList = []
+    image_url = []
 
     app = buildChatAgent()
             
@@ -949,7 +944,7 @@ def run_agent_executor(query, st):
 
     msg = extract_thinking_tag(msg, st)
     
-    return msg+reference, reference_docs
+    return msg+reference, image_url, reference_docs
 
 def run_agent_executor2(query, st, debug_mode, model_name):        
     class State(TypedDict):
@@ -1303,31 +1298,41 @@ def upload_to_s3(file_bytes, file_name):
             service_name='s3',
             region_name=bedrock_region
         )
-
         # Generate a unique file name to avoid collisions
         #timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         #unique_id = str(uuid.uuid4())[:8]
         #s3_key = f"uploaded_images/{timestamp}_{unique_id}_{file_name}"
-        s3_key = f"{s3_prefix}/{file_name}"
 
-        content_type = (
-            "image/jpeg"
-            if file_name.lower().endswith((".jpg", ".jpeg"))
-            else "image/png"
+        content_type = utils.get_contents_type(file_name)       
+        logger.info(f"content_type: {content_type}") 
+
+        if content_type == "image/jpeg" or content_type == "image/png":
+            s3_key = f"{s3_image_prefix}/{file_name}"
+        else:
+            s3_key = f"{s3_prefix}/{file_name}"
+        
+        user_meta = {  # user-defined metadata
+            "content_type": content_type,
+            "model_name": model_name
+        }
+        
+        response = s3_client.put_object(
+            Bucket=s3_bucket, 
+            Key=s3_key, 
+            ContentType=content_type,
+            Metadata = user_meta,
+            Body=file_bytes            
         )
+        logger.info(f"upload response: {response}")
 
-        s3_client.put_object(
-            Bucket=bucketName, Key=s3_key, Body=file_bytes, ContentType=content_type
-        )
-
-        url = f"https://{bucketName}.s3.amazonaws.com/{s3_key}"
+        url = f"https://{s3_bucket}.s3.amazonaws.com/{s3_key}"
         return url
     
     except Exception as e:
         err_msg = f"Error uploading to S3: {str(e)}"
         logger.info(f"{err_msg}")
         return None
-
+        
 def extract_and_display_s3_images(text, s3_client):
     """
     Extract S3 URLs from text, download images, and return them for display
@@ -1398,7 +1403,7 @@ def get_image_summarization(object_name, prompt, st):
         logger.info(f"status: {status}")
         st.info(status)
                 
-    image_obj = s3_client.get_object(Bucket=bucketName, Key=s3_prefix+'/'+object_name)
+    image_obj = s3_client.get_object(Bucket=s3_bucket, Key=s3_prefix+'/'+object_name)
     # print('image_obj: ', image_obj)
     
     image_content = image_obj['Body'].read()

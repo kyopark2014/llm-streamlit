@@ -107,6 +107,12 @@ def display_chat_messages() -> None:
     """
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
+            if "images" in message:                
+                for url in message["images"]:
+                    logger.info(f"url: {url}")
+
+                    file_name = url[url.rfind('/')+1:]
+                    st.image(url, caption=file_name, use_container_width=True)
             st.markdown(message["content"])
 
 display_chat_messages()
@@ -175,12 +181,23 @@ if prompt := st.chat_input("메시지를 입력하세요."):
 
         elif mode == 'Agent':
             with st.status("thinking...", expanded=True, state="running") as status:
-                response, reference_docs = chat.run_agent_executor(prompt, st)
+                response, image_url, reference_docs = chat.run_agent_executor(prompt, st)
                 # response = chat.run_agent_executor2(prompt st, debugMode, modelName)
                 st.write(response)
                 print('response: ', response)
 
-                st.session_state.messages.append({"role": "assistant", "content": response})
+                if len(image_url):
+                    for url in image_url:
+                        logger.info(f"url: {url}")
+
+                        file_name = url[url.rfind('/')+1:]
+                        st.image(url, caption=file_name, use_container_width=True)
+
+                st.session_state.messages.append({
+                    "role": "assistant", 
+                    "content": response,
+                    "images": image_url if image_url else []
+                })
 
                 chat.save_chat_history(prompt, response)
             
@@ -189,11 +206,15 @@ if prompt := st.chat_input("메시지를 입력하세요."):
         elif mode == 'Agent (Chat)':
             with st.status("thinking...", expanded=True, state="running") as status:
                 revise_prompt = chat.revise_question(prompt, st)
-                response, reference_docs = chat.run_agent_executor(revise_prompt, st)
+                response, image_url, reference_docs = chat.run_agent_executor(revise_prompt, st)
                 st.write(response)
                 print('response: ', response)
                 
-                st.session_state.messages.append({"role": "assistant", "content": response})
+                st.session_state.messages.append({
+                    "role": "assistant", 
+                    "content": response,
+                    "images": image_url if image_url else []
+                })
 
                 chat.save_chat_history(prompt, response)
             
