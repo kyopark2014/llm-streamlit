@@ -113,6 +113,17 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     });
     tavilyApiSecret.grantRead(ec2Role) 
 
+    const codeInterpreterSecret = new secretsmanager.Secret(this, `code-interpreter-secret-for-${projectName}`, {
+      description: 'secret for code interpreter api key', // openweathermap
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      secretName: `code-interpreter-${projectName}`,
+      secretObjectValue: {
+        project_name: cdk.SecretValue.unsafePlainText(projectName),
+        code_interpreter_api_key: cdk.SecretValue.unsafePlainText(''),
+      },
+    });
+    codeInterpreterSecret.grantRead(ec2Role) 
+
     const pvrePolicy = new iam.PolicyStatement({  
       resources: ['*'],
       actions: ['ssm:*', 'ssmmessages:*', 'ec2messages:*', 'tag:*'],

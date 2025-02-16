@@ -264,6 +264,23 @@ except Exception as e:
     print('Tavily credential is required: ', e)
     raise e
 
+# secret of code interpreter
+code_interpreter_api_key = ""
+try:
+    get_code_interpreter_api_secret = secretsmanager.get_secret_value(
+        SecretId=f"code-interpreter-{projectName}"
+    )
+    #print('get_code_interpreter_api_secret: ', get_code_interpreter_api_secret)
+    secret = json.loads(get_code_interpreter_api_secret['SecretString'])
+    #print('secret: ', secret)
+    code_interpreter_api_key = secret['code_interpreter_api_key']
+    code_interpreter_project = secret['project_name']
+except Exception as e:
+    raise e
+
+if code_interpreter_api_key:
+    os.environ["RIZA_API_KEY"] = code_interpreter_api_key
+
 def isKorean(text):
     # check korean
     pattern_hangul = re.compile('[\u3131-\u3163\uac00-\ud7a3]+')
