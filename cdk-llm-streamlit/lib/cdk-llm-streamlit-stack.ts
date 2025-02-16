@@ -120,6 +120,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       secretObjectValue: {
         project_name: cdk.SecretValue.unsafePlainText(projectName),
         code_interpreter_api_key: cdk.SecretValue.unsafePlainText(''),
+        code_interpreter_id: cdk.SecretValue.unsafePlainText(''),
       },
     });
     codeInterpreterSecret.grantRead(ec2Role) 
@@ -282,8 +283,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
       "projectName": projectName,
       "accountId": accountId,
       "region": region,
-      "s3_arn": s3Bucket.bucketArn,
-      "code_interpreter_id": "XXXXXX"
+      "s3_arn": s3Bucket.bucketArn
     }    
     new cdk.CfnOutput(this, `environment-for-${projectName}`, {
       value: JSON.stringify(environment),

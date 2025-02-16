@@ -82,9 +82,6 @@ logger.info(f"region: {region}")
 bucketName = config["bucketName"] if "bucketName" in config else f"storage-for-{projectName}-{accountId}-{region}" 
 logger.info(f"bucketName: {bucketName}")
 
-codeInterpreterId = config["code_interpreter_id"] if "code_interpreter_id" in config else None
-logger.info(f"codeInterpreterId: {codeInterpreterId}")
-
 s3_prefix = 'docs'
 
 MSG_LENGTH = 100
@@ -276,6 +273,9 @@ try:
     #print('secret: ', secret)
     code_interpreter_api_key = secret['code_interpreter_api_key']
     code_interpreter_project = secret['project_name']
+    code_interpreter_id = secret['code_interpreter_id']
+
+    logger.info('code_interpreter_id: ', code_interpreter_id)
 except Exception as e:
     raise e
 
@@ -731,7 +731,7 @@ print(image_base64)
         client = Riza()
 
         resp = client.command.exec(
-            runtime_revision_id=codeInterpreterId,
+            runtime_revision_id=code_interpreter_id,
             language="python",
             code=code,
             env={
