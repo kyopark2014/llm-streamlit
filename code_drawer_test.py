@@ -1,44 +1,35 @@
 code = """
 import pandas as pd
 import matplotlib.pyplot as plt
-from datetime import datetime
+import yfinance as yf
 
-# Create sample data
-data = {
-    'Date': ['2025-01-14', '2025-01-15', '2025-01-16', '2025-01-17', '2025-01-20', 
-             '2025-01-21', '2025-01-22', '2025-01-23', '2025-01-24', '2025-01-31',
-             '2025-02-03', '2025-02-04', '2025-02-05', '2025-02-06', '2025-02-07',
-             '2025-02-10', '2025-02-11', '2025-02-12', '2025-02-13', '2025-02-14'],
-    'Close': [202000, 206500, 206500, 209000, 205000, 
-              204500, 204000, 204500, 204000, 216500,
-              217000, 218500, 229000, 232000, 225500,
-              227500, 228500, 225000, 220000, 221000]
-}
-
-# Convert to DataFrame
-df = pd.DataFrame(data)
-df['Date'] = pd.to_datetime(df['Date'])
+# Get data for both companies from 2010
+kakao = yf.download('035720.KS', start='2010-01-01')
+naver = yf.download('035420.KS', start='2010-01-01')
 
 # Create the plot
-plt.figure(figsize=(12, 6))
-plt.plot(df['Date'], df['Close'], marker='o')
+plt.figure(figsize=(15, 8))
+
+# Plot both lines
+plt.plot(kakao.index, kakao['Close'], label='Kakao', color='yellow')
+plt.plot(naver.index, naver['Close'], label='Naver', color='green')
 
 # Customize the plot
-plt.title('NAVER Stock Price Trend', fontsize=14)
-plt.xlabel('Date', fontsize=12)
-plt.ylabel('Closing Price (KRW)', fontsize=12)
+plt.title('Stock Price Comparison: Kakao vs Naver (2010-Present)', fontsize=14)
+plt.xlabel('Year', fontsize=12)
+plt.ylabel('Price (KRW)', fontsize=12)
 plt.grid(True, linestyle='--', alpha=0.7)
+plt.legend(fontsize=10)
 
 # Rotate x-axis labels for better readability
 plt.xticks(rotation=45)
 
-# Format y-axis labels with thousand separator
+# Format y-axis with thousand separator
 plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: format(int(x), ',')))
 
 # Adjust layout to prevent label cutoff
 plt.tight_layout()
 
-# Show the plot
 plt.show()
 """
 

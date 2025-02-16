@@ -702,7 +702,10 @@ from rizaio import Riza
 def code_drawer(code):
     """
     Execute a Python script for draw a graph.
-    code: The Python code to execute
+    Since Python runtime cannot use external APIs, necessary data must be included in the code.
+    The graph should use English exclusively for all textual elements.
+    When a comparison is made, all arrays must be of the same length.
+    code: the Python code was written in English
     return: the url of graph
     """ 
     # The Python runtime does not have filesystem access, but does include the entire standard library.
@@ -739,41 +742,90 @@ print(image_base64)
             }
         )
         output = dict(resp)
-
         print(f"output: {output}") # includling exit_code, stdout, stderr
 
         if resp.exit_code > 0:
             logger.debug(f"non-zero exit code {resp.exit_code}")
 
         base64Img = resp.stdout
+        
+        if base64Img:
+            byteImage = BytesIO(base64.b64decode(base64Img))
 
-        byteImage = BytesIO(base64.b64decode(base64Img))
+            image_name = generate_short_uuid()+'.png'
+            url = upload_to_s3(byteImage, image_name)
+            logger.info(f"url: {url}")
 
-        image_name = generate_short_uuid()+'.png'
-        url = upload_to_s3(byteImage, image_name)
-        logger.info(f"url: {url}")
+            file_name = url[url.rfind('/')+1:]
+            print(f"file_name: {file_name}")
 
-        file_name = url[url.rfind('/')+1:]
-        print(f"file_name: {file_name}")
+            global image_url
+            image_url.append(path+'/'+s3_image_prefix+'/'+parse.quote(file_name))
+            print(f"image_url: {image_url}")
+            result = f"생성된 그래프의 URL: {image_url}"
 
-        global image_url
-        image_url.append(path+'/'+s3_image_prefix+'/'+parse.quote(file_name))
-        print(f"image_url: {image_url}")
-
-        result = f"생성된 그래프의 URL: {image_url}"
-
-        # im = Image.open(BytesIO(base64.b64decode(base64Img)))  # for debuuing
-        # im.save(image_name, 'PNG')
+            # im = Image.open(BytesIO(base64.b64decode(base64Img)))  # for debuuing
+            # im.save(image_name, 'PNG')
 
     except Exception:
         result = "그래프 생성에 실패했어요. 다시 시도해주세요."
-
         err_msg = traceback.format_exc()
         logger.info(f"error message: {err_msg}")
 
+    logger.info(f"result: {result}")
     return result
 
-tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily, stock_data_lookup, code_drawer]        
+@tool
+def code_interpreter(code):
+    """
+    Execute a Python script to solve a complex question.    
+    Since Python runtime cannot use external APIs, necessary data must be included in the code.
+    The Python runtime does not have filesystem access, but does include the entire standard library.
+    Make HTTP requests with the httpx or requests libraries.
+    Read input from stdin and write output to stdout."        
+    code: the Python code was written in English
+    return: the stdout value
+    """ 
+        
+    code = re.sub(r"seaborn", "classic", code)
+    code = re.sub(r"plt.savefig", "#plt.savefig", code)
+    
+    pre = f"os.environ[ 'MPLCONFIGDIR' ] = '/tmp/'\n"  # matplatlib
+    post = """"""
+    # code = pre + code + post    
+    code = pre + code
+    logger.info(f"code: {code}")
+    
+    result = ""
+    try:     
+        client = Riza()
+
+        resp = client.command.exec(
+            runtime_revision_id=code_interpreter_id,
+            language="python",
+            code=code,
+            env={
+                "DEBUG": "true",
+            }
+        )
+        output = dict(resp)
+        print(f"output: {output}") # includling exit_code, stdout, stderr
+
+        if resp.exit_code > 0:
+            logger.debug(f"non-zero exit code {resp.exit_code}")
+
+        resp.stdout        
+        result = f"프로그램 실행 결과: {resp.stdout}"
+
+    except Exception:
+        result = "프로그램 실행에 실패했습니다. 다시 시도해주세요."
+        err_msg = traceback.format_exc()
+        logger.info(f"error message: {err_msg}")
+
+    logger.info(f"result: {result}")
+    return result
+
+tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily, stock_data_lookup, code_drawer, code_interpreter]        
 
 def run_agent_executor(query, st):
     chatModel = get_chat()     
