@@ -463,6 +463,14 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대
 
 <img width="600" alt="image" src="https://github.com/user-attachments/assets/26ea6bc9-3dcb-48e7-81ec-0c535d98c3a8" />
 
+"strawberry에 R은 몇개야?"로 질문하면 아래와 같이 3개로 정확한 답변을 합니다. 
+
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/5e5b6e8e-bbca-4401-b971-65a733c51f2f" />
+
+LangSmith 로그를 보면 아래와 같습니다. Agent는 아래와 같은 code를 생성하여 code_interpreter를 실행시켰고, 결과적으로 정답인 3을 얻을 수 있었습니다.
+
+![noname](https://github.com/user-attachments/assets/f8f79e0a-710d-4db2-b201-03ee393f10d6)
+
 
 
 
