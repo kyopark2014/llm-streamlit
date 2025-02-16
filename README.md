@@ -454,6 +454,18 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대
 
 ### Code Interpreter를 이용한 그래프 그리기
 
+LLM에 "strawberry에 R은 몇개야?"로 질문하면 tokenizer의 특징으로 R은 2개라고 답변합니다. 이 경우에 code interpreter를 사용하면 R이 3개라고 정확한 답변을 구할 수 있습니다. 메뉴에서 "Agent (Tool Use)"를 선택하고 아래와 같이 질문합니다. 
+
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/5e5b6e8e-bbca-4401-b971-65a733c51f2f" />
+
+Agent의 정확한 동작을 LangSmith 로그를 이용해 확인합니다. Agent는 아래와 같은 code를 생성하여 code_interpreter를 실행시켰고, 결과적으로 정답인 3을 얻을 수 있었습니다.
+
+<img width="700" alt="image" src="https://github.com/user-attachments/assets/f8f79e0a-710d-4db2-b201-03ee393f10d6" />
+
+
+
+
+
 메뉴에서 "Agent"를 선택하고 "2000년 이후에 한국의 GDP 변화를 일본과 비교해서 그래프로 그려주세요. 그래프는 영어로 작성합니다."라고 입력하고 결과를 확인합니다. 이때 agent는 인터넷을 검색하여 얻어온 GDP정보를 code interpreter를 이용해 그래프로 표시합니다.
 
 <img width="600" alt="image" src="https://github.com/user-attachments/assets/c8b6f42a-4b4c-4b1a-ae6e-66adce7956cd" />
@@ -462,14 +474,6 @@ Agentic Workflow(Tool Use) 메뉴를 선택하여 오늘 서울의 날씨에 대
 메뉴에서 "Agent"를 선택하고 "네이버와 카카오의 주가 동향을 비교하여 그래프를 그려주세요. 그래프는 영어로 작성하고 향후 투자 방법에 대해서도 조언해주세요"라고 입력후 결과를 확인하면 아래와 같습니다.
 
 <img width="600" alt="image" src="https://github.com/user-attachments/assets/26ea6bc9-3dcb-48e7-81ec-0c535d98c3a8" />
-
-"strawberry에 R은 몇개야?"로 질문하면 아래와 같이 3개로 정확한 답변을 합니다. 
-
-<img width="600" alt="image" src="https://github.com/user-attachments/assets/5e5b6e8e-bbca-4401-b971-65a733c51f2f" />
-
-LangSmith 로그를 보면 아래와 같습니다. Agent는 아래와 같은 code를 생성하여 code_interpreter를 실행시켰고, 결과적으로 정답인 3을 얻을 수 있었습니다.
-
-<img width="700" alt="image" src="https://github.com/user-attachments/assets/f8f79e0a-710d-4db2-b201-03ee393f10d6" />
 
 
 
