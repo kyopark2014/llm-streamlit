@@ -34,6 +34,9 @@ from langgraph.prebuilt import ToolNode
 from langchain_core.output_parsers import StrOutputParser
 from urllib import parse
 
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.store.memory import InMemoryStore
+
 logger = utils.CreateLogger("chat")
 
 userId = "demo"
@@ -491,6 +494,7 @@ def get_references(docs):
         #excerpt = excerpt.replace('"', '')        
         #excerpt = ''.join(c for c in excerpt if c not in '"')
         excerpt = re.sub('"', '', excerpt)
+        excerpt = re.sub('\n', '', excerpt)   
         logger.info(f"excerpt(quotation removed): {excerpt}")
         
         if page:                
@@ -865,7 +869,7 @@ def run_agent_executor(query, st):
         #if not last_message.tool_calls:
         else:
             print()
-            logger.info(f"Final: {last_message.content}")
+            # logger.info(f"Final: {last_message.content}")
             logger.info(f"--- END ---")
             return "end"
            
@@ -941,6 +945,9 @@ def run_agent_executor(query, st):
                 # raise Exception ("Not able to request to LLM")
 
         return {"messages": [response]}
+    
+    checkpointer = MemorySaver()
+    store = InMemoryStore()
 
     def buildChatAgent():
         workflow = StateGraph(State)
@@ -958,7 +965,10 @@ def run_agent_executor(query, st):
         )
         workflow.add_edge("action", "agent")
 
-        return workflow.compile()
+        return workflow.compile(
+            checkpointer=checkpointer,
+            store=store
+        )
 
     # initiate
     global reference_docs, contentList, image_url
@@ -970,7 +980,8 @@ def run_agent_executor(query, st):
             
     inputs = [HumanMessage(content=query)]
     config = {
-        "recursion_limit": 50
+        "recursion_limit": 50,
+        "configurable": {"thread_id": userId}
     }
     
     # msg = message.content

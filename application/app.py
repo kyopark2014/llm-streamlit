@@ -184,7 +184,7 @@ if prompt := st.chat_input("메시지를 입력하세요."):
                 response, image_url, reference_docs = chat.run_agent_executor(prompt, st)
                 # response = chat.run_agent_executor2(prompt st, debugMode, modelName)
                 st.write(response)
-                logger.info(f"response: {response}")
+                # logger.info(f"response: {response}")
 
                 if len(image_url):
                     for url in image_url:
