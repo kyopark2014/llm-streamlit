@@ -70,6 +70,14 @@ aws sts get-caller-identity --query Account --output text
 cdk bootstrap aws://[account-id]/us-west-2
 ```
 
+만약 AWS CLI가 설치가 안되어서 bootstrap이 실패하는 경우에는 아래 명령어로 설치합니다.
+
+```text
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+```
+
 4) 아래 명령어로 인프라를 설치합니다.
 
 ```java
@@ -229,6 +237,12 @@ pip install beautifulsoup4 pytz tavily-python
 
 ```text
 streamlit run application/app.py
+```
+
+만약 CloudWatch Agent가 설치되지 않은 instance일 경우에는 아래 명령어로 설치합니다.
+
+```text
+sudo yum install amazon-cloudwatch-agent
 ```
 
 ### EC2에서 로그를 보면서 실행하기
