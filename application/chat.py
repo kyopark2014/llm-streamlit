@@ -995,7 +995,7 @@ def run_agent_executor(query, st):
     logger.info(f"snapshot.values: {snapshot.values}")
     logger.info(f"userId: {userId}")
 
-    reference = ""
+    reference = "" 
     if reference_docs:
         reference = get_references(reference_docs)
 
