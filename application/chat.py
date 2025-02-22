@@ -831,6 +831,8 @@ def code_interpreter(code):
 
 tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily, stock_data_lookup, code_drawer, code_interpreter]        
 
+checkpointer = MemorySaver()
+store = InMemoryStore()
 def run_agent_executor(query, st):
     chatModel = get_chat()     
     model = chatModel.bind_tools(tools)
@@ -944,10 +946,7 @@ def run_agent_executor(query, st):
                 logger.info(f"error message: {err_msg}")
                 # raise Exception ("Not able to request to LLM")
 
-        return {"messages": [response]}
-    
-    checkpointer = MemorySaver()
-    store = InMemoryStore()
+        return {"messages": [response]}        
 
     def buildChatAgent():
         workflow = StateGraph(State)
@@ -990,6 +989,9 @@ def run_agent_executor(query, st):
 
     msg = result["messages"][-1].content
     logger.info(f"msg: {msg}")
+
+    snapshot = app.get_state(config)
+    logger.info(f"snapshot: {snapshot}")
 
     reference = ""
     if reference_docs:
