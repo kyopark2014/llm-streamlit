@@ -991,8 +991,8 @@ def run_agent_executor(query, st):
     logger.info(f"msg: {msg}")
 
     snapshot = app.get_state(config)
-    # logger.info(f"snapshot: {snapshot}")
-    logger.info(f"snapshot.messages: {snapshot.messages}")
+    logger.info(f"snapshot: {snapshot}")
+    logger.info(f"snapshot.values: {snapshot.values}")
     logger.info(f"userId: {userId}")
 
     reference = ""
