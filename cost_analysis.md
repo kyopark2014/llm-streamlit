@@ -170,6 +170,26 @@ def generate_cost_insights():
 
 ## 실행 결과
 
+서비스 사용량에 대한 그래프입니다.
+
+
+![image](https://github.com/user-attachments/assets/b30bf292-d9cd-4c90-a9cb-8b367f6bc46f)
+
+일별 사용량에 대한 트랜드입니다.
+
+![image](https://github.com/user-attachments/assets/bfec6305-41eb-45fe-8404-63e79a57a500)
+
+리전별 사용량에 대한 통계입니다.
+
+![image](https://github.com/user-attachments/assets/bbf8ddf1-2c96-4516-a147-5f06fc1f3f35)
+
+사용 패턴에 대한 분석 결과 입니다.
+
+![image](https://github.com/user-attachments/assets/28c019b4-e8dc-42ca-b5d0-76e499e55674)
+
+질문에 대한 답변입니다.
+
+![image](https://github.com/user-attachments/assets/08b9a256-e5c5-40ac-840e-9f3fa9f0be1a)
 
 
 ## 결과값 예제
