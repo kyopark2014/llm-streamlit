@@ -114,7 +114,7 @@ def create_cost_visualizations(cost_data):
         cost_data['service_costs'],
         values='cost',
         names='SERVICE',
-        title='Cost Distribution by Service'
+        title='Service Cost'
     )
     visualizations['service_pie'] = fig_pie
             
@@ -124,7 +124,7 @@ def create_cost_visualizations(cost_data):
         x='date',
         y='cost',
         color='SERVICE',
-        title='Daily Cost Trend by Service'
+        title='Daily Cost Trend'
     )
     visualizations['daily_trend'] = fig_line
     
@@ -133,7 +133,7 @@ def create_cost_visualizations(cost_data):
         cost_data['region_costs'],
         x='REGION',
         y='cost',
-        title='Cost by Region'
+        title='Region Cost'
     )
     visualizations['region_bar'] = fig_bar
     
