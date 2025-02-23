@@ -1,6 +1,176 @@
 # Cost Analysis
 
-## Reference
+[AWS Resource Monitor ChatBot](https://github.com/aws-samples/aws-ai-ml-workshop-kr/blob/master/genai/aws-gen-ai-kr/20_applications/15_AWS_Resource_Monitoring_Chatbot/main.ipynb)을 참조하여 비용 분석을 수행합니다.
+
+## 비용 분석
+
+Cost Explorer를 이용하여 지난 한달 간의 데이터를 가져옯니다.
+
+```python
+def get_cost_analysis():
+  end_date = datetime.now()
+  start_date = end_date - timedelta(days=30)
+  
+  # cost explorer
+  ce = boto3.client('ce')
+
+  # service cost
+  service_response = ce.get_cost_and_usage(
+      TimePeriod={
+          'Start': start_date.strftime('%Y-%m-%d'),
+          'End': end_date.strftime('%Y-%m-%d')
+      },
+      Granularity='MONTHLY',
+      Metrics=['UnblendedCost'],
+      GroupBy=[{'Type': 'DIMENSION', 'Key': 'SERVICE'}]
+  )
+        
+  service_costs = pd.DataFrame([
+      {
+          'SERVICE': group['Keys'][0],
+          'cost': float(group['Metrics']['UnblendedCost']['Amount'])
+      }
+      for group in service_response['ResultsByTime'][0]['Groups']
+  ])
+  
+  # region cost
+  region_response = ce.get_cost_and_usage(
+      TimePeriod={
+          'Start': start_date.strftime('%Y-%m-%d'),
+          'End': end_date.strftime('%Y-%m-%d')
+      },
+      Granularity='MONTHLY',
+      Metrics=['UnblendedCost'],
+      GroupBy=[{'Type': 'DIMENSION', 'Key': 'REGION'}]
+  )
+        
+  region_costs = pd.DataFrame([
+      {
+          'REGION': group['Keys'][0],
+          'cost': float(group['Metrics']['UnblendedCost']['Amount'])
+      }
+      for group in region_response['ResultsByTime'][0]['Groups']
+  ])
+  
+  # Daily Cost
+  daily_response = ce.get_cost_and_usage(
+      TimePeriod={
+          'Start': start_date.strftime('%Y-%m-%d'),
+          'End': end_date.strftime('%Y-%m-%d')
+      },
+      Granularity='DAILY',
+      Metrics=['UnblendedCost'],
+      GroupBy=[{'Type': 'DIMENSION', 'Key': 'SERVICE'}]
+  )
+  
+  daily_costs = []
+  for time_period in daily_response['ResultsByTime']:
+      date = time_period['TimePeriod']['Start']
+      for group in time_period['Groups']:
+          daily_costs.append({
+              'date': date,
+              'SERVICE': group['Keys'][0],
+              'cost': float(group['Metrics']['UnblendedCost']['Amount'])
+          })
+  
+     daily_costs_df = pd.DataFrame(daily_costs)
+     
+  return {
+      'service_costs': service_costs,
+      'region_costs': region_costs,
+      'daily_costs': daily_costs_df
+  }
+```
+
+아래와 같이 Service 비용, 리전 비용, 일반 사용 트랜드를 그래프로 그릴 수 있습니다.
+
+```python
+def create_cost_visualizations(cost_data):
+    visualizations = {}    
+    # service cost (pie chart)
+    fig_pie = px.pie(
+        cost_data['service_costs'],
+        values='cost',
+        names='SERVICE',
+        title='Cost Distribution by Service'
+    )
+    visualizations['service_pie'] = fig_pie
+            
+    # daily trend cost (line chart)
+    fig_line = px.line(
+        cost_data['daily_costs'],
+        x='date',
+        y='cost',
+        color='SERVICE',
+        title='Daily Cost Trend by Service'
+    )
+    visualizations['daily_trend'] = fig_line
+    
+    # region cost (bar chart)
+    fig_bar = px.bar(
+        cost_data['region_costs'],
+        x='REGION',
+        y='cost',
+        title='Cost by Region'
+    )
+    visualizations['region_bar'] = fig_bar
+    
+    return visualizations
+```
+
+비용에 대한 insight를 아래와 같이 추출할 수 있습니다.
+
+```python
+def generate_cost_insights():
+     cost_data_dict = {
+         'service_costs': cost_data['service_costs'].to_dict(orient='records'),
+         'region_costs': cost_data['region_costs'].to_dict(orient='records'),
+         'daily_costs': cost_data['daily_costs'].to_dict(orient='records') if 'daily_costs' in cost_data else []
+     }
+    system = (
+        "당신의 AWS solutions architect입니다."
+        "다음의 Cost Data을 이용하여 user의 질문에 답변합니다."
+        "모르는 질문을 받으면 솔직히 모른다고 말합니다."
+        "답변의 이유를 풀어서 명확하게 설명합니다."
+    )
+    human = (
+        "다음 AWS 비용 데이터를 분석하여 상세한 인사이트를 제공해주세요:"
+        "Cost Data:"
+        "{raw_cost}"
+        
+        "다음 항목들에 대해 분석해주세요:"
+        "1. 주요 비용 발생 요인"
+        "2. 비정상적인 패턴이나 급격한 비용 증가"
+        "3. 비용 최적화가 가능한 영역"
+        "4. 전반적인 비용 추세와 향후 예측"
+        
+        "분석 결과를 다음과 같은 형식으로 제공해주세요:"
+
+        "### 주요 비용 발생 요인"
+        "- [구체적인 분석 내용]"
+
+        "### 이상 패턴 분석"
+        "- [비정상적인 비용 패턴 설명]"
+
+        "### 최적화 기회"
+        "- [구체적인 최적화 방안]"
+
+        "### 비용 추세"
+        "- [추세 분석 및 예측]"
+    ) 
+    prompt = ChatPromptTemplate.from_messages([("system", system), ("human", human)])
+    llm = chat.get_chat()
+    chain = prompt | llm
+    raw_cost = json.dumps(cost_data_dict)
+    response = chain.invoke({
+       "raw_cost": raw_cost
+    })    
+    return response.content
+```
+
+## 실행 결과
+
+
 
 ## 결과값 예제
 
