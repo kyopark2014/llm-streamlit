@@ -6,6 +6,23 @@
 
 ### Service Cost
 
+서비스 비용은 아래와 같이 알 수 있습니다.
+
+```python
+ce = boto3.client('ce')
+service_response = ce.get_cost_and_usage(
+   TimePeriod={
+       'Start': start_date.strftime('%Y-%m-%d'),
+       'End': end_date.strftime('%Y-%m-%d')
+   },
+   Granularity='MONTHLY',
+   Metrics=['UnblendedCost'],
+   GroupBy=[{'Type': 'DIMENSION', 'Key': 'SERVICE'}]
+)
+```
+
+이때의 결과는 아래와 같습니다. 
+
 ```java
 {
    "GroupDefinitions":[
@@ -421,4 +438,41 @@
    }
 }
 ```
+
+서비스 비용은 아래와 같이 panda를 통해 정리합니다.
+
+```python
+service_costs = pd.DataFrame([
+   {
+       'SERVICE': group['Keys'][0],
+       'cost': float(group['Metrics']['UnblendedCost']['Amount'])
+   }
+   for group in service_response['ResultsByTime'][0]['Groups']
+])
+logger.info(f"Service Costs: {service_costs}")
+```
+
+이때의 결과는 아래와 같습니다.
+
+```text
+Service Costs:                                    SERVICE          cost
+0                              AWS Amplify  4.040000e-07
+1                       AWS CloudFormation  0.000000e+00
+2               AWS Key Management Service  0.000000e+00
+3                               AWS Lambda  4.068809e-04
+4                      AWS Secrets Manager  1.028985e+00
+5                       AWS Step Functions  0.000000e+00
+6                           Amazon Bedrock  1.274391e+01
+7                        Amazon CloudFront  6.256687e-03
+8      Amazon EC2 Container Registry (ECR)  8.438748e-01
+9                              EC2 - Other  3.186629e+01
+10  Amazon Elastic Compute Cloud - Compute  8.473933e+01
+11           Amazon Elastic Load Balancing  1.422650e+01
+12               Amazon OpenSearch Service  2.506458e+02
+13             Amazon Simple Queue Service  1.104660e-01
+14           Amazon Simple Storage Service  1.317397e-02
+15            Amazon Virtual Private Cloud  1.471420e+01
+16                        AmazonCloudWatch  2.817742e+00
+```
+
 
