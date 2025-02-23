@@ -452,10 +452,10 @@ service_costs = pd.DataFrame([
 logger.info(f"Service Costs: {service_costs}")
 ```
 
-이때의 결과는 아래와 같습니다.
+이때의 Service Cost에 대한 결과는 아래와 같습니다.
 
 ```text
-Service Costs:                                    SERVICE          cost
+                                SERVICE          cost
 0                              AWS Amplify  4.040000e-07
 1                       AWS CloudFormation  0.000000e+00
 2               AWS Key Management Service  0.000000e+00
@@ -475,4 +475,33 @@ Service Costs:                                    SERVICE          cost
 16                        AmazonCloudWatch  2.817742e+00
 ```
 
+Region Cost에 대한 결과는 아래와 같습니다.
 
+```text
+          REGION        cost
+0  ap-northeast-1    0.247742
+1  ap-northeast-2    0.294199
+2  ap-southeast-1    0.006241
+3       eu-west-1    0.000000
+4          global    0.774194
+5       us-east-1    3.633604
+6       us-east-2    0.891332
+7       us-west-2  407.909584
+```
+
+Daily Cost에 대한 결과는 아래와 같습니다.
+
+```text
+           date                        SERVICE          cost
+0    2025-01-24             AWS CloudFormation  0.000000e+00
+1    2025-01-24     AWS Key Management Service  0.000000e+00
+2    2025-01-24                     AWS Lambda  0.000000e+00
+3    2025-01-24            AWS Secrets Manager  1.194390e-01
+4    2025-01-24                 Amazon Bedrock  3.296282e+00
+..          ...                            ...           ...
+419  2025-02-22      Amazon OpenSearch Service  1.685505e+01
+420  2025-02-22    Amazon Simple Queue Service  7.365600e-03
+421  2025-02-22  Amazon Simple Storage Service  6.990000e-08
+422  2025-02-22   Amazon Virtual Private Cloud  1.240000e+00
+423  2025-02-22               AmazonCloudWatch  2.410714e-01
+```
