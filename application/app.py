@@ -166,10 +166,13 @@ if clear_button==False and mode == '비용 분석':
 
     with st.status("thinking...", expanded=True, state="running") as status:
         if not cost.cost_data:
-            st.info("잠시만 기다리세요. 지난 한달간의 사용량을 분삭하고 있습니다...")
+            st.info("비용 데이터를 가져옵니다.")
+            cost_data = cost.get_cost_analysis()
+            logger.info(f"cost_data: {cost_data}")
+            cost.cost_data = cost_data
         else:
             if not cost.insights:        
-                st.info("비용 데이터를 기반으로 분석하고 있습니다...")    
+                st.info("잠시만 기다리세요. 지난 한달간의 사용량을 분삭하고 있습니다...")
                 insights = cost.generate_cost_insights()
                 logger.info(f"insights: {insights}")
                 cost.insights = insights

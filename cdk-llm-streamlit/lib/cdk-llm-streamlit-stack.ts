@@ -145,16 +145,17 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
         statements: [BedrockPolicy],
       }),
     );     
-
-    const ec2Policy = new iam.PolicyStatement({  
-      resources: ['arn:aws:ec2:*:*:instance/*'],
-      actions: ['ec2:*'],
-    });
-    ec2Role.attachInlinePolicy( // add bedrock policy
-      new iam.Policy(this, `ec2-policy-for-${projectName}`, {
-        statements: [ec2Policy],
+    
+    // Cost Explorer Policy
+    const costExplorerPolicy = new iam.PolicyStatement({  
+      resources: ['*'],
+      actions: ['ce:GetCostAndUsage'],
+    });        
+    ec2Role.attachInlinePolicy( // add costExplorerPolicy
+      new iam.Policy(this, `cost-explorer-policy-for-${projectName}`, {
+        statements: [costExplorerPolicy],
       }),
-    );
+    );         
 
     // VPC
     const vpc = new ec2.Vpc(this, `vpc-for-${projectName}`, {
