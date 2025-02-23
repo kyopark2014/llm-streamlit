@@ -39,24 +39,42 @@ from langgraph.store.memory import InMemoryStore
 
 logger = utils.CreateLogger("chat")
 
-userId = "demo"
-map_chain = dict() 
+userId = uuid.uuid4().hex
+logger.info(f"userId: {userId}")
+map_chain = dict() # general conversation
+
+checkpointers = dict() 
+memorystores = dict() 
+
+checkpointer = MemorySaver()
+memorystore = InMemoryStore()
+
+checkpointers[userId] = checkpointer
+memorystores[userId] = memorystore
 
 def initiate():
     global userId
-    global memory_chain
-    global enableLoggerChat
+    global map_chain, memory_chain, checkpointers, memorystores, checkpointer, memorystore
 
     userId = uuid.uuid4().hex
     logger.info(f"userId: {userId}")
 
     if userId in map_chain:  
-            # print('memory exist. reuse it!')
-            memory_chain = map_chain[userId]
+        # print('memory exist. reuse it!')
+        memory_chain = map_chain[userId]
+
+        checkpointer = checkpointers[userId]
+        memorystore = memorystores[userId]
     else: 
         # print('memory does not exist. create new one!')        
         memory_chain = ConversationBufferWindowMemory(memory_key="chat_history", output_key='answer', return_messages=True, k=5)
         map_chain[userId] = memory_chain
+
+        checkpointer = MemorySaver()
+        memorystore = InMemoryStore()
+
+        checkpointers[userId] = checkpointer
+        memorystores[userId] = memorystore
         
 initiate()
  
@@ -831,9 +849,7 @@ def code_interpreter(code):
 
 tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily, stock_data_lookup, code_drawer, code_interpreter]        
 
-checkpointer = MemorySaver()
-store = InMemoryStore()
-def run_agent_executor(query, st):
+def run_agent_executor(query, historyMode, st):
     chatModel = get_chat()     
     model = chatModel.bind_tools(tools)
 
@@ -846,11 +862,11 @@ def run_agent_executor(query, st):
     def should_continue(state: State) -> Literal["continue", "end"]:
         logger.info(f"###### should_continue ######")
 
-        logger.info(f"state: {state}")
+        # logger.info(f"state: {state}")
         messages = state["messages"]    
 
         last_message = messages[-1]
-        logger.info(f"last_message: {last_message}")
+        # logger.info(f"last_message: {last_message}")
         
         # print('last_message: ', last_message)
         
@@ -877,7 +893,7 @@ def run_agent_executor(query, st):
            
     def call_model(state: State, config):
         logger.info(f"###### call_model ######")
-        logger.info(f"state: {state['messages']}")
+        # logger.info(f"state: {state['messages']}")
                 
         if isKorean(state["messages"][0].content)==True:
             system = (
@@ -893,7 +909,7 @@ def run_agent_executor(query, st):
             )
                 
         for attempt in range(5):   
-            logger.info(f"attempt: {attempt}")
+            # logger.info(f"attempt: {attempt}")
             try:
                 prompt = ChatPromptTemplate.from_messages(
                     [
@@ -904,26 +920,26 @@ def run_agent_executor(query, st):
                 chain = prompt | model
                     
                 response = chain.invoke(state["messages"])
-                logger.info(f"call_model response: {response}")
+                # logger.info(f"call_model response: {response}")
             
                 if isinstance(response.content, list):      
                     for re in response.content:
                         if "type" in re:
                             if re['type'] == 'text':
-                                logger.info(f"--> {re['type']}: {re['text']}")
+                                # logger.info(f"--> {re['type']}: {re['text']}")
 
                                 status = re['text']
-                                logger.info(f"status: {status}")
+                                # logger.info(f"status: {status}")
                                 
                                 status = status.replace('`','')
                                 status = status.replace('\"','')
                                 status = status.replace("\'",'')
                                 
-                                logger.info(f"status: {status}")
+                                # logger.info(f"status: {status}")
                                 if status.find('<thinking>') != -1:
-                                    logger.info(f"rRemove <thinking> tag.")
+                                    # logger.info(f"Remove <thinking> tag.")
                                     status = status[status.find('<thinking>')+11:status.find('</thinking>')]
-                                    logger.info(f"status without <thinking> tag: {status}")
+                                    # logger.info(f"status without <thinking> tag: {status}")
 
                                 if debug_mode=="Enable":
                                     st.info(status)
@@ -964,9 +980,27 @@ def run_agent_executor(query, st):
         )
         workflow.add_edge("action", "agent")
 
+        return workflow.compile()
+
+    def buildChatAgentWithHistory():
+        workflow = StateGraph(State)
+
+        workflow.add_node("agent", call_model)
+        workflow.add_node("action", tool_node)
+        workflow.add_edge(START, "agent")
+        workflow.add_conditional_edges(
+            "agent",
+            should_continue,
+            {
+                "continue": "action",
+                "end": END,
+            },
+        )
+        workflow.add_edge("action", "agent")
+
         return workflow.compile(
             checkpointer=checkpointer,
-            store=store
+            store=memorystore
         )
 
     # initiate
@@ -974,14 +1008,20 @@ def run_agent_executor(query, st):
     reference_docs = []
     contentList = []
     image_url = []
-
-    app = buildChatAgent()
             
     inputs = [HumanMessage(content=query)]
-    config = {
-        "recursion_limit": 50,
-        "configurable": {"thread_id": userId}
-    }
+
+    if historyMode == "Enable":
+        app = buildChatAgentWithHistory()
+        config = {
+            "recursion_limit": 50,
+            "configurable": {"thread_id": userId}
+        }
+    else:
+        app = buildChatAgent()
+        config = {
+            "recursion_limit": 50
+        }
     
     # msg = message.content
     result = app.invoke({"messages": inputs}, config)
@@ -990,10 +1030,13 @@ def run_agent_executor(query, st):
     msg = result["messages"][-1].content
     logger.info(f"msg: {msg}")
 
-    snapshot = app.get_state(config)
-    logger.info(f"snapshot: {snapshot}")
-    logger.info(f"snapshot.values: {snapshot.values}")
-    logger.info(f"userId: {userId}")
+    if historyMode == "Enable":
+        snapshot = app.get_state(config)
+        # logger.info(f"snapshot.values: {snapshot.values}")
+        messages = snapshot.values["messages"]
+        for i, m in enumerate(messages):
+            logger.info(f"{i} --> {m.content}")
+        logger.info(f"userId: {userId}")
 
     reference = "" 
     if reference_docs:
