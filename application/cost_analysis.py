@@ -13,8 +13,8 @@ from langchain_core.prompts import ChatPromptTemplate
 logger = utils.CreateLogger("streamlit")
 
 def get_cost_analysis():
-    """비용 분석 데이터 수집"""
-    print("Getting cost analysis...")
+    """Cost analysis data collection"""
+    logger.info(f"Getting cost analysis...")
     try:
         end_date = datetime.now()
         start_date = end_date - timedelta(days=30)

@@ -157,9 +157,12 @@ if uploaded_file and clear_button==False and mode == '이미지 분석':
 if clear_button==False and mode == '비용 분석':
     st.subheader("📈 Cost Analysis")
 
-    st.plotly_chart(cost.visualizations['service_pie'])
-    st.plotly_chart(cost.visualizations['daily_trend'])
-    st.plotly_chart(cost.visualizations['region_bar'])
+    if 'service_pie' in cost.visualizations:
+        st.plotly_chart(cost.visualizations['service_pie'])
+    if 'daily_trend' in cost.visualizations:
+        st.plotly_chart(cost.visualizations['daily_trend'])
+    if 'region_bar' in cost.visualizations:
+        st.plotly_chart(cost.visualizations['region_bar'])
 
     with st.status("thinking...", expanded=True, state="running") as status:
         if not cost.cost_data:
