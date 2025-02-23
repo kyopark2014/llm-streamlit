@@ -545,3 +545,10 @@ const vpc = new ec2.Vpc(this, `vpc-for-${projectName}`, {
 
 [API Gateway to ECS Fargate cluster](https://serverlessland.com/patterns/apigw-vpclink-pvt-alb?ref=search)
 
+### History
+
+[How to add thread-level persistence to your graph](https://langchain-ai.github.io/langgraph/how-tos/persistence/)
+
+[Part 3: Adding Memory to the Chatbot](https://langchain-ai.github.io/langgraph/tutorials/introduction/#requirements)
+
+[LangGrpah-Memory](https://langchain-ai.github.io/langgraph/concepts/memory/)
