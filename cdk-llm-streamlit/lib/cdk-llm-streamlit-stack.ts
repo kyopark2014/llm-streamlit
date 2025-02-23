@@ -91,7 +91,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
     });
     weatherApiSecret.grantRead(ec2Role) 
 
-  /*  const langsmithApiSecret = new secretsmanager.Secret(this, `langsmith-secret-for-${projectName}`, {
+    const langsmithApiSecret = new secretsmanager.Secret(this, `langsmith-secret-for-${projectName}`, {
       description: 'secret for lamgsmith api key', // langsmith
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       secretName: `langsmithapikey-${projectName}`,
@@ -111,7 +111,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
         tavily_api_key: cdk.SecretValue.unsafePlainText(''),
       },
     });
-    tavilyApiSecret.grantRead(ec2Role) */
+    tavilyApiSecret.grantRead(ec2Role) 
 
     const codeInterpreterSecret = new secretsmanager.Secret(this, `code-interpreter-secret-for-${projectName}`, {
       description: 'secret for code interpreter api key', // code interpreter
