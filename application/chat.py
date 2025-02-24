@@ -1510,7 +1510,7 @@ def get_image_summarization(object_name, prompt, st):
         logger.info(f"status: {status}")
         st.info(status)
                 
-    image_obj = s3_client.get_object(Bucket=s3_bucket, Key=s3_prefix+'/'+object_name)
+    image_obj = s3_client.get_object(Bucket=s3_bucket, Key=s3_image_prefix+'/'+object_name)
     # print('image_obj: ', image_obj)
     
     image_content = image_obj['Body'].read()
