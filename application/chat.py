@@ -764,7 +764,7 @@ print(image_base64)
             }
         )
         output = dict(resp)
-        print(f"output: {output}") # includling exit_code, stdout, stderr
+        # print(f"output: {output}") # includling exit_code, stdout, stderr
 
         if resp.exit_code > 0:
             logger.debug(f"non-zero exit code {resp.exit_code}")
@@ -867,27 +867,33 @@ def run_agent_executor(query, historyMode, st):
 
         last_message = messages[-1]
         # logger.info(f"last_message: {last_message}")
-        
-        # print('last_message: ', last_message)
-        
+                
         # if not isinstance(last_message, ToolMessage):
         #     return "end"
         # else:                
         #     return "continue"
         if isinstance(last_message, ToolMessage) or last_message.tool_calls:
-            logger.info(f"tool_calls: {last_message.tool_calls}")
-
+            # logger.info(f"tool_calls: {last_message.tool_calls}")
             for message in last_message.tool_calls:
-                logger.info(f"tool name: {message['name']}, args: {message['args']}")
-                # update_state_message(f"calling... {message['name']}", config)
+                args = message['args']
+                if "code" in args:                    
+                    state_msg = f"tool name: {message['name']}"
+                    logger.info(f"{state_msg}")
+                    utils.status(st, state_msg)                    
+                    logger.info(f"{args['code']}")
+                    utils.stcode(st, args['code'])
+                
+                else:
+                    state_msg = f"tool name: {message['name']}, args: {message['args']}"
+                    logger.info(f"{state_msg}")                    
+                    utils.status(st, state_msg)                    
 
             logger.info("--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
             return "continue"
         
         #if not last_message.tool_calls:
         else:
-            print()
-            # logger.info(f"Final: {last_message.content}")
+            # utils.status(st, last_message.content)            
             logger.info(f"--- END ---")
             return "end"
            
@@ -926,7 +932,7 @@ def run_agent_executor(query, historyMode, st):
                     for re in response.content:
                         if "type" in re:
                             if re['type'] == 'text':
-                                # logger.info(f"--> {re['type']}: {re['text']}")
+                                logger.info(f"call_model: (text) --> {re['type']}: {re['text']}")
 
                                 status = re['text']
                                 # logger.info(f"status: {status}")
@@ -942,17 +948,16 @@ def run_agent_executor(query, historyMode, st):
                                     # logger.info(f"status without <thinking> tag: {status}")
 
                                 if debug_mode=="Enable":
-                                    st.info(status)
+                                    utils.status(st, status)
                                 
                             elif re['type'] == 'tool_use':                
-                                logger.info(f"--> {re['type']}: {re['name']}, {re['input']}")
+                                logger.info(f"call_model: (tool_use) --> {re['type']}: {re['name']}, {re['input']}")
 
                                 if debug_mode=="Enable":
-                                    st.info(f"{re['type']}: {re['name']}, {re['input']}")
+                                    utils.status(st, f"{re['type']}: {re['name']}, {re['input']}")
                             else:
                                 logger.info(f"{re}")
                         else: # answer
-                            print(response.content)
                             logger.info(f"{response.content}")
                 break
             except Exception:
@@ -1119,13 +1124,13 @@ def run_agent_executor2(query, st, debug_mode, model_name):
                         logger.info(f"agent_thinking: {status}")
 
                     if debug_mode=="Enable":
-                        st.info(status)
+                        utils.status(st, status)
 
                 elif re['type'] == 'tool_use':                
                     logger.info(f"--> {re['type']}: name: {re['name']}, input: {re['input']}")
 
                     if debug_mode=="Enable":
-                        st.info(f"{re['type']}: name: {re['name']}, input: {re['input']}")
+                        utils.status(st, f"{re['type']}: name: {re['name']}, input: {re['input']}")
                 else:
                     print(re)
                     logger.info(f"{re}")
@@ -1181,8 +1186,18 @@ def run_agent_executor2(query, st, debug_mode, model_name):
             logger.info(f"tool_calls: {last_message.tool_calls}")
 
             for message in last_message.tool_calls:
-                logger.info(f"tool name: {message['name']}, args: {message['args']}")
+                logger.info(state_msg)
                 # update_state_message(f"calling... {message['name']}", config)
+                
+                args = message['args']
+                if "code" in args:                    
+                    state_msg = f"tool name: {message['name']}"
+                    utils.status(st, state_msg)                    
+                    utils.stcode(st, args['code'])
+                
+                else:
+                    state_msg = f"tool name: {message['name']}, args: {message['args']}"
+                    utils.status(st, state_msg)
 
             logger.info(f"--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
             return "continue"
