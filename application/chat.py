@@ -678,7 +678,7 @@ def search_by_tavily(keyword: str) -> str:
 @tool
 def stock_data_lookup(ticker, country):
     """
-    Retrieve accurate stock trends for a given ticker.
+    Retrieve accurate stock data for a given ticker.
     ticker: the ticker to retrieve price history for
     country: the english country name of the stock
     return: the information of ticker
@@ -1190,14 +1190,16 @@ def run_agent_executor2(query, st, debug_mode, model_name):
                 # update_state_message(f"calling... {message['name']}", config)
                 
                 args = message['args']
-                if "code" in args:                    
-                    state_msg = f"tool name: {message['name']}"
-                    utils.status(st, state_msg)                    
-                    utils.stcode(st, args['code'])
-                
-                else:
-                    state_msg = f"tool name: {message['name']}, args: {message['args']}"
-                    utils.status(st, state_msg)
+                if debug_mode=='Enable': 
+                    if "code" in args:                    
+                        state_msg = f"tool name: {message['name']}"
+                        utils.status(st, state_msg)                    
+                        utils.stcode(st, args['code'])
+                    
+                    elif model_type=='claude':
+                        state_msg = f"tool name: {message['name']}, args: {message['args']}"
+                        utils.status(st, state_msg)
+                    
 
             logger.info(f"--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
             return "continue"
@@ -1425,7 +1427,8 @@ def upload_to_s3(file_bytes, file_name):
         #unique_id = str(uuid.uuid4())[:8]
         #s3_key = f"uploaded_images/{timestamp}_{unique_id}_{file_name}"
 
-        content_type = utils.get_contents_type(file_name)       
+        if model_type=='claude' and debug_mode=='Enable':
+            content_type = utils.get_contents_type(file_name)       
         logger.info(f"content_type: {content_type}") 
 
         if content_type == "image/jpeg" or content_type == "image/png":
