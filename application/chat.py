@@ -1427,8 +1427,7 @@ def upload_to_s3(file_bytes, file_name):
         #unique_id = str(uuid.uuid4())[:8]
         #s3_key = f"uploaded_images/{timestamp}_{unique_id}_{file_name}"
 
-        if model_type=='claude' and debug_mode=='Enable':
-            content_type = utils.get_contents_type(file_name)       
+        content_type = utils.get_contents_type(file_name)       
         logger.info(f"content_type: {content_type}") 
 
         if content_type == "image/jpeg" or content_type == "image/png":
