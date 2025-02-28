@@ -679,8 +679,8 @@ def search_by_tavily(keyword: str) -> str:
 def stock_data_lookup(ticker, country):
     """
     Retrieve accurate stock data for a given ticker.
-    ticker: the ticker to retrieve price history for
     country: the english country name of the stock
+    ticker: the ticker to retrieve price history for. In South Korea, ticker should be 6 digit numbers.
     return: the information of ticker
     """ 
     com = re.compile('[a-zA-Z]') 
