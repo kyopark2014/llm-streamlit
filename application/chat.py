@@ -876,18 +876,16 @@ def run_agent_executor(query, historyMode, st):
             # logger.info(f"tool_calls: {last_message.tool_calls}")
             for message in last_message.tool_calls:
                 args = message['args']
-                if "code" in args:                    
-                    state_msg = f"tool name: {message['name']}"
-                    logger.info(f"{state_msg}")
-                    utils.status(st, state_msg)                    
-                    logger.info(f"{args['code']}")
-                    utils.stcode(st, args['code'])
-                
-                else:
-                    state_msg = f"tool name: {message['name']}, args: {message['args']}"
-                    logger.info(f"{state_msg}")                    
-                    utils.status(st, state_msg)                    
-
+                if debug_mode=='Enable': 
+                    if "code" in args:                    
+                        state_msg = f"tool name: {message['name']}"
+                        utils.status(st, state_msg)                    
+                        utils.stcode(st, args['code'])
+                    
+                    elif model_type=='claude':
+                        state_msg = f"tool name: {message['name']}, args: {message['args']}"
+                        utils.status(st, state_msg)
+            
             logger.info("--- CONTINUE: {last_message.tool_calls[-1]['name']} ---")
             return "continue"
         
@@ -1058,6 +1056,7 @@ def run_agent_executor(query, historyMode, st):
     
     return msg+reference, image_url, reference_docs
 
+"""
 def run_agent_executor2(query, st, debug_mode, model_name):        
     class State(TypedDict):
         messages: Annotated[list, add_messages]
@@ -1275,6 +1274,7 @@ def get_basic_answer(query):
     logger.info(f"output.content: {output.content}")
 
     return output.content
+"""
 
 ####################### LangChain #######################
 # Translation (English)
