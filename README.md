@@ -554,3 +554,5 @@ const vpc = new ec2.Vpc(this, `vpc-for-${projectName}`, {
 [LangGrpah-Memory](https://langchain-ai.github.io/langgraph/concepts/memory/)
 
 [LangGraph with Streamlit Intersection](https://shiv248.medium.com/langgraph-with-streamlit-intersection-0687995d1287)
+
+[Streamlit-Authenticator, Part 1: Adding an authentication component to your app](https://blog.streamlit.io/streamlit-authenticator-part-1-adding-an-authentication-component-to-your-app/)
