@@ -680,7 +680,7 @@ def stock_data_lookup(ticker, country):
     """
     Retrieve accurate stock data for a given ticker.
     country: the english country name of the stock
-    ticker: the ticker to retrieve price history for. In South Korea, ticker should be 6 digit numbers.
+    ticker: the ticker to retrieve price history for. In South Korea, ticker is 6 digit numbers.
     return: the information of ticker
     """ 
     com = re.compile('[a-zA-Z]') 
@@ -696,7 +696,11 @@ def stock_data_lookup(ticker, country):
             ticker += ".T"
     logger.info(f"ticker: {ticker}")
     
-    stock = yf.Ticker(ticker)
+    try: 
+        stock = yf.Ticker(ticker)
+    except Exception:
+        err_msg = traceback.format_exc()
+        logger.info(f"error message: {err_msg}")
     
     # get the price history for past 1 month
     history = stock.history(period="1mo")
