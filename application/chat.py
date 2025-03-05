@@ -124,9 +124,10 @@ models = info.get_model_info(model_name)
 number_of_models = len(models)
 selected_chat = 0
 
-def update(modelName, debugMode, multiRegion):    
+reasoning_mode = 'Disable'
+def update(modelName, debugMode, multiRegion, reasoningMode):    
     global model_name, debug_mode, multi_region
-    global selected_chat, models, number_of_models
+    global selected_chat, models, number_of_models, reasoning_mode
     
     if model_name != modelName:
         model_name = modelName
@@ -145,6 +146,9 @@ def update(modelName, debugMode, multiRegion):
         logger.info(f"multi_region: {multi_region}")
 
         selected_chat = 0
+    
+    reasoning_mode = "Enable" if reasoningMode=="Enable" else "Disable"
+    logger.info(f"reasoning_mode: {reasoning_mode}")
 
 def clear_chat_history():
     memory_chain = []
@@ -157,7 +161,7 @@ def save_chat_history(text, msg):
     else:
         memory_chain.chat_memory.add_ai_message(msg) 
 
-def get_chat():
+def get_chat(extended_thinking):
     global selected_chat, model_type
 
     profile = models[selected_chat]
@@ -187,14 +191,28 @@ def get_chat():
             }
         )
     )
-    parameters = {
-        "max_tokens":maxOutputTokens,     
-        "temperature":0.1,
-        "top_k":250,
-        "top_p":0.9,
-        "stop_sequences": [STOP_SEQUENCE]
-    }
-    # print('parameters: ', parameters)
+    if extended_thinking=='Enable':
+        maxReasoningOutputTokens=64000
+        logger.info(f"extended_thinking: {extended_thinking}")
+        thinking_budget = min(maxOutputTokens, maxReasoningOutputTokens-1000)
+
+        parameters = {
+            "max_tokens":maxReasoningOutputTokens,
+            "temperature":1,            
+            "thinking": {
+                "type": "enabled",
+                "budget_tokens": thinking_budget
+            },
+            "stop_sequences": [STOP_SEQUENCE]
+        }
+    else:
+        parameters = {
+            "max_tokens":maxOutputTokens,     
+            "temperature":0.1,
+            "top_k":250,
+            "top_p":0.9,
+            "stop_sequences": [STOP_SEQUENCE]
+        }
 
     chat = ChatBedrock(   # new chat model
         model_id=modelId,
@@ -373,7 +391,7 @@ def extract_thinking_tag(response, st):
 def revise_question(query, st):    
     logger.info(f"###### revise_question ######")    
 
-    chat = get_chat()
+    chat = get_chat(reasoning_mode)
     st.info("히스토리를 이용해 질문을 변경합니다.")
         
     if isKorean(query)==True :      
@@ -434,12 +452,19 @@ def revise_question(query, st):
             
     return revised_question    
 
+def show_extended_thinking(st, result):
+    # logger.info(f"result: {result}")
+    if "thinking" in result.response_metadata:
+        if "text" in result.response_metadata["thinking"]:
+            thinking = result.response_metadata["thinking"]["text"]
+            st.info(thinking)
+
 ####################### LangChain #######################
 # General Conversation
 #########################################################
 
 def general_conversation(query):
-    chat = get_chat()
+    llm = get_chat(reasoning_mode)
 
     system = (
         "당신의 이름은 서연이고, 질문에 대해 친절하게 답변하는 사려깊은 인공지능 도우미입니다."
@@ -457,21 +482,36 @@ def general_conversation(query):
                 
     history = memory_chain.load_memory_variables({})["chat_history"]
 
-    chain = prompt | chat | StrOutputParser()
     try: 
-        stream = chain.stream(
-            {
-                "history": history,
-                "input": query,
-            }
-        )  
+        if reasoning_mode == "Disable":
+            chain = prompt | llm | StrOutputParser()
+            output = chain.stream(
+                {
+                    "history": history,
+                    "input": query,
+                }
+            )  
+            response = output
+        else:
+            # output = llm.invoke(query)
+            # logger.info(f"output: {output}")
+            # response = output.content
+            chain = prompt | llm
+            output = chain.invoke(
+                {
+                    "history": history,
+                    "input": query,
+                }
+            )
+            logger.info(f"output: {output}")
+            response = output
             
     except Exception:
         err_msg = traceback.format_exc()
         logger.info(f"error message: {err_msg}")  
         raise Exception ("Not able to request to LLM: "+err_msg)
         
-    return stream
+    return response
 
 def get_references(docs):
     reference = "\n\n### 관련 문서\n"
@@ -575,7 +615,7 @@ def get_weather_info(city: str) -> str:
     city = city.replace('\'','')
     city = city.replace('\"','')
                 
-    chat = get_chat()
+    chat = get_chat(reasoning_mode)
     if isKorean(city):
         place = traslation(chat, city, "Korean", "English")
         logger.info(f"city (translated): {place}") 
@@ -854,7 +894,7 @@ def code_interpreter(code):
 tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily, stock_data_lookup, code_drawer, code_interpreter]        
 
 def run_agent_executor(query, historyMode, st):
-    chatModel = get_chat()     
+    chatModel = get_chat(reasoning_mode)     
     model = chatModel.bind_tools(tools)
 
     class State(TypedDict):
@@ -928,7 +968,11 @@ def run_agent_executor(query, historyMode, st):
                 chain = prompt | model
                     
                 response = chain.invoke(state["messages"])
-                # logger.info(f"call_model response: {response}")
+                logger.info(f"call_model response: {response}")
+
+                # extended thinking
+                if debug_mode=="Enable":
+                    show_extended_thinking(st, response)
             
                 if isinstance(response.content, list):      
                     for re in response.content:
@@ -1169,7 +1213,7 @@ def run_agent_executor2(query, st, debug_mode, model_name):
             "answer": answer
         }
     
-    chat = get_chat()
+    chat = get_chat(reasoning_mode)
     
     execution_agent = create_agent(chat, tools)
     
@@ -1252,7 +1296,7 @@ def run_agent_executor2(query, st, debug_mode, model_name):
 
 def get_basic_answer(query):
     logger.info(f"#### get_basic_answer ####")
-    chat = get_chat()
+    chat = get_chat(reasoning_mode)
 
     if isKorean(query)==True:
         system = (
@@ -1284,11 +1328,11 @@ def get_basic_answer(query):
 # Translation (English)
 #########################################################
 
-def translate_text(text, model_name):
+def translate_text(text, model_name, st):
     global llmMode
     llmMode = model_name
 
-    chat = get_chat()
+    chat = get_chat(reasoning_mode)
 
     system = (
         "You are a helpful assistant that translates {input_language} to {output_language} in <article> tags. Put it in <result> tags."
@@ -1314,6 +1358,11 @@ def translate_text(text, model_name):
                 "text": text,
             }
         )
+
+        # extended thinking
+        if debug_mode=="Enable":
+            show_extended_thinking(st, result)
+
         msg = result.content
         logger.info(f"translated text: {msg}")
     except Exception:
@@ -1332,11 +1381,11 @@ def translate_text(text, model_name):
 # Translation (Japanese)
 #########################################################
 
-def translate_text_for_japanese(text, model_name):
+def translate_text_for_japanese(text, model_name, st):
     global llmMode
     llmMode = model_name
 
-    chat = get_chat()
+    chat = get_chat(reasoning_mode)
 
     system = (
         "You are a helpful assistant that translates {input_language} to {output_language} in <article> tags. Put it in <result> tags."
@@ -1358,6 +1407,11 @@ def translate_text_for_japanese(text, model_name):
                 "text": text,
             }
         )
+
+        # extended thinking
+        if debug_mode=="Enable":
+            show_extended_thinking(st, result)
+
         msg = result.content
         logger.info(f"translated text from Japanese: {msg}")
     except Exception:
@@ -1376,11 +1430,11 @@ def translate_text_for_japanese(text, model_name):
 # Grammer Check
 #########################################################
     
-def check_grammer(text, model_name):
+def check_grammer(text, model_name, st):
     global llmMode
     llmMode = model_name
 
-    chat = get_chat()
+    chat = get_chat(reasoning_mode)
 
     if isKorean(text)==True:
         system = (
@@ -1403,6 +1457,10 @@ def check_grammer(text, model_name):
                 "text": text
             }
         )
+
+        # extended thinking
+        if debug_mode=="Enable":
+            show_extended_thinking(st, result)
         
         msg = result.content
         logger.info(f"result of grammer correction: {msg}")
@@ -1591,7 +1649,7 @@ def get_image_summarization(object_name, prompt, st):
     return contents
 
 def extract_text(img_base64):
-    multimodal = get_chat()
+    multimodal = get_chat(reasoning_mode)
     query = "텍스트를 추출해서 markdown 포맷으로 변환하세요. <result> tag를 붙여주세요."
     
     messages = [
@@ -1630,7 +1688,7 @@ def extract_text(img_base64):
     return extracted_text
 
 def summary_image(img_base64, prompt):
-    chat = get_chat()
+    chat = get_chat(reasoning_mode)
 
     if prompt:        
         query = f"{prompt}. markdown 포맷으로 답변을 작성합니다."

@@ -85,8 +85,13 @@ with st.sidebar:
     select_multiRegion = st.checkbox('Multi Region', value=False)
     multiRegion = 'Enable' if select_multiRegion else 'Disable'
     #print('multiRegion: ', multiRegion)
+
+    # extended thinking of claude 3.7 sonnet
+    select_reasoning = st.checkbox('Reasonking (only Claude 3.7 Sonnet)', value=False)
+    reasoningMode = 'Enable' if select_reasoning and modelName=='Claude 3.7 Sonnet' else 'Disable'
+    logger.info(f"reasoningMode: {reasoningMode}")
    
-    chat.update(modelName, debugMode, multiRegion)
+    chat.update(modelName, debugMode, multiRegion, reasoningMode)
 
     st.success(f"Connected to {modelName}", icon="💚")
     clear_button = st.button("대화 초기화", key="clear")
@@ -203,10 +208,21 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             #     st.session_state.messages.append({"role": "assistant", "content": response})
             #     st.rerun()                
 
-            stream = chat.general_conversation(prompt)            
-            response = st.write_stream(stream)            
-            logger.info(f"response: {response}")
+            output = chat.general_conversation(prompt)            
+            if reasoningMode=="Enable":
+                with st.status("thinking...", expanded=True, state="running") as status:    
+                    # extended thinking
+                    if debugMode=="Enable":
+                        chat.show_extended_thinking(st, output)
+
+                    response = output.content
+                    st.write(response)
+                
+            else:
+                response = st.write_stream(output)
             
+            logger.info(f"response: {response}")
+                        
             st.session_state.messages.append({"role": "assistant", "content": response})
 
             chat.save_chat_history(prompt, response)
@@ -261,21 +277,21 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             
             show_references(reference_docs) 
         elif mode == '번역하기 (한국어 / 영어)':
-            response = chat.translate_text(prompt, modelName)
+            response = chat.translate_text(prompt, modelName, st)
             st.write(response)
 
             st.session_state.messages.append({"role": "assistant", "content": response})
             # chat.save_chat_history(prompt, response)
         
         elif mode == '번역하기 (일본어 / 한국어)':
-            response = chat.translate_text_for_japanese(prompt, modelName)
+            response = chat.translate_text_for_japanese(prompt, modelName, st)
             st.write(response)
 
             st.session_state.messages.append({"role": "assistant", "content": response})
             # chat.save_chat_history(prompt, response)
 
         elif mode == '문법 검토하기':
-            response = chat.check_grammer(prompt, modelName)
+            response = chat.check_grammer(prompt, modelName, st)
             st.write(response)
 
             st.session_state.messages.append({"role": "assistant", "content": response})
