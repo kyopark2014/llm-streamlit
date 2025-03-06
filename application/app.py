@@ -51,7 +51,7 @@ with st.sidebar:
     
     # radio selection
     mode = st.radio(
-        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화", "Agent", 'Agent (Chat)', "번역하기 (한국어 / 영어)", "번역하기 (일본어 / 한국어)", "문법 검토하기", "이미지 분석", "비용 분석"], index=0
+        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화", "Agent", 'Agent (Chat)', "번역하기 (한국어 / 영어)", "문법 검토하기", "이미지 분석", "비용 분석"], index=0  # "번역하기 (일본어 / 한국어)",
     )   
     st.info(mode_descriptions[mode][0])
     # limit = st.slider(
@@ -283,12 +283,11 @@ if prompt := st.chat_input("메시지를 입력하세요."):
             st.session_state.messages.append({"role": "assistant", "content": response})
             # chat.save_chat_history(prompt, response)
         
-        elif mode == '번역하기 (일본어 / 한국어)':
-            response = chat.translate_text_for_japanese(prompt, modelName, st)
-            st.write(response)
+        # elif mode == '번역하기 (일본어 / 한국어)':
+        #     response = chat.translate_text_for_japanese(prompt, modelName, st)
+        #     st.write(response)
 
-            st.session_state.messages.append({"role": "assistant", "content": response})
-            # chat.save_chat_history(prompt, response)
+        #     st.session_state.messages.append({"role": "assistant", "content": response})
 
         elif mode == '문법 검토하기':
             response = chat.check_grammer(prompt, modelName, st)

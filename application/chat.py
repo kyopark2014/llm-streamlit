@@ -391,7 +391,7 @@ def extract_thinking_tag(response, st):
 def revise_question(query, st):    
     logger.info(f"###### revise_question ######")    
 
-    chat = get_chat(reasoning_mode)
+    chat = get_chat(extended_thinking="Disable")
     st.info("히스토리를 이용해 질문을 변경합니다.")
         
     if isKorean(query)==True :      
@@ -607,7 +607,7 @@ def get_current_time(format: str=f"%Y-%m-%d %H:%M:%S")->str:
 def get_weather_info(city: str) -> str:
     """
     retrieve weather information by city name and then return weather statement.
-    city: the name of city to retrieve
+    city: the English name of city to retrieve
     return: weather statement
     """    
     
@@ -615,7 +615,7 @@ def get_weather_info(city: str) -> str:
     city = city.replace('\'','')
     city = city.replace('\"','')
                 
-    chat = get_chat(reasoning_mode)
+    chat = get_chat(extended_thinking="Disable")
     if isKorean(city):
         place = traslation(chat, city, "Korean", "English")
         logger.info(f"city (translated): {place}") 
@@ -1332,7 +1332,7 @@ def translate_text(text, model_name, st):
     global llmMode
     llmMode = model_name
 
-    chat = get_chat(reasoning_mode)
+    chat = get_chat(extended_thinking="Disable")
 
     system = (
         "You are a helpful assistant that translates {input_language} to {output_language} in <article> tags. Put it in <result> tags."
@@ -1385,7 +1385,7 @@ def translate_text_for_japanese(text, model_name, st):
     global llmMode
     llmMode = model_name
 
-    chat = get_chat(reasoning_mode)
+    chat = get_chat(extended_thinking="Disable")
 
     system = (
         "You are a helpful assistant that translates {input_language} to {output_language} in <article> tags. Put it in <result> tags."
@@ -1434,7 +1434,7 @@ def check_grammer(text, model_name, st):
     global llmMode
     llmMode = model_name
 
-    chat = get_chat(reasoning_mode)
+    chat = get_chat(extended_thinking="Disable")
 
     if isKorean(text)==True:
         system = (
@@ -1649,7 +1649,7 @@ def get_image_summarization(object_name, prompt, st):
     return contents
 
 def extract_text(img_base64):
-    multimodal = get_chat(reasoning_mode)
+    multimodal = get_chat(extended_thinking="Disable")
     query = "텍스트를 추출해서 markdown 포맷으로 변환하세요. <result> tag를 붙여주세요."
     
     messages = [
@@ -1688,7 +1688,7 @@ def extract_text(img_base64):
     return extracted_text
 
 def summary_image(img_base64, prompt):
-    chat = get_chat(reasoning_mode)
+    chat = get_chat(extended_thinking="Disable")
 
     if prompt:        
         query = f"{prompt}. markdown 포맷으로 답변을 작성합니다."
