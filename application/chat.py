@@ -770,6 +770,7 @@ def code_drawer(code):
     Execute a Python script for draw a graph.
     Since Python runtime cannot use external APIs, necessary data must be included in the code.
     The graph should use English exclusively for all textual elements.
+    Do not save pictures locally bacause the runtime does not have filesystem.
     When a comparison is made, all arrays must be of the same length.
     code: the Python code was written in English
     return: the url of graph
@@ -847,8 +848,6 @@ def code_interpreter(code):
     Execute a Python script to solve a complex question.    
     Since Python runtime cannot use external APIs, necessary data must be included in the code.
     The Python runtime does not have filesystem access, but does include the entire standard library.
-    Make HTTP requests with the httpx or requests libraries.
-    Read input from stdin and write output to stdout."        
     code: the Python code was written in English
     return: the stdout value
     """ 
