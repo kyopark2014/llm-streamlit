@@ -851,6 +851,8 @@ def code_interpreter(code):
     code: the Python code was written in English
     return: the stdout value
     """ 
+    # Make HTTP requests with the httpx or requests libraries.
+    # Read input from stdin and write output to stdout."  
         
     code = re.sub(r"seaborn", "classic", code)
     code = re.sub(r"plt.savefig", "#plt.savefig", code)
