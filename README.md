@@ -556,3 +556,5 @@ const vpc = new ec2.Vpc(this, `vpc-for-${projectName}`, {
 [LangGraph with Streamlit Intersection](https://shiv248.medium.com/langgraph-with-streamlit-intersection-0687995d1287)
 
 [Streamlit-Authenticator, Part 1: Adding an authentication component to your app](https://blog.streamlit.io/streamlit-authenticator-part-1-adding-an-authentication-component-to-your-app/)
+
+[Claude의 System Prompt](https://docs.anthropic.com/en/release-notes/system-prompts#feb-24th-2025)
