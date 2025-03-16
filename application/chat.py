@@ -36,6 +36,7 @@ from urllib import parse
 
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.store.memory import InMemoryStore
+from langchain_experimental.tools import PythonAstREPLTool
 
 logger = utils.CreateLogger("chat")
 
@@ -561,6 +562,24 @@ def get_references(docs):
             reference = reference + f"{i+1}. [{name}]({url}), {excerpt[:40]}...\n"
     return reference
 
+def show_graph(app, st):
+    from IPython.display import Image
+    from langchain_core.runnables.graph import CurveStyle, MermaidDrawMethod, NodeStyles
+
+    graphImage = Image(
+        app.get_graph().draw_mermaid_png(
+            draw_method=MermaidDrawMethod.API
+        )
+    )
+    # show graph in streamlit
+    st.image(graphImage.data, caption="Graph", use_container_width=True)
+
+    # save a file
+    import PIL
+    import io
+    pimg = PIL.Image.open(io.BytesIO(graphImage.data))
+    pimg.save('graph-file.png')
+
 ####################### LangGraph #######################
 # Agentic Workflow: Tool Use
 #########################################################
@@ -892,7 +911,10 @@ def code_interpreter(code):
     logger.info(f"result: {result}")
     return result
 
-tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily, stock_data_lookup, code_drawer, code_interpreter]        
+python_repl = PythonAstREPLTool()
+
+# tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily, stock_data_lookup, code_drawer, code_interpreter]
+tools = [get_current_time, get_book_list, get_weather_info, search_by_tavily, stock_data_lookup, code_drawer, python_repl]
 
 def run_agent_executor(query, historyMode, st):
     chatModel = get_chat(reasoning_mode)     
@@ -1072,7 +1094,7 @@ def run_agent_executor(query, historyMode, st):
         config = {
             "recursion_limit": 50
         }
-    
+
     # msg = message.content
     result = app.invoke({"messages": inputs}, config)
     #print("result: ", result)
