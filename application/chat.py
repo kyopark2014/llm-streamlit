@@ -79,18 +79,7 @@ def initiate():
         
 initiate()
  
-try:
-    with open("/home/config.json", "r", encoding="utf-8") as f:
-        config = json.load(f)
-        # print(f"config: {config}")
-        logger.info(f"config: {config}")
-        
-except Exception:
-    print("use local configuration")
-    with open("application/config.json", "r", encoding="utf-8") as f:
-        config = json.load(f)
-        # print('config: ', config)
-        logger.info(f"config: {config}")
+config = utils.load_config()
         
 bedrock_region = "us-west-2"
 projectName = config["projectName"] if "projectName" in config else "bedrock-agent"
@@ -1015,7 +1004,8 @@ def run_agent_executor(query, historyMode, st):
                 
         if isinstance(last_message, AIMessage) and last_message.tool_calls:
             logger.info(f"{last_message.content}")
-            st.info(f"{last_message.content}")
+            if debug_mode=='Enable' and last_message.content:
+                st.info(f"last_message: {last_message.content}")
 
             for message in last_message.tool_calls:
                 args = message['args']
