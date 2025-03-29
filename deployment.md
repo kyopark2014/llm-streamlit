@@ -215,7 +215,7 @@ cat /opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log
 
 ### Local에서 실행하기 
 
-Output의 environmentforbedrockagent의 내용을 복사하여 [config.json](./application/config.json)을 업데이트 합니다. "aws configure"로 credential이 설정되어 있어야합니다.
+Output의 environmentforbedrockagent의 내용을 복사하여 application/config.json을 생성합니다. "aws configure"로 credential이 설정되어 있어야합니다.
 
 만약 visual studio code 사용자라면 config.json 파일은 아래 명령어를 사용합니다.
 
