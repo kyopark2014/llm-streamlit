@@ -67,9 +67,6 @@ def general_conversation(query):
             )  
             response = output
         else:
-            # output = llm.invoke(query)
-            # logger.info(f"output: {output}")
-            # response = output.content
             chain = prompt | llm
             output = chain.invoke(
                 {
