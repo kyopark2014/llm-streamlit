@@ -1,5 +1,51 @@
 # LangGraph의 메모리
 
+## Short Term Memory
+
+여기서는 MemorySaver, InMemoryStore를 이용해 memory 기능을 구현합니다.
+
+```python
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.store.memory import InMemoryStore
+
+checkpointer = MemorySaver()
+memorystore = InMemoryStore()
+
+def buildChatAgentWithHistory():
+    workflow = StateGraph(State)
+
+    workflow.add_node("agent", call_model)
+    workflow.add_node("action", tool_node)
+    workflow.add_edge(START, "agent")
+    workflow.add_conditional_edges(
+        "agent",
+        should_continue,
+        {
+            "continue": "action",
+            "end": END,
+        },
+    )
+    workflow.add_edge("action", "agent")
+
+    return workflow.compile(
+        checkpointer=checkpointer,
+        store=memorystore
+    )
+
+app = buildChatAgentWithHistory()
+config = {
+    "recursion_limit": 50,
+    "configurable": {"thread_id": userId}
+}
+
+result = app.invoke({"messages": inputs}, config)
+msg = result["messages"][-1].content
+```
+
+메모리 적용후 결과를 테스트하면 아래와 같습니다.
+
+![image](https://github.com/user-attachments/assets/a29cd27f-cbb9-4ee3-89bd-0a0e8bb9f358)
+
 
 ## Long Term Memory
 
