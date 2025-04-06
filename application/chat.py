@@ -177,7 +177,8 @@ def get_chat(extended_thinking):
         region_name=bedrock_region,
         config=Config(
             retries = {
-                'max_attempts': 30
+                'max_attempts': 30,
+                'mode': 'adaptive'
             }
         )
     )
@@ -193,7 +194,8 @@ def get_chat(extended_thinking):
                 "type": "enabled",
                 "budget_tokens": thinking_budget
             },
-            "stop_sequences": [STOP_SEQUENCE]
+            "stop_sequences": [STOP_SEQUENCE],
+            "anthropic_beta": ["token-efficient-tools-2025-02-19"]
         }
     else:
         parameters = {
@@ -201,7 +203,8 @@ def get_chat(extended_thinking):
             "temperature":0.1,
             "top_k":250,
             "top_p":0.9,
-            "stop_sequences": [STOP_SEQUENCE]
+            "stop_sequences": [STOP_SEQUENCE],
+            "anthropic_beta": ["token-efficient-tools-2025-02-19"]
         }
 
     chat = ChatBedrock(   # new chat model
