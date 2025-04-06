@@ -87,3 +87,9 @@ with RedisSaver.from_conn_string(REDIS_URI) as checkpointer:
     config = {"configurable": {"thread_id": "user123"}}
     res = graph.invoke({"messages": [("human", "what's the weather in sf")]}, config)
 ```
+
+
+## Reference
+
+[How to add long-term memory using PostgreSQL to LangGraph ReAct agent🤖: Python — LangGraph #3](https://www.youtube.com/watch?v=hE8C2M8GRLo)
+
