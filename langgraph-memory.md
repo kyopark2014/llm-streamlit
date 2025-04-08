@@ -79,6 +79,17 @@ msg = result["messages"][-1].content
 
 
 
+
+
+### Persistant memory
+
+[LangGraph & Redis: Build smarter AI agents with memory & persistence](https://redis.io/blog/langgraph-redis-build-smarter-ai-agents-with-memory-persistence/)
+
+
+## memory
+
+![image](https://github.com/user-attachments/assets/9e9fe6ba-8d14-4bab-9dbe-5efbf33c171c)
+
 ```python
 from typing import Literal
  
@@ -116,15 +127,6 @@ with RedisSaver.from_conn_string(REDIS_URI) as checkpointer:
     res = graph.invoke({"messages": [("human", "what's the weather in sf")]}, config)
 ```
 
-
-### Persistant memory
-
-[LangGraph & Redis: Build smarter AI agents with memory & persistence](https://redis.io/blog/langgraph-redis-build-smarter-ai-agents-with-memory-persistence/)
-
-
-## memory
-
-![image](https://github.com/user-attachments/assets/9e9fe6ba-8d14-4bab-9dbe-5efbf33c171c)
 
 https://www.linkedin.com/posts/rakeshgohel01_these-explanations-will-clarify-your-ai-agent-activity-7313175951243190273-hZl_/?utm_source=share&utm_medium=member_android&rcm=ACoAAA5jTp0BX-JuOkof3Ak56U3VlXjQVT43NzQ
 
