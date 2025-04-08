@@ -1,15 +1,16 @@
 # LangGraph의 메모리
 
+## 메모리 설명
 
-
+아래와 같이 short term과 long term 메모리로 나누어 구현할 수 있습니다.
 
 | 구분 | Short-term Memory | Long-term Memory |
 |------|------------------|------------------|
 | 범위 | 단일 대화 스레드 내에서만 유효 | 여러 대화 스레드에서 공유 가능 |
-| 저장 위치 | 에이전트의 상태(state)로 관리 | 커스텀 네임스페이스에 저장 |
-| 지속성 | 체크포인터를 통해 데이터베이스에 저장 | 스토어(Store)를 통해 JSON 문서로 저장 |
+| 저장 위치 | agent의 state로 관리 | custom namespace에 저장 |
+| 지속성 | checkpoint를 통해 데이터베이스에 저장 | store를 통해 JSON 문서로 저장 |
 | 주요 용도 | 현재 진행 중인 대화 컨텍스트 유지 | 사용자 정보, 경험, 규칙 등 장기 보존 필요 정보 저장 |
-| 메모리 관리 | 메시지 목록 편집, 요약 등으로 관리 | 시맨틱, 에피소딕, 프로시저 메모리로 구분하여 관리 |
+| 메모리 관리 | 메시지 목록 편집, 요약 등으로 관리 | Semantic, Episodic, Procedural 메모리로 구분하여 관리 |
 
 ## Short Term Memory
 
@@ -60,7 +61,14 @@ msg = result["messages"][-1].content
 
 ## Long Term Memory
 
-[LangGraph & Redis: Build smarter AI agents with memory & persistence](https://redis.io/blog/langgraph-redis-build-smarter-ai-agents-with-memory-persistence/)
+| 메모리 타입 | 저장 내용 | 인간의 예시 | AI 에이전트의 예시 | 주요 특징 |
+|------------|----------|------------|-----------------|-----------|
+| Semantic Memory (의미 기억) | 사실과 개념 | 학교에서 배운 지식 | 사용자에 대한 사실 정보 | - Profile 또는 Collection 형태로 관리<br>- 지속적으로 업데이트 가능<br>- 개인화된 상호작용에 활용 |
+| Episodic Memory (일화 기억) | 경험과 사건 | 과거에 했던 일들 | 에이전트의 과거 행동 | - Few-shot 예제로 구현<br>- 과거 시퀀스를 통한 학습<br>- 작업 수행 방법 기억 |
+| Procedural Memory (절차 기억) | 작업 수행 규칙 | 본능적 기술(자전거 타기 등) | 에이전트 시스템 프롬프트 | - 모델 가중치, 코드, 프롬프트 포함<br>- 주로 프롬프트 수정을 통해 개선<br>- Reflection을 통한 자가 학습 |
+
+
+
 
 ```python
 from typing import Literal
@@ -98,6 +106,11 @@ with RedisSaver.from_conn_string(REDIS_URI) as checkpointer:
     config = {"configurable": {"thread_id": "user123"}}
     res = graph.invoke({"messages": [("human", "what's the weather in sf")]}, config)
 ```
+
+
+### Persistant memory
+
+[LangGraph & Redis: Build smarter AI agents with memory & persistence](https://redis.io/blog/langgraph-redis-build-smarter-ai-agents-with-memory-persistence/)
 
 
 ## memory
