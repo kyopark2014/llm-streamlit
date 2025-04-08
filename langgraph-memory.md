@@ -4,6 +4,10 @@
 
 아래와 같이 short term과 long term 메모리로 나누어 구현할 수 있습니다.
 
+![image](https://github.com/user-attachments/assets/fef5bbb7-e750-4d26-a1e6-d7d460026447)
+
+두 메모리의 특징을 비교하면 아래와 같습니다.
+
 | 구분 | Short-term Memory | Long-term Memory |
 |------|------------------|------------------|
 | 범위 | 단일 대화 스레드 내에서만 유효 | 여러 대화 스레드에서 공유 가능 |
@@ -13,6 +17,8 @@
 | 메모리 관리 | 메시지 목록 편집, 요약 등으로 관리 | Semantic, Episodic, Procedural 메모리로 구분하여 관리 |
 
 ## Short Term Memory
+
+단일 대화 thread에서만 사용되는 메모리로 주로 대화 이력과 업로드된 파일, 검색된 문서를 포함합니다. 긴 대화를 관리하기 위해서는 오래된 메시지를 제거하거나 요약을 수행하여야 합니다. 
 
 여기서는 MemorySaver, InMemoryStore를 이용해 memory 기능을 구현합니다.
 
@@ -60,6 +66,9 @@ msg = result["messages"][-1].content
 
 
 ## Long Term Memory
+
+
+여러 대화 세션에서 공유 가능한 메모리로 Semantic(의미), Episodic(일화), Procedual(절차) 메모리 형태가 있습니다. Semantic Memory는 사용자 정보 저장에, Episodic Memory는 작업 수행 방법 학습에, Procedural Memory는 에이전트의 행동 규칙 정의에 효과적입니다. 각 메모리 타입들의 장단점과 애플리케이션의 요구사항에 따라 적절히 조합하여 사용합니다.
 
 | 메모리 타입 | 저장 내용 | 인간의 예시 | AI 에이전트의 예시 | 주요 특징 |
 |------------|----------|------------|-----------------|-----------|
