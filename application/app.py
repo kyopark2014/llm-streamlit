@@ -196,7 +196,7 @@ if mode == '카메라로 사진 찍어 번역하기':
     logger.info("카메라로 사진 찍어 번역하기")
     image = photo_translater.take_photo(st)
     if image is not None:
-        st.image(image, caption="Captured Image", use_container_width=True)              
+        st.image(image, caption="Captured Image")
         text = photo_translater.load_text_from_image(image, st)
         if text is not None:
             llm = chat.get_chat(extended_thinking="Disable")
@@ -323,12 +323,6 @@ if prompt := st.chat_input("메시지를 입력하세요."):
                         st.write(summary)
 
                         st.session_state.messages.append({"role": "assistant", "content": summary})
-        
-        elif mode == '카메라로 사진 찍어 번역하기':
-            logger.info("카메라로 사진 찍어 번역하기")
-            image = photo_translater.take_photo(st)
-            if image is not None:
-                st.image(image, caption="Captured Image", use_container_width=True)
             
         elif mode == '비용 분석':
             with st.status("thinking...", expanded=True, state="running") as status:
