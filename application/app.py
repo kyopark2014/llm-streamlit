@@ -2,6 +2,7 @@ import streamlit as st
 import chat
 import utils
 import cost_analysis as cost
+import photo_translater
 
 # logging
 logger = utils.CreateLogger("streamlit")
@@ -31,6 +32,9 @@ mode_descriptions = {
     "이미지 분석": [
         "이미지를 업로드하면 이미지의 내용을 요약할 수 있습니다."
     ],
+    "카메라로 사진 찍어 번역하기": [
+        "카메라 UI를 이용해 번역합니다."
+    ],
     "비용 분석": [
         "Cloud 사용에 대한 분석을 수행합니다."
     ]
@@ -51,9 +55,8 @@ with st.sidebar:
     
     # radio selection
     mode = st.radio(
-        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화", "Agent", 'Agent (Chat)', "번역하기 (한국어 / 영어)", "문법 검토하기", "이미지 분석", "비용 분석"], index=0  # "번역하기 (일본어 / 한국어)",
+        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화", "Agent", 'Agent (Chat)', "번역하기 (한국어 / 영어)", "문법 검토하기", "이미지 분석", "카메라로 사진 찍기", "비용 분석"], index=0  # "번역하기 (일본어 / 한국어)",
     )   
-    st.info(mode_descriptions[mode][0])
     # limit = st.slider(
     #     label="Number of cards",
     #     min_value=1,
@@ -74,7 +77,7 @@ with st.sidebar:
     uploaded_file = None
     if mode == '이미지 분석':
         st.subheader("🌇 이미지 업로드")
-        uploaded_file = st.file_uploader("이미지 요약을 위한 파일을 선택합니다.", type=["png", "jpg", "jpeg"])
+        uploaded_file = st.file_uploader("이미지 요약을 위한 파일을 선택합니다.", type=["png", "jpg", "jpeg"])        
 
     # debug checkbox
     select_debugMode = st.checkbox('Debug Mode', value=True)
@@ -309,6 +312,11 @@ if prompt := st.chat_input("메시지를 입력하세요."):
                         st.write(summary)
 
                         st.session_state.messages.append({"role": "assistant", "content": summary})
+        
+        elif mode == '카메라로 사진 찍기':
+            image = photo_translater.take_photo()
+            st.image(image, caption="Captured Image", use_container_width=True)
+            
         elif mode == '비용 분석':
             with st.status("thinking...", expanded=True, state="running") as status:
                 response = cost.ask_cost_insights(prompt)
