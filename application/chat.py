@@ -1664,11 +1664,10 @@ def tavily_search(query, k):
 
     return docs
 
-
 ####################### LangChain #######################
 # Image Summarization
 #########################################################
-
+    
 def get_image_summarization(object_name, prompt, st):
     # load image
     s3_client = boto3.client(
