@@ -55,7 +55,7 @@ with st.sidebar:
     
     # radio selection
     mode = st.radio(
-        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화", "Agent", 'Agent (Chat)', "번역하기 (한국어 / 영어)", "문법 검토하기", "이미지 분석", "카메라로 사진 찍기", "비용 분석"], index=0  # "번역하기 (일본어 / 한국어)",
+        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화", "Agent", 'Agent (Chat)', "번역하기 (한국어 / 영어)", "문법 검토하기", "이미지 분석", "카메라로 사진 찍어 번역하기", "비용 분석"], index=0
     )   
     # limit = st.slider(
     #     label="Number of cards",
@@ -92,7 +92,7 @@ with st.sidebar:
     # extended thinking of claude 3.7 sonnet
     select_reasoning = st.checkbox('Reasonking (only Claude 3.7 Sonnet)', value=False)
     reasoningMode = 'Enable' if select_reasoning and modelName=='Claude 3.7 Sonnet' else 'Disable'
-    logger.info(f"reasoningMode: {reasoningMode}")
+    # logger.info(f"reasoningMode: {reasoningMode}")
    
     chat.update(modelName, debugMode, multiRegion, reasoningMode)
 
@@ -191,7 +191,18 @@ if clear_button==False and mode == '비용 분석':
             
             st.markdown(cost.insights)
             st.session_state.messages.append({"role": "assistant", "content": cost.insights})
-            
+
+if mode == '카메라로 사진 찍어 번역하기':
+    logger.info("카메라로 사진 찍어 번역하기")
+    image = photo_translater.take_photo(st)
+    if image is not None:
+        st.image(image, caption="Captured Image", use_container_width=True)              
+        text = photo_translater.load_text_from_image(image, st)
+        if text is not None:
+            llm = chat.get_chat(extended_thinking="Disable")
+            translated_text = chat.traslation(llm, text, "English", "Korean")
+        st.write(translated_text)
+        
 # Always show the chat input
 if prompt := st.chat_input("메시지를 입력하세요."):
     logger.info(f"prompt: {prompt}")
@@ -313,9 +324,11 @@ if prompt := st.chat_input("메시지를 입력하세요."):
 
                         st.session_state.messages.append({"role": "assistant", "content": summary})
         
-        elif mode == '카메라로 사진 찍기':
-            image = photo_translater.take_photo()
-            st.image(image, caption="Captured Image", use_container_width=True)
+        elif mode == '카메라로 사진 찍어 번역하기':
+            logger.info("카메라로 사진 찍어 번역하기")
+            image = photo_translater.take_photo(st)
+            if image is not None:
+                st.image(image, caption="Captured Image", use_container_width=True)
             
         elif mode == '비용 분석':
             with st.status("thinking...", expanded=True, state="running") as status:
