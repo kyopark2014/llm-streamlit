@@ -167,6 +167,8 @@ def get_model_info(model_name):
         models = claude_3_5_sonnet_v2_models
     elif model_name == "Claude 3.5 Haiku":
         models = claude_3_5_haiku_models
+    elif model_name == "Nova Premier":
+        models = nova_premier
 
     return models
 
