@@ -361,18 +361,18 @@ def traslation(chat, text, input_language, output_language):
         logger.info(f"err_msg: {err_msg}")                
         raise Exception ("Not able to request to LLM")
 
-    return msg[msg.find('<result>')+8:len(msg)-9] # remove <result> tag
+    return msg[msg.find('<result>')+8:msg.find('</result>')] # remove <result> tag
 
 def extract_thinking_tag(response, st):
     if response.find('<thinking>') != -1:
-        status = response[response.find('<thinking>')+11:response.find('</thinking>')]
+        status = response[response.find('<thinking>')+10:response.find('</thinking>')]
         logger.info(f"agent_thinking: {status}")                
         
         if debug_mode=="Enable":
             st.info(status)
 
         if response.find('<thinking>') == 0:
-            msg = response[response.find('</thinking>')+13:]
+            msg = response[response.find('</thinking>')+12:]
         else:
             msg = response[:response.find('<thinking>')]
         logger.info(f"msg: {msg}")    
@@ -1082,7 +1082,7 @@ def run_agent_executor(query, historyMode, st):
                                 # logger.info(f"status: {status}")
                                 if status.find('<thinking>') != -1:
                                     # logger.info(f"Remove <thinking> tag.")
-                                    status = status[status.find('<thinking>')+11:status.find('</thinking>')]
+                                    status = status[status.find('<thinking>')+10:status.find('</thinking>')]
                                     # logger.info(f"status without <thinking> tag: {status}")
 
                                 if debug_mode=="Enable":
@@ -1259,7 +1259,7 @@ def run_agent_executor2(query, st, debug_mode, model_name):
                     status = re['text']
                     if status.find('<thinking>') != -1:
                         logger.info(f"Remove <thinking> tag.")
-                        status = status[status.find('<thinking>')+11:status.find('</thinking>')]
+                        status = status[status.find('<thinking>')+10:status.find('</thinking>')]
                         logger.info(f"agent_thinking: {status}")
 
                     if debug_mode=="Enable":
