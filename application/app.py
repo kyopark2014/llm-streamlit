@@ -71,7 +71,7 @@ with st.sidebar:
         index = 4
     modelName = st.selectbox(
         '🖊️ 사용 모델을 선택하세요',
-        ("Nova Premier", 'Nova Pro', 'Nova Lite', 'Nova Micro', 'Claude 3.7 Sonnet', 'Claude 3.5 Sonnet', 'Claude 3.0 Sonnet', 'Claude 3.5 Haiku'), index=index
+        ("Nova Premier", 'Nova Pro', 'Nova Lite', 'Nova Micro', "Claude 4 Sonnet", "Claude 4 Opus", 'Claude 3.7 Sonnet', 'Claude 3.5 Sonnet', 'Claude 3.0 Sonnet', 'Claude 3.5 Haiku'), index=index
     )
     
     uploaded_file = None
@@ -90,8 +90,8 @@ with st.sidebar:
     #print('multiRegion: ', multiRegion)
 
     # extended thinking of claude 3.7 sonnet
-    select_reasoning = st.checkbox('Reasonking (only Claude 3.7 Sonnet)', value=False)
-    reasoningMode = 'Enable' if select_reasoning and modelName=='Claude 3.7 Sonnet' else 'Disable'
+    select_reasoning = st.checkbox('Reasoning', value=False)
+    reasoningMode = 'Enable' if select_reasoning else 'Disable'
     # logger.info(f"reasoningMode: {reasoningMode}")
    
     chat.update(modelName, debugMode, multiRegion, reasoningMode)
