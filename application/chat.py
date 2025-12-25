@@ -29,6 +29,18 @@ from langchain_community.utilities.tavily_search import TavilySearchAPIWrapper
 from bs4 import BeautifulSoup
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 
+import sys
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,  # Default to INFO level
+    format='%(filename)s:%(lineno)d | %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stderr)
+    ]
+)
+logger = logging.getLogger("app")
+
 # Simple memory class to replace ConversationBufferWindowMemory
 class SimpleMemory:
     def __init__(self, k=5):
@@ -62,8 +74,6 @@ from urllib import parse
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.store.memory import InMemoryStore
 from langchain_experimental.tools import PythonAstREPLTool
-
-logger = utils.CreateLogger("chat")
 
 userId = uuid.uuid4().hex
 logger.info(f"userId: {userId}")
@@ -227,7 +237,6 @@ def get_chat(extended_thinking):
             "max_tokens":maxOutputTokens,     
             "temperature":0.1,
             "top_k":250,
-            "top_p":0.9,
             "stop_sequences": [STOP_SEQUENCE],
             "anthropic_beta": ["token-efficient-tools-2025-02-19"]
         }
