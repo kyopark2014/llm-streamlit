@@ -296,6 +296,7 @@ export class CdkLlmStreamlitStack extends cdk.Stack {
 
     const commands = [
       'yum install git python-pip -y',
+      'yum install portaudio-devel -y',
       'pip install pip --upgrade',            
       `sh -c "cat <<EOF > /etc/systemd/system/streamlit.service
 [Unit]
@@ -316,7 +317,7 @@ EOF"`,
       `runuser -l ec2-user -c 'cd && git clone https://github.com/kyopark2014/${projectName}'`,
       `runuser -l ec2-user -c 'pip install streamlit streamlit_chat'`,        
       `runuser -l ec2-user -c 'pip install boto3 langchain_aws langchain langchain_community langgraph langchain_experimental'`,
-      `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python yfinance rizaio plotly_express numpy matplotlib'`,
+      `runuser -l ec2-user -c 'pip install beautifulsoup4 pytz tavily-python yfinance rizaio plotly_express numpy matplotlib pyaudio'`,
       'systemctl enable streamlit.service',
       'systemctl start streamlit',      
       `runuser -l ec2-user -c 'cat <<EOF > /home/ec2-user/.streamlit/config.toml
