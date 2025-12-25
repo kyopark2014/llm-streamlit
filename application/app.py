@@ -3,6 +3,7 @@ import chat
 import utils
 import cost_analysis as cost
 import photo_translater
+import translator
 
 # logging
 logger = utils.CreateLogger("streamlit")
@@ -37,7 +38,10 @@ mode_descriptions = {
     ],
     "비용 분석": [
         "Cloud 사용에 대한 분석을 수행합니다."
-    ]
+    ],
+    "Translator (Text2Speech)": [
+        "Nova Sonic를 이용해 실시간 번역을 구현합니다."
+    ],
 }
 
 with st.sidebar:
@@ -55,7 +59,7 @@ with st.sidebar:
     
     # radio selection
     mode = st.radio(
-        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화", "Agent", 'Agent (Chat)', "번역하기 (한국어 / 영어)", "문법 검토하기", "이미지 분석", "카메라로 사진 찍어 번역하기", "비용 분석"], index=0
+        label="원하는 대화 형태를 선택하세요. ",options=["일상적인 대화", "Agent", 'Agent (Chat)', "Translator (Text2Speech)", "번역하기 (한국어 / 영어)", "문법 검토하기", "이미지 분석", "카메라로 사진 찍어 번역하기", "비용 분석"], index=0
     )   
     # limit = st.slider(
     #     label="Number of cards",
@@ -64,6 +68,25 @@ with st.sidebar:
     #     value=6,
     # )
 
+    if mode == 'Translator (Text2Speech)':
+        # model selection box
+        selectLanguage = st.selectbox(
+            '🖊️ 번역할 언어를 선택하세요',
+            (
+                "Japanese",
+                "French",
+                "German",
+                "Italian",
+                "Spanish",
+                "Portuguese",
+                "Chinese",
+                "English",
+            ), index=0
+        )
+        language = selectLanguage if selectLanguage else "Japanese"
+        logger.info(f"language: {language}")
+        translator.is_active = False
+
     # model selection box
     if mode == '이미지 분석':
         index = 6
@@ -71,9 +94,25 @@ with st.sidebar:
         index = 6
     modelName = st.selectbox(
         '🖊️ 사용 모델을 선택하세요',
-        ("Nova Premier", 'Nova Pro', 'Nova Lite', 'Nova Micro', "Claude 4 Sonnet", "Claude 4 Opus", 'Claude 3.7 Sonnet', 'Claude 3.5 Sonnet', 'Claude 3.0 Sonnet', 'Claude 3.5 Haiku'), index=index
+        (
+            "Claude 4.5 Haiku",
+            'Claude 4.5 Sonnet',
+            'Claude 4 Opus', 
+            'Claude 4 Sonnet', 
+            'Claude 3.7 Sonnet', 
+            'Claude 3.5 Sonnet', 
+            'Claude 3.0 Sonnet', 
+            'Claude 3.5 Haiku', 
+            'OpenAI OSS 120B',
+            'OpenAI OSS 20B',
+            "Nova 2 Sonic",            
+            'Nova 2 Lite',
+            "Nova Premier", 
+            'Nova Pro', 
+            'Nova Lite', 
+            'Nova Micro',            
+        ), index=0
     )
-    
     uploaded_file = None
     if mode == '이미지 분석':
         st.subheader("🌇 이미지 업로드")
@@ -290,6 +329,20 @@ if prompt := st.chat_input("메시지를 입력하세요."):
                 chat.save_chat_history(prompt, response)
             
             show_references(reference_docs) 
+
+        elif mode == 'Translator (Text2Speech)':
+            final = st.empty()
+            response = chat.run_translator(prompt, language, final)
+            logger.info(f"response: {response}")
+            final.write(response)
+
+            # translate
+            pronunciate_to_korean = chat.pronunciate_to_korean(response, language)
+            logger.info(f"pronunciate_to_korean: {pronunciate_to_korean}")
+            st.info(pronunciate_to_korean)
+
+            st.session_state.messages.append({"role": "assistant", "content": pronunciate_to_korean})
+
         elif mode == '번역하기 (한국어 / 영어)':
             response = chat.translate_text(prompt, modelName, st)
             st.write(response)

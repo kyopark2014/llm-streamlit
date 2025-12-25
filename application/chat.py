@@ -11,6 +11,9 @@ import uuid
 import info
 import yfinance as yf
 import utils
+import asyncio
+import translator
+import time
 
 from io import BytesIO
 from PIL import Image
@@ -18,14 +21,36 @@ from pytz import timezone
 from langchain_aws import ChatBedrock
 from botocore.config import Config
 from langchain_core.prompts import MessagesPlaceholder, ChatPromptTemplate
-from langchain.memory import ConversationBufferWindowMemory
 from langchain_core.tools import tool
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 from tavily import TavilyClient  
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_community.utilities.tavily_search import TavilySearchAPIWrapper
 from bs4 import BeautifulSoup
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
+
+# Simple memory class to replace ConversationBufferWindowMemory
+class SimpleMemory:
+    def __init__(self, k=5):
+        self.k = k
+        self.chat_memory = SimpleChatMemory()
+    
+    def load_memory_variables(self, inputs):
+        return {"chat_history": self.chat_memory.messages[-self.k:] if len(self.chat_memory.messages) > self.k else self.chat_memory.messages}
+
+class SimpleChatMemory:
+    def __init__(self):
+        self.messages = []
+    
+    def add_user_message(self, message):
+        self.messages.append(HumanMessage(content=message))
+    
+    def add_ai_message(self, message):
+        self.messages.append(AIMessage(content=message))
+    
+    def clear(self):
+        self.messages = []
+
 from langgraph.graph import START, END, StateGraph
 from typing import Literal
 from typing_extensions import Annotated, TypedDict
@@ -68,7 +93,7 @@ def initiate():
         memorystore = memorystores[userId]
     else: 
         # print('memory does not exist. create new one!')        
-        memory_chain = ConversationBufferWindowMemory(memory_key="chat_history", output_key='answer', return_messages=True, k=5)
+        memory_chain = SimpleMemory(k=5)
         map_chain[userId] = memory_chain
 
         checkpointer = MemorySaver()
@@ -1820,3 +1845,163 @@ def summary_image(img_base64, prompt):
         summary = "이미지의 내용을 분석하지 못하였습니다."
 
     return summary
+
+
+# Global variables to track event loop and background task
+_translator_loop = None
+_background_task = None
+
+def get_or_create_loop():
+    """Get existing event loop or create a new one."""
+    global _translator_loop
+    
+    if _translator_loop is None or _translator_loop.is_closed():
+        # Create new event loop
+        _translator_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(_translator_loop)
+        logger.info(f"Created new event loop: {_translator_loop}")
+        # Start loop in background thread
+        import threading
+        def run_loop():
+            _translator_loop.run_forever()
+        thread = threading.Thread(target=run_loop, daemon=True)
+        thread.start()
+        logger.info("Started event loop in background thread")
+    else:
+        logger.info(f"Using existing event loop: {_translator_loop}")
+    
+    return _translator_loop
+
+async def _run_translator_async(text, language, final):
+    """Async implementation of run_translator."""
+    global _background_task
+    
+    logger.info(f"is_active: {translator.is_active}")    
+    if not translator.is_active:        
+        logger.info(f"Starting translator as background task...")
+        # Use the persistent loop created by run_translator
+        loop = get_or_create_loop()
+        _background_task = loop.create_task(translator.translate(language))
+        logger.info(f"Created translate task: {_background_task}")
+        await asyncio.sleep(0.5)
+    
+    if _background_task and not _background_task.done():
+        await asyncio.sleep(0.1)
+
+    # Send text using send_text_input with provided text
+    logger.info(f"Sending text: {text}")
+    await translator.send_text_input(text=text)
+
+    # Wait for response from output_queue
+    logger.info(f"Waiting for response from output_queue")
+    translated_text = ""
+    try:
+        # Wait for response with timeout (30 seconds)
+        response_chunks = []
+        timeout = 30.0  # seconds
+        start_time = time.time()
+        
+        consecutive_timeouts = 0
+        max_consecutive_timeouts = 3  # Wait for 3 consecutive timeouts before giving up
+        
+        while True:
+            try:
+                # Wait for chunk with timeout
+                remaining_time = timeout - (time.time() - start_time)
+                if remaining_time <= 0:
+                    logger.info("Timeout waiting for translation response")
+                    break
+                    
+                chunk = await asyncio.wait_for(
+                    translator.output_queue.get(),
+                    timeout=min(remaining_time, 1.5)  # Check every 1.5 seconds
+                )
+                
+                # Reset timeout counter when we receive a chunk
+                consecutive_timeouts = 0
+                
+                response_chunks.append(chunk)
+                logger.info(f"Received translation chunk: {chunk}")
+                        
+            except asyncio.TimeoutError:
+                consecutive_timeouts += 1
+                logger.debug(f"Timeout waiting for chunk (consecutive: {consecutive_timeouts})")
+                
+                # Check if there are any chunks in the queue that arrived during the timeout
+                while not translator.output_queue.empty():
+                    try:
+                        chunk = translator.output_queue.get_nowait()
+                        consecutive_timeouts = 0  # Reset counter if we get a chunk
+                        response_chunks.append(chunk)
+                        logger.info(f"Received translation chunk after timeout check: {chunk}")
+                    except asyncio.QueueEmpty:
+                        break
+                
+                # If we have chunks and had multiple consecutive timeouts, assume response is complete
+                if response_chunks and consecutive_timeouts >= max_consecutive_timeouts:
+                    logger.info(f"Received {consecutive_timeouts} consecutive timeouts, assuming translation complete")
+                    break
+                
+                # If no chunks yet, continue waiting
+                if not response_chunks:
+                    remaining_time = timeout - (time.time() - start_time)
+                    if remaining_time <= 0:
+                        logger.info("Overall timeout waiting for translation response")
+                        break
+                    continue
+        
+        translated_text = "".join(response_chunks) if response_chunks else text
+        logger.info(f"Final translated text: {translated_text}")
+        
+    except Exception as e:
+        error_msg = str(e) if e else "Unknown error"
+        logger.info(f"Error reading from output_queue: {error_msg}")
+        if hasattr(e, '__traceback__'):
+            import traceback
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+    
+    return translated_text
+
+def run_translator(text, language, final):
+    """Synchronous wrapper for run_translator that uses persistent event loop."""
+    # Get or create persistent event loop
+    loop = get_or_create_loop()
+    
+    # Run the async function in the persistent loop
+    if loop.is_running():
+        # If loop is already running, schedule the coroutine
+        future = asyncio.run_coroutine_threadsafe(_run_translator_async(text, language, final), loop)
+        return future.result(timeout=35.0)  # Wait up to 35 seconds
+    else:
+        # If loop is not running, run it
+        return loop.run_until_complete(_run_translator_async(text, language, final))
+
+def pronunciate_to_korean(context, language):
+    system = (
+        f"당신은 여행자입니다. 현지인과 얘기하기 위하여 <context> tag안의 {language}를 읽고 싶습니다. <example>의 예시를 참고하세요."
+        f"<context> tag안의 문장을 원문 그대로 읽을때에 한글로 발음기호를 표시하세요."
+        "<example> 私は駅を探しています。 => 와타시 와 에키 오 사가시테 이마스.</example>"
+        "발음 결과는 <result> tag를 붙여주세요."
+    )
+    human = "<context>{context}</context>"
+    
+    prompt = ChatPromptTemplate.from_messages([("system", system), ("human", human)])
+    # print('prompt: ', prompt)
+    
+    chat = get_chat(extended_thinking=reasoning_mode)
+    chain = prompt | chat    
+    try: 
+        result = chain.invoke(
+            {
+                "context": context,
+            }
+        )
+        
+        msg = result.content
+        # print('translated text: ', msg)
+    except Exception:
+        err_msg = traceback.format_exc()
+        logger.info(f"error message: {err_msg}")     
+        raise Exception ("Not able to request to LLM")
+
+    return msg[msg.find('<result>')+8:len(msg)-9] # remove <result> tag
